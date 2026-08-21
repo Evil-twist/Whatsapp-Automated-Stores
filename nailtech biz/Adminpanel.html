@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Nail Tech Store</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #1a1614;
+            --sidebar-text: #a09a94;
+            --sidebar-active: #a85d4a;
+            --bg: #f5f3f0;
+            --card: #ffffff;
+            --border: #e8e4e0;
+            --text: #1a1614;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(168,93,74,0.2); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #666; margin-top: 6px; display: block; font-size: 0.85rem; }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: #fff; }
+        .btn-add:hover { opacity: 0.9; }
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+        }
+        .product-block {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .product-block-header {
+            background: #f5f3f0;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .product-block-header:hover { background: #ebe9e6; }
+        .product-block-body { padding: 20px; }
+        .product-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 80px 40px;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-row:last-child { border-bottom: none; }
+        .product-row img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-row input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .images-list { margin-top: 8px; }
+        .image-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .image-row input { flex: 1; }
+        .variant-list { margin-top: 8px; }
+        .variant-tag { display: inline-block; background: #f0eeeb; padding: 4px 10px; border-radius: 6px; margin: 2px; font-size: 0.85rem; }
+        .variant-tag .remove-variant { margin-left: 6px; cursor: pointer; color: var(--danger); }
+        .testimonial-row {
+            display: grid;
+            grid-template-columns: 1fr 120px 40px;
+            gap: 12px;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        .testimonial-row textarea { min-height: 60px; resize: vertical; }
+        .status-badge { padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; }
+        .status-badge.pending { background: #fef3c7; color: #92400e; }
+        .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
+        .status-badge.completed { background: #d1fae5; color: #065f46; }
+
+        /* Auth screens */
+        .auth-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #1a1614 0%, #2d2522 100%);
+        }
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .auth-box h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            color: var(--sidebar-active);
+            margin-bottom: 8px;
+        }
+        .auth-box .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
+        .auth-box .form-group { margin-bottom: 18px; }
+        .auth-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; }
+        .auth-box .btn-auth {
+            width: 100%;
+            padding: 14px;
+            background: var(--sidebar-active);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .auth-box .btn-auth:hover { opacity: 0.9; }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+        .auth-error.show { display: block; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 280px;
+                left: -280px;
+                transition: left 0.25s ease;
+                z-index: 100;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+            }
+            .sidebar.open { left: 0; }
+            .sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.4);
+                z-index: 99;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s ease;
+            }
+            .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .page-header { flex-wrap: wrap; gap: 12px; }
+            .page-title { font-size: 1.25rem; }
+            .save-btn { padding: 10px 18px; font-size: 0.9rem; }
+            .card { padding: 20px; }
+            .mobile-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 56px;
+                background: var(--sidebar);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 16px;
+                z-index: 98;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            }
+            .mobile-header .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--sidebar-active); }
+            .mobile-menu-btn {
+                width: 44px;
+                height: 44px;
+                border: none;
+                background: transparent;
+                color: var(--sidebar-text);
+                font-size: 1.25rem;
+                cursor: pointer;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .mobile-menu-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+            .product-row { grid-template-columns: 1fr 1fr 80px 60px 36px; gap: 8px; font-size: 0.85rem; }
+            .product-row img { width: 40px; height: 40px; }
+            .testimonial-row { grid-template-columns: 1fr 100px 36px; }
+            .link-row { grid-template-columns: 1fr 1fr 50px; }
+            table { font-size: 0.85rem; }
+            .btn-small { padding: 6px 10px; font-size: 0.8rem; }
+        }
+        .mobile-header { display: none; }
+        @media (max-width: 768px) {
+            .mobile-header { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+            .mobile-header { display: none !important; }
+        }
+        #admin-app { display: none; }
+        #admin-app.authenticated { display: flex; flex-wrap: wrap; }
+        @media (max-width: 768px) {
+            #admin-app.authenticated { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth: setup (first time) or login -->
+    <div id="auth-screen" class="auth-wrap">
+        <div class="auth-box" id="auth-setup-box" style="display: none;">
+            <h1>Create admin login</h1>
+            <p class="subtitle">Set the username and password you'll use to access this panel.</p>
+            <form id="auth-setup-form" onsubmit="return handleSetup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="setup-username" required minlength="2" placeholder="Choose a username" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="setup-password" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm password</label>
+                    <input type="password" id="setup-confirm" required placeholder="Repeat password" autocomplete="new-password">
+                </div>
+                <p class="auth-error" id="setup-error"></p>
+                <button type="submit" class="btn-auth">Create login</button>
+            </form>
+        </div>
+        <div class="auth-box" id="auth-login-box" style="display: none;">
+            <h1>Admin login</h1>
+            <p class="subtitle">Enter your credentials to continue.</p>
+            <form id="auth-login-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required placeholder="Username" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="Password" autocomplete="current-password">
+                </div>
+                <p class="auth-error" id="login-error"></p>
+                <button type="submit" class="btn-auth">Log in</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-app">
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <header class="mobile-header">
+            <span class="logo">Nail Tech Admin</span>
+            <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+        </header>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">Nail Tech Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General Settings</span>
+            </div>
+            <div class="nav-item" data-section="mainpage">
+                <i class="fa-solid fa-home"></i>
+                <span>Main Page Content</span>
+            </div>
+            <div class="nav-item" data-section="products">
+                <i class="fa-solid fa-gem"></i>
+                <span>Products & Services</span>
+            </div>
+            <div class="nav-item" data-section="testimonials">
+                <i class="fa-solid fa-quote-left"></i>
+                <span>Testimonials</span>
+            </div>
+            <div class="nav-item" data-section="booking">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Booking & Slots</span>
+            </div>
+            <div class="nav-item" data-section="account">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Account</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Preview Store
+            </button>
+            <button class="preview-btn" type="button" onclick="logout()" style="margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.2); color:var(--sidebar-text);">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log out
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+
+        <!-- General Settings -->
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store & Contact</h3>
+                <div class="form-group">
+                    <label>Store / Brand Name (header)</label>
+                    <input type="text" id="site-brand" placeholder="CLIRNAIL.">
+                </div>
+                <div class="form-group">
+                    <label>Instagram URL</label>
+                    <input type="text" id="site-instagram" placeholder="https://instagram.com/yourhandle">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code + number, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233538865290">
+                    <small>Used for automated order/booking messages. Example: 233501234567 for Ghana.</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency (e.g. GHS, GH₵, $)</label>
+                    <input type="text" id="currency" placeholder="GHS" maxlength="10">
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Page Content -->
+        <section class="section" id="section-mainpage">
+            <div class="card">
+                <h3 class="card-title">Bio Section</h3>
+                <div class="form-group">
+                    <label>Heading (e.g. Hi, I'm Akua)</label>
+                    <input type="text" id="bio-name" placeholder="Hi, I'm Akua">
+                </div>
+                <div class="form-group">
+                    <label>Short description</label>
+                    <textarea id="bio-desc" placeholder="Certified Nail Technician based in Spintex..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Profile image URL</label>
+                    <input type="text" id="bio-avatar" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Stats — Clients (e.g. 500+)</label>
+                    <input type="text" id="stat-clients" placeholder="500+">
+                </div>
+                <div class="form-group">
+                    <label>Stats — Rating (e.g. 4.9)</label>
+                    <input type="text" id="stat-rating" placeholder="4.9">
+                </div>
+                <div class="form-group">
+                    <label>Stats — Experience (e.g. 5yr)</label>
+                    <input type="text" id="stat-exp" placeholder="5yr">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Section Titles</h3>
+                <div class="form-group">
+                    <label>Products section title</label>
+                    <input type="text" id="section-collection" placeholder="The Collection">
+                </div>
+                <div class="form-group">
+                    <label>Testimonials section title</label>
+                    <input type="text" id="section-testimonials-title" placeholder="Client Love">
+                </div>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Products / Nail Sets</h3>
+                    <button class="btn-small btn-add" onclick="addProduct()">
+                        <i class="fa-solid fa-plus"></i> Add Product
+                    </button>
+                </div>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="section" id="section-testimonials">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Client Testimonials</h3>
+                    <button class="btn-small btn-add" onclick="addTestimonial()">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </div>
+                <div id="testimonials-container"></div>
+            </div>
+        </section>
+
+        <!-- Booking & Slots -->
+        <section class="section" id="section-booking">
+            <div class="card">
+                <h3 class="card-title">Slot rules (prevents double-booking)</h3>
+                <div class="form-group">
+                    <label>Slot duration (minutes)</label>
+                    <input type="number" id="slot-duration" min="10" max="120" step="5" placeholder="30">
+                    <small>Each booking blocks this many minutes. e.g. 30 = 12:30pm blocks 12:30–1:00pm so 12:40 and 12:50 cannot be chosen.</small>
+                </div>
+                <div class="form-group">
+                    <label>Business hours — Start (e.g. 09:00)</label>
+                    <input type="text" id="business-start" placeholder="09:00">
+                </div>
+                <div class="form-group">
+                    <label>Business hours — End (e.g. 17:00)</label>
+                    <input type="text" id="business-end" placeholder="17:00">
+                </div>
+                <div class="form-group">
+                    <label>Working days (customers can book only on these days)</label>
+                    <div class="flex flex-wrap gap-4 mt-2">
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="0"> Sun</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="1"> Mon</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="2"> Tue</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="3"> Wed</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="4"> Thu</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="5"> Fri</label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" class="working-day" value="6"> Sat</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Bookings</h3>
+                    <button type="button" class="btn-small btn-add" onclick="renderBookings()"><i class="fa-solid fa-sync-alt"></i> Refresh</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border);">
+                                <th class="py-2 pr-4 font-semibold">Date</th>
+                                <th class="py-2 pr-4 font-semibold">Time</th>
+                                <th class="py-2 pr-4 font-semibold">Client</th>
+                                <th class="py-2 pr-4 font-semibold">Service</th>
+                                <th class="py-2 pr-4 font-semibold">Variant</th>
+                                <th class="py-2 pr-4 font-semibold">Status</th>
+                                <th class="py-2 font-semibold">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-tbody"></tbody>
+                    </table>
+                </div>
+                <p id="bookings-empty" class="text-sm mt-4 hidden" style="color:#666;">No bookings yet.</p>
+            </div>
+        </section>
+
+        <!-- Account: change username / password -->
+        <section class="section" id="section-account">
+            <div class="card">
+                <h3 class="card-title">Change login</h3>
+                <p class="text-sm mb-4" style="color:#666;">Update your admin username or password. You must enter your current password to save changes.</p>
+                <form id="account-form" onsubmit="return handleChangeCredentials(event)">
+                    <div class="form-group">
+                        <label>Current password</label>
+                        <input type="password" id="account-current" placeholder="Your current password" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label>New username</label>
+                        <input type="text" id="account-new-username" placeholder="Leave blank to keep current" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label>New password</label>
+                        <input type="password" id="account-new-password" placeholder="Leave blank to keep current" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm new password</label>
+                        <input type="password" id="account-confirm-password" placeholder="Repeat new password" autocomplete="new-password">
+                    </div>
+                    <p class="auth-error" id="account-error"></p>
+                    <button type="submit" class="save-btn"><i class="fa-solid fa-key"></i> Update login</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <script>
+        const STORAGE_KEY = 'nailtech_settings';
+        const BOOKINGS_STORAGE_KEY = 'nailtech_bookings';
+        const AUTH_USER_KEY = 'nailtech_admin_user';
+        const AUTH_HASH_KEY = 'nailtech_admin_passhash';
+        const AUTH_SESSION_KEY = 'nailtech_admin_session';
+
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = enc.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getStoredCredentials() {
+            const user = localStorage.getItem(AUTH_USER_KEY);
+            const hash = localStorage.getItem(AUTH_HASH_KEY);
+            return user && hash ? { user, hash } : null;
+        }
+
+        function setStoredCredentials(user, passHash) {
+            localStorage.setItem(AUTH_USER_KEY, user);
+            localStorage.setItem(AUTH_HASH_KEY, passHash);
+        }
+
+        function hasCredentials() {
+            return !!getStoredCredentials();
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem(AUTH_SESSION_KEY) === '1';
+        }
+
+        function setLoggedIn(value) {
+            if (value) sessionStorage.setItem(AUTH_SESSION_KEY, '1');
+            else sessionStorage.removeItem(AUTH_SESSION_KEY);
+        }
+
+        function showAuthScreen() {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('admin-app').classList.remove('authenticated');
+            if (hasCredentials()) {
+                document.getElementById('auth-setup-box').style.display = 'none';
+                document.getElementById('auth-login-box').style.display = 'block';
+                document.getElementById('login-error').classList.remove('show');
+            } else {
+                document.getElementById('auth-setup-box').style.display = 'block';
+                document.getElementById('auth-login-box').style.display = 'none';
+                document.getElementById('setup-error').classList.remove('show');
+            }
+        }
+
+        function showAdmin() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('admin-app').classList.add('authenticated');
+        }
+
+        async function handleSetup(e) {
+            e.preventDefault();
+            const username = document.getElementById('setup-username').value.trim();
+            const password = document.getElementById('setup-password').value;
+            const confirm = document.getElementById('setup-confirm').value;
+            const errEl = document.getElementById('setup-error');
+            if (password.length < 6) {
+                errEl.textContent = 'Password must be at least 6 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (password !== confirm) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const hash = await hashPassword(password);
+            setStoredCredentials(username, hash);
+            setLoggedIn(true);
+            showAdmin();
+            return false;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            const cred = getStoredCredentials();
+            if (!cred) {
+                errEl.textContent = 'No credentials set.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const hash = await hashPassword(password);
+            if (cred.user !== username || cred.hash !== hash) {
+                errEl.textContent = 'Invalid username or password.';
+                errEl.classList.add('show');
+                return false;
+            }
+            setLoggedIn(true);
+            showAdmin();
+            return false;
+        }
+
+        function logout() {
+            setLoggedIn(false);
+            showAuthScreen();
+        }
+
+        async function handleChangeCredentials(e) {
+            e.preventDefault();
+            const current = document.getElementById('account-current').value;
+            const newUser = document.getElementById('account-new-username').value.trim();
+            const newPass = document.getElementById('account-new-password').value;
+            const confirmPass = document.getElementById('account-confirm-password').value;
+            const errEl = document.getElementById('account-error');
+            errEl.classList.remove('show');
+            const cred = getStoredCredentials();
+            if (!cred) {
+                errEl.textContent = 'No stored credentials.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const currentHash = await hashPassword(current);
+            if (currentHash !== cred.hash) {
+                errEl.textContent = 'Current password is incorrect.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (!newUser && !newPass) {
+                errEl.textContent = 'Enter a new username and/or new password.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (newPass && newPass.length < 6) {
+                errEl.textContent = 'New password must be at least 6 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (newPass && newPass !== confirmPass) {
+                errEl.textContent = 'New passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const finalUser = newUser || cred.user;
+            const finalHash = newPass ? await hashPassword(newPass) : cred.hash;
+            setStoredCredentials(finalUser, finalHash);
+            document.getElementById('account-form').reset();
+            errEl.textContent = '';
+            showToast('Login updated. Use your new credentials next time.');
+            return false;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function initAuth() {
+            if (isLoggedIn()) {
+                showAdmin();
+                return;
+            }
+            showAuthScreen();
+        }
+
+        const DEFAULT_DATA = {
+            site: {
+                brand: 'CLIRNAIL.',
+                instagram: 'https://instagram.com',
+                whatsapp: '233538865290',
+                currency: 'GHS'
+            },
+            bookingSettings: {
+                slotDurationMinutes: 30,
+                businessHoursStart: '09:00',
+                businessHoursEnd: '17:00',
+                workingDays: [1, 2, 3, 4, 5]
+            },
+            bio: {
+                name: "Hi, I'm Akua",
+                description: "Certified Nail Technician based in Spintex. I specialize in acrylics, biab, and intricate nail art.",
+                avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
+                stats: { clients: '500+', rating: '4.9', exp: '5yr' }
+            },
+            sections: {
+                collectionTitle: 'The Collection',
+                testimonialsTitle: 'Client Love'
+            },
+            products: [
+                { id: 1, name: "Marble French", price: 200, images: ["https://images.unsplash.com/photo-1698308233758-d55c98fd7444?q=80&w=735"], hasVariants: true, variantLabel: "Shape", variants: ["Coffin", "Almond", "Square"] },
+                { id: 2, name: "Classic Nude", price: 150, images: ["https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600"], hasVariants: true, variantLabel: "Shape", variants: ["Coffin", "Almond", "Square"] },
+                { id: 3, name: "Ruby Red", price: 180, images: ["https://images.unsplash.com/photo-1648844421727-cde6c4246b13?q=80&w=680"], hasVariants: false },
+                { id: 4, name: "Glitter Ombre", price: 220, images: ["https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600"], hasVariants: false },
+                { id: 5, name: "Abstract Art", price: 250, images: ["https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?q=80&w=687"], hasVariants: false },
+                { id: 6, name: "Milky White", price: 160, images: ["https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=600"], hasVariants: false }
+            ],
+            testimonials: [
+                { text: '"The best set I\'ve ever had. She is so gentle and the shaping is perfection!"', author: 'Sarah K.' },
+                { text: '"Lasted 4 weeks without lifting. Akua is a magician."', author: 'Jessica M.' },
+                { text: '"I have known Akua for like 2 years and she\'s my go to person for everything nails."', author: 'Abigail B.' },
+                { text: '"She\'s a cool nail tech, I mean she asks what you want and do it like how you asked."', author: 'Sharon S.' }
+            ]
+        };
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed };
+                    if (!data.products || !Array.isArray(data.products)) data.products = DEFAULT_DATA.products.slice();
+                    if (!data.testimonials || !Array.isArray(data.testimonials)) data.testimonials = DEFAULT_DATA.testimonials.slice();
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast(message) {
+            const t = document.getElementById('toast');
+            t.textContent = message || 'Settings saved successfully!';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('nailtech.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General Settings', mainpage: 'Main Page Content', products: 'Products & Services', testimonials: 'Testimonials', booking: 'Booking & Slots', account: 'Account' };
+                document.getElementById('section-title').textContent = titles[id] || id;
+                if (window.innerWidth <= 768) toggleSidebar();
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-brand').value = data.site?.brand || '';
+            document.getElementById('site-instagram').value = data.site?.instagram || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS';
+            document.getElementById('bio-name').value = data.bio?.name || '';
+            document.getElementById('bio-desc').value = data.bio?.description || '';
+            document.getElementById('bio-avatar').value = data.bio?.avatar || '';
+            document.getElementById('stat-clients').value = data.bio?.stats?.clients || '';
+            document.getElementById('stat-rating').value = data.bio?.stats?.rating || '';
+            document.getElementById('stat-exp').value = data.bio?.stats?.exp || '';
+            document.getElementById('section-collection').value = data.sections?.collectionTitle || '';
+            document.getElementById('section-testimonials-title').value = data.sections?.testimonialsTitle || '';
+            const bs = data.bookingSettings || {};
+            document.getElementById('slot-duration').value = bs.slotDurationMinutes ?? 30;
+            document.getElementById('business-start').value = bs.businessHoursStart || '09:00';
+            document.getElementById('business-end').value = bs.businessHoursEnd || '17:00';
+            const wd = Array.isArray(bs.workingDays) ? bs.workingDays : [1, 2, 3, 4, 5];
+            document.querySelectorAll('.working-day').forEach(cb => { cb.checked = wd.includes(parseInt(cb.value, 10)); });
+        }
+
+        function getBookings() {
+            try {
+                const raw = localStorage.getItem(BOOKINGS_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+
+        function saveBookingsList(bookings) {
+            localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
+        }
+
+        function renderBookings() {
+            const bookings = getBookings();
+            const tbody = document.getElementById('bookings-tbody');
+            const emptyEl = document.getElementById('bookings-empty');
+            if (!bookings.length) {
+                tbody.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+            emptyEl.classList.add('hidden');
+            const sorted = [...bookings].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+            tbody.innerHTML = sorted.map(b => {
+                const dateStr = b.date ? new Date(b.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                const timeStr = b.time || '—';
+                const status = b.status || 'pending';
+                return `
+                    <tr class="border-b border-gray-200">
+                        <td class="py-3 pr-4">${escapeHtml(dateStr)}</td>
+                        <td class="py-3 pr-4">${escapeHtml(timeStr)}</td>
+                        <td class="py-3 pr-4">${escapeHtml(b.name || '—')}</td>
+                        <td class="py-3 pr-4">${escapeHtml(b.productName || '—')}</td>
+                        <td class="py-3 pr-4">${escapeHtml(b.variant || '—')}</td>
+                        <td class="py-3 pr-4"><span class="status-badge ${status}">${status}</span></td>
+                        <td class="py-3">${status !== 'cancelled' ? `<button type="button" class="btn-small btn-danger" onclick="cancelBooking(${b.id})">Cancel</button>` : '—'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function cancelBooking(id) {
+            if (!confirm('Mark this booking as cancelled? The time slot will become available again.')) return;
+            const bookings = getBookings();
+            const idx = bookings.findIndex(b => b.id === id);
+            if (idx === -1) return;
+            bookings[idx].status = 'cancelled';
+            saveBookingsList(bookings);
+            renderBookings();
+            showToast('Booking cancelled. Slot is available again.');
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            const products = data.products || [];
+            container.innerHTML = products.map((p, idx) => {
+                const imgs = Array.isArray(p.images) ? p.images : (p.img ? [p.img] : []);
+                const variants = Array.isArray(p.variants) ? p.variants : [];
+                return `
+                    <div class="product-block" data-idx="${idx}">
+                        <div class="product-block-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${escapeHtml(p.name || 'Product')}</strong>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="product-block-body">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" value="${escapeHtml(p.name || '')}" onchange="updateProduct(${idx}, 'name', this.value)" placeholder="Product name">
+                            </div>
+                            <div class="form-group">
+                                <label>Price (number)</label>
+                                <input type="number" value="${p.price ?? ''}" onchange="updateProduct(${idx}, 'price', this.value)" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Images (one URL per line for multiple images)</label>
+                                <textarea rows="3" onchange="updateProductImages(${idx}, this.value)" placeholder="https://...">${(imgs.join('\n') || '').replace(/"/g, '&quot;')}</textarea>
+                                <small>First image is the main one. Add more lines for gallery.</small>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" ${p.hasVariants ? 'checked' : ''} onchange="updateProduct(${idx}, 'hasVariants', this.checked)"> Has options (e.g. shape/color)</label>
+                            </div>
+                            <div class="form-group" id="variants-wrap-${idx}" style="${p.hasVariants ? '' : 'display:none;'}">
+                                <label>Option label (e.g. Shape, Color)</label>
+                                <input type="text" value="${escapeHtml(p.variantLabel || '')}" onchange="updateProduct(${idx}, 'variantLabel', this.value)" placeholder="Shape">
+                                <label class="mt-2">Options (comma-separated)</label>
+                                <input type="text" value="${escapeHtml((variants || []).join(', '))}" onchange="updateProductVariants(${idx}, this.value)" placeholder="Coffin, Almond, Square">
+                            </div>
+                            <button type="button" class="btn-small btn-danger" onclick="removeProduct(${idx})" style="margin-top:12px;"><i class="fa-solid fa-trash"></i> Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            products.forEach((p, idx) => {
+                const wrap = document.getElementById('variants-wrap-' + idx);
+                if (wrap) wrap.style.display = p.hasVariants ? 'block' : 'none';
+            });
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(s);
+            return div.innerHTML;
+        }
+
+        function updateProduct(idx, field, val) {
+            if (!data.products) data.products = [];
+            data.products[idx] = data.products[idx] || {};
+            if (field === 'price') val = parseFloat(val) || 0;
+            if (field === 'hasVariants') val = !!val;
+            data.products[idx][field] = val;
+            if (field === 'hasVariants') {
+                const wrap = document.getElementById('variants-wrap-' + idx);
+                if (wrap) wrap.style.display = val ? 'block' : 'none';
+            }
+        }
+
+        function updateProductImages(idx, text) {
+            const urls = text.split('\n').map(s => s.trim()).filter(Boolean);
+            updateProduct(idx, 'images', urls);
+        }
+
+        function updateProductVariants(idx, text) {
+            const arr = text.split(',').map(s => s.trim()).filter(Boolean);
+            updateProduct(idx, 'variants', arr);
+        }
+
+        function addProduct() {
+            if (!data.products) data.products = [];
+            const maxId = Math.max(0, ...data.products.map(p => p.id || 0)) + 1;
+            data.products.push({
+                id: maxId,
+                name: 'New Product',
+                price: 0,
+                images: [],
+                hasVariants: false,
+                variantLabel: 'Shape',
+                variants: []
+            });
+            renderProducts();
+        }
+
+        function removeProduct(idx) {
+            if (!confirm('Remove this product?')) return;
+            data.products.splice(idx, 1);
+            renderProducts();
+        }
+
+        function renderTestimonials() {
+            const container = document.getElementById('testimonials-container');
+            const list = data.testimonials || [];
+            container.innerHTML = list.map((t, i) => `
+                <div class="testimonial-row">
+                    <div>
+                        <label>Quote</label>
+                        <textarea onchange="updateTestimonial(${i}, 'text', this.value)" placeholder="Client quote...">${escapeHtml(t.text || '')}</textarea>
+                    </div>
+                    <div>
+                        <label>Author</label>
+                        <input type="text" value="${escapeHtml(t.author || '')}" onchange="updateTestimonial(${i}, 'author', this.value)" placeholder="Name">
+                    </div>
+                    <div style="padding-top:24px;">
+                        <button type="button" class="btn-icon" onclick="removeTestimonial(${i})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTestimonial(i, field, val) {
+            if (!data.testimonials) data.testimonials = [];
+            data.testimonials[i] = data.testimonials[i] || {};
+            data.testimonials[i][field] = val;
+        }
+
+        function addTestimonial() {
+            if (!data.testimonials) data.testimonials = [];
+            data.testimonials.push({ text: '', author: '' });
+            renderTestimonials();
+        }
+
+        function removeTestimonial(i) {
+            data.testimonials.splice(i, 1);
+            renderTestimonials();
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.brand = document.getElementById('site-brand').value.trim() || 'CLIRNAIL.';
+            data.site.instagram = document.getElementById('site-instagram').value.trim() || '';
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim().replace(/\D/g, '') || '';
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS';
+            data.bio = data.bio || {};
+            data.bio.name = document.getElementById('bio-name').value.trim() || "Hi, I'm Akua";
+            data.bio.description = document.getElementById('bio-desc').value.trim() || '';
+            data.bio.avatar = document.getElementById('bio-avatar').value.trim() || '';
+            data.bio.stats = data.bio.stats || {};
+            data.bio.stats.clients = document.getElementById('stat-clients').value.trim() || '500+';
+            data.bio.stats.rating = document.getElementById('stat-rating').value.trim() || '4.9';
+            data.bio.stats.exp = document.getElementById('stat-exp').value.trim() || '5yr';
+            data.sections = data.sections || {};
+            data.sections.collectionTitle = document.getElementById('section-collection').value.trim() || 'The Collection';
+            data.sections.testimonialsTitle = document.getElementById('section-testimonials-title').value.trim() || 'Client Love';
+            data.bookingSettings = data.bookingSettings || {};
+            data.bookingSettings.slotDurationMinutes = parseInt(document.getElementById('slot-duration').value, 10) || 30;
+            data.bookingSettings.businessHoursStart = document.getElementById('business-start').value.trim() || '09:00';
+            data.bookingSettings.businessHoursEnd = document.getElementById('business-end').value.trim() || '17:00';
+            data.bookingSettings.workingDays = Array.from(document.querySelectorAll('.working-day:checked')).map(cb => parseInt(cb.value, 10));
+            if (!data.bookingSettings.workingDays.length) data.bookingSettings.workingDays = [1, 2, 3, 4, 5];
+        }
+
+        function saveAll() {
+            collectGeneral();
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        renderGeneral();
+        renderProducts();
+        renderTestimonials();
+        renderBookings();
+        initAuth();
+    </script>
+</body>
+</html>

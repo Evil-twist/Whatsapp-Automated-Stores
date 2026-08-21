@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Grace City Chapel</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #b8860b;
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --border: #e5e5e5;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(184,134,11,0.2); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: #0f0f0f;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #666; margin-top: 6px; display: block; }
+
+        .slide-item, .item-block {
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .slide-item-header, .item-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .slide-preview {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: #0f0f0f; }
+        .btn-add:hover { opacity: 0.9; }
+
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 140px 50px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .link-row input, .link-row select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+
+        /* ========== LOGIN / SETUP SCREEN ========== */
+        #auth-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 100%);
+        }
+        #auth-screen.hidden { display: none !important; }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 36px 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .auth-card h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            color: var(--sidebar-active);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .auth-card .auth-sub { color: #666; font-size: 0.9rem; text-align: center; margin-bottom: 28px; }
+        .auth-card .form-group { margin-bottom: 18px; }
+        .auth-card .form-group label { font-size: 0.875rem; }
+        .auth-card input {
+            padding: 14px 16px;
+            font-size: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 100%;
+        }
+        .auth-card input:focus { outline: none; border-color: var(--sidebar-active); box-shadow: 0 0 0 3px rgba(184,134,11,0.2); }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--sidebar-active);
+            color: #0f0f0f;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
+        .auth-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .auth-err {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 12px;
+            text-align: center;
+            min-height: 20px;
+        }
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .auth-switch button {
+            background: none;
+            border: none;
+            color: var(--sidebar-active);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ========== MOBILE ========== */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+                box-shadow: none;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            .sidebar.open { transform: translateY(0); box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+            .sidebar-footer { position: static; padding: 16px 24px; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+            .main { margin-left: 0; margin-top: 56px; padding: 16px; padding-bottom: 100px; min-height: 100vh; }
+            .page-header {
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .page-title { font-size: 1.35rem; }
+            .save-btn { padding: 12px 20px; font-size: 0.9rem; }
+            .card { padding: 20px; margin-bottom: 16px; }
+            .link-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .link-row select { grid-column: 1 / -1; }
+            .link-row .btn-small.btn-danger { grid-column: 1 / -1; }
+            .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+        }
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--sidebar);
+            color: #fff;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 99;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 768px) {
+            .mobile-header { display: flex; }
+        }
+        .mobile-header .menu-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .mobile-header .menu-btn:active { background: rgba(255,255,255,0.2); }
+        .mobile-header .logo-text { font-family: 'Cormorant Garamond', serif; color: var(--sidebar-active); font-size: 1.2rem; }
+        .logout-btn {
+            padding: 10px 16px;
+            background: rgba(239,68,68,0.2);
+            color: #e55;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.3); }
+        #admin-dashboard { display: none; }
+        #admin-dashboard.visible { display: flex; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN / SETUP SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1 id="auth-title">Set up your login</h1>
+            <p class="auth-sub" id="auth-sub">Create a username and password to protect the admin panel.</p>
+            <form id="auth-form" onsubmit="return handleAuthSubmit(event)">
+                <div id="auth-setup-fields">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="auth-username" placeholder="Choose a username" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="auth-password" placeholder="At least 6 characters" autocomplete="new-password" required minlength="6">
+                    </div>
+                    <div class="form-group" id="auth-confirm-wrap">
+                        <label>Confirm password</label>
+                        <input type="password" id="auth-confirm" placeholder="Confirm password" autocomplete="new-password" required>
+                    </div>
+                </div>
+                <div id="auth-login-fields" style="display:none;">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="auth-login-username" placeholder="Your username" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="auth-login-password" placeholder="Your password" autocomplete="current-password">
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn" id="auth-submit-btn">Create login</button>
+                <p class="auth-err" id="auth-err"></p>
+            </form>
+            <p class="auth-switch" id="auth-switch-wrap" style="display:none;">
+                Already have an account? <button type="button" id="auth-show-login">Log in</button>
+            </p>
+            <p class="auth-switch" id="auth-setup-wrap" style="display:none;">
+                First time? <button type="button" id="auth-show-setup">Set up login</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- MOBILE HEADER (visible on small screens) -->
+    <header class="mobile-header">
+        <button type="button" class="menu-btn" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+        <span class="logo-text">Church Admin</span>
+        <button type="button" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </header>
+
+    <div id="admin-dashboard">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">Church Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General</span>
+            </div>
+            <div class="nav-item" data-section="hero">
+                <i class="fa-solid fa-image"></i>
+                <span>Hero / Home</span>
+            </div>
+            <div class="nav-item" data-section="about">
+                <i class="fa-solid fa-landmark"></i>
+                <span>About & Vision</span>
+            </div>
+            <div class="nav-item" data-section="pastor">
+                <i class="fa-solid fa-user-tie"></i>
+                <span>Our Pastor</span>
+            </div>
+            <div class="nav-item" data-section="services">
+                <i class="fa-solid fa-clock"></i>
+                <span>Service Times</span>
+            </div>
+            <div class="nav-item" data-section="sermons">
+                <i class="fa-solid fa-microphone"></i>
+                <span>Sermons</span>
+            </div>
+            <div class="nav-item" data-section="events">
+                <i class="fa-solid fa-calendar"></i>
+                <span>Events</span>
+            </div>
+            <div class="nav-item" data-section="give">
+                <i class="fa-solid fa-hand-holding-heart"></i>
+                <span>Give / MoMo / WhatsApp</span>
+            </div>
+            <div class="nav-item" data-section="footer">
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Footer & Contact</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                View Website
+            </button>
+            <button type="button" class="logout-btn" onclick="logout()" style="width:100%; margin-top:10px; justify-content:center;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save All Changes
+            </button>
+        </div>
+
+        <!-- General -->
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Church Identity</h3>
+                <div class="form-group">
+                    <label>Church Name (Brand)</label>
+                    <input type="text" id="site-brand" placeholder="GRACE CITY">
+                </div>
+                <div class="form-group">
+                    <label>Tagline (e.g. Chapel International)</label>
+                    <input type="text" id="site-tagline" placeholder="Chapel International">
+                </div>
+                <div class="form-group">
+                    <label>Short About (Footer)</label>
+                    <textarea id="site-about" placeholder="A place of grace and truth. Building leaders, transforming lives."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="site-copyright" placeholder="© 2025 Grace City Chapel. All rights reserved.">
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero -->
+        <section class="section" id="section-hero">
+            <div class="card">
+                <h3 class="card-title">Hero Section (Home Page)</h3>
+                <div class="form-group">
+                    <label>Badge Text (small label above title)</label>
+                    <input type="text" id="hero-badge" placeholder="Welcome Home">
+                </div>
+                <div class="form-group">
+                    <label>Main Title (use &lt;span class=\"text-[var(--accent-soft)]\"&gt;word&lt;/span&gt; for gold highlight)</label>
+                    <input type="text" id="hero-title" placeholder="A Place of Grace & Truth">
+                </div>
+                <div class="form-group">
+                    <label>Subtitle</label>
+                    <textarea id="hero-subtitle" rows="3" placeholder="Join us for a life-transforming encounter with God..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hero Background Image URL</label>
+                    <input type="text" id="hero-image" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Watch Live Button URL</label>
+                    <input type="text" id="hero-watch-url" placeholder="https://youtube.com/... or #">
+                </div>
+                <div class="slide-preview" id="hero-preview" style="background-image:url('')"></div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section class="section" id="section-about">
+            <div class="card">
+                <h3 class="card-title">About Section</h3>
+                <div class="form-group">
+                    <label>Intro (Who We Are)</label>
+                    <textarea id="about-intro" rows="2" placeholder="A community built on faith, grace..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Our Vision</label>
+                    <textarea id="about-vision" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Our Mission</label>
+                    <textarea id="about-mission" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Our Values</label>
+                    <textarea id="about-values" rows="2"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pastor -->
+        <section class="section" id="section-pastor">
+            <div class="card">
+                <h3 class="card-title">Pastor / Shepherd</h3>
+                <div class="form-group">
+                    <label>Full Name & Title</label>
+                    <input type="text" id="pastor-name" placeholder="Rev. Dr. Jesali White Clirpa">
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="pastor-bio" rows="4" placeholder="With over 20 years of ministry..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Quote (without quotes)</label>
+                    <input type="text" id="pastor-quote" placeholder="Our vision is to build a city of God...">
+                </div>
+                <div class="form-group">
+                    <label>Pastor Image URL</label>
+                    <input type="text" id="pastor-image" placeholder="https://...">
+                </div>
+                <div class="slide-preview" id="pastor-preview"></div>
+            </div>
+        </section>
+
+        <!-- Service Times -->
+        <section class="section" id="section-services">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Service Times</h3>
+                    <button class="btn-small btn-add" onclick="addService()"><i class="fa-solid fa-plus"></i> Add</button>
+                </div>
+                <div id="services-container"></div>
+                <small>Icon: sunday, midweek, live, or calendar</small>
+            </div>
+        </section>
+
+        <!-- Sermons -->
+        <section class="section" id="section-sermons">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Sermons / Messages</h3>
+                    <button class="btn-small btn-add" onclick="addSermon()"><i class="fa-solid fa-plus"></i> Add</button>
+                </div>
+                <div id="sermons-container"></div>
+            </div>
+        </section>
+
+        <!-- Events -->
+        <section class="section" id="section-events">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Upcoming Events</h3>
+                    <button class="btn-small btn-add" onclick="addEvent()"><i class="fa-solid fa-plus"></i> Add</button>
+                </div>
+                <div id="events-container"></div>
+                <small>Date format: YYYY-MM-DD</small>
+            </div>
+        </section>
+
+        <!-- Give / MoMo / WhatsApp -->
+        <section class="section" id="section-give">
+            <div class="card">
+                <h3 class="card-title">Give Online (MoMo)</h3>
+                <div class="form-group">
+                    <label>MoMo Number (as shown on site)</label>
+                    <input type="text" id="give-momo-number" placeholder="053 886 5290">
+                </div>
+                <div class="form-group">
+                    <label>MoMo Account Name</label>
+                    <input type="text" id="give-momo-name" placeholder="Grace City Finance">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp – “I Have Sent It” Button</h3>
+                <p class="text-sm text-gray-600 mb-4">When visitors click "I Have Sent It", they can be sent to WhatsApp with a pre-filled message (e.g. to confirm their giving).</p>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code, no + or spaces)</label>
+                    <input type="text" id="give-whatsapp-number" placeholder="233538865290">
+                    <small>Example: 233501234567 for Ghana</small>
+                </div>
+                <div class="form-group">
+                    <label>Pre-filled Message (when they open WhatsApp)</label>
+                    <input type="text" id="give-whatsapp-message" placeholder="I have sent my tithe/offering. God bless you.">
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer & Contact -->
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Contact Info (Footer)</h3>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="footer-address" placeholder="East Legon Hills, Near the British International School, Accra.">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="footer-phone" placeholder="+233 XX XXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="footer-email" placeholder="info@gracecitychapel.org">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> Add</button>
+                <small>Icon: facebook, youtube, instagram, twitter</small>
+            </div>
+        </section>
+    </main>
+    </div><!-- #admin-dashboard -->
+
+    <div class="toast" id="toast">Settings saved. Refresh the main website to see changes.</div>
+
+    <script>
+        const STORAGE_KEY = 'church_site_settings';
+        const AUTH_KEY = 'church_admin_auth';
+        const SESSION_KEY = 'church_admin_session';
+
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+
+        function getStoredAuth() {
+            try {
+                const raw = localStorage.getItem(AUTH_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function isLoggedIn() {
+            const session = sessionStorage.getItem(SESSION_KEY);
+            const auth = getStoredAuth();
+            return auth && session === auth.user;
+        }
+
+        function showAuthScreen(show) {
+            document.getElementById('auth-screen').classList.toggle('hidden', !show);
+            document.getElementById('admin-dashboard').classList.toggle('visible', !show);
+        }
+
+        function showSetupMode() {
+            document.getElementById('auth-title').textContent = 'Set up your login';
+            document.getElementById('auth-sub').textContent = 'Create a username and password to protect the admin panel.';
+            document.getElementById('auth-setup-fields').style.display = 'block';
+            document.getElementById('auth-login-fields').style.display = 'none';
+            document.getElementById('auth-confirm-wrap').style.display = 'block';
+            document.getElementById('auth-submit-btn').textContent = 'Create login';
+            document.getElementById('auth-switch-wrap').style.display = getStoredAuth() ? 'block' : 'none';
+            document.getElementById('auth-setup-wrap').style.display = 'none';
+            document.getElementById('auth-err').textContent = '';
+        }
+
+        function showLoginMode() {
+            document.getElementById('auth-title').textContent = 'Log in';
+            document.getElementById('auth-sub').textContent = 'Enter your admin credentials.';
+            document.getElementById('auth-setup-fields').style.display = 'none';
+            document.getElementById('auth-login-fields').style.display = 'block';
+            document.getElementById('auth-submit-btn').textContent = 'Log in';
+            document.getElementById('auth-switch-wrap').style.display = 'none';
+            document.getElementById('auth-setup-wrap').style.display = 'block';
+            document.getElementById('auth-err').textContent = '';
+        }
+
+        function setAuthError(msg) {
+            document.getElementById('auth-err').textContent = msg || '';
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            setAuthError('');
+            const setupFields = document.getElementById('auth-setup-fields').style.display !== 'none';
+
+            if (setupFields) {
+                const user = document.getElementById('auth-username').value.trim();
+                const pass = document.getElementById('auth-password').value;
+                const confirm = document.getElementById('auth-confirm').value;
+                if (!user) { setAuthError('Please enter a username.'); return false; }
+                if (pass.length < 6) { setAuthError('Password must be at least 6 characters.'); return false; }
+                if (pass !== confirm) { setAuthError('Passwords do not match.'); return false; }
+                const btn = document.getElementById('auth-submit-btn');
+                btn.disabled = true;
+                const hash = await hashPassword(pass);
+                localStorage.setItem(AUTH_KEY, JSON.stringify({ user, hash }));
+                sessionStorage.setItem(SESSION_KEY, user);
+                btn.disabled = false;
+                showAuthScreen(false);
+                return false;
+            } else {
+                const user = document.getElementById('auth-login-username').value.trim();
+                const pass = document.getElementById('auth-login-password').value;
+                const stored = getStoredAuth();
+                if (!stored || !user || !pass) { setAuthError('Invalid username or password.'); return false; }
+                if (stored.user !== user) { setAuthError('Invalid username or password.'); return false; }
+                const btn = document.getElementById('auth-submit-btn');
+                btn.disabled = true;
+                const hash = await hashPassword(pass);
+                btn.disabled = false;
+                if (hash !== stored.hash) { setAuthError('Invalid username or password.'); return false; }
+                sessionStorage.setItem(SESSION_KEY, user);
+                showAuthScreen(false);
+                return false;
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            document.getElementById('sidebar').classList.remove('open');
+            showAuthScreen(true);
+            showLoginMode();
+ document.getElementById('auth-login-username').value = '';
+ document.getElementById('auth-login-password').value = '';
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        (function initAuth() {
+            if (isLoggedIn()) {
+                showAuthScreen(false);
+                return;
+            }
+            const auth = getStoredAuth();
+            if (auth) {
+                showLoginMode();
+            } else {
+                showSetupMode();
+            }
+            showAuthScreen(true);
+        })();
+
+        document.getElementById('auth-show-login').onclick = function() {
+            showLoginMode();
+            document.getElementById('auth-login-username').value = '';
+            document.getElementById('auth-login-password').value = '';
+        };
+        document.getElementById('auth-show-setup').onclick = function() {
+            showSetupMode();
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-confirm').value = '';
+        };
+
+        const DEFAULT_DATA = {
+            site: {
+                brand: 'GRACE CITY',
+                tagline: 'Chapel International',
+                about: 'A place of grace and truth. Building leaders, transforming lives.',
+                copyright: '© 2025 Grace City Chapel. All rights reserved.'
+            },
+            hero: {
+                badge: 'Welcome Home',
+                title: 'A Place of <span class="text-[var(--accent-soft)]">Grace</span> & Truth',
+                subtitle: 'Join us for a life-transforming encounter with God. We are a family of believers dedicated to raising leaders.',
+                image: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1600',
+                watchUrl: '#'
+            },
+            about: {
+                intro: 'A community built on faith, grace, and the pursuit of God\'s purpose for every life.',
+                vision: 'To build a city of God where every member is empowered to dominate in their sphere of influence.',
+                mission: 'To preach the Gospel, disciple nations, and demonstrate God\'s love through acts of service and excellence.',
+                values: 'Excellence, Integrity, Love, Faith, and Servant Leadership in everything we do.'
+            },
+            pastor: {
+                name: 'Rev. Dr. Jesali White Clirpa',
+                bio: 'With over 20 years of ministry, Rev. Jesali carries a mandate to liberate God\'s people through the teaching of the unadulterated Word. His ministry is characterized by tangible miracles and a deep fatherly love for the congregation.',
+                quote: 'Our vision is to build a city of God where every member is empowered to dominate in their sphere of influence.',
+                image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800'
+            },
+            services: [
+                { title: 'Sunday Worship', time: '9:00 AM & 11:00 AM', subtitle: 'Main Sanctuary', icon: 'sunday' },
+                { title: 'Midweek Service', time: 'Wednesdays • 6:00 PM', subtitle: 'Bible Study & Prayer', icon: 'midweek' },
+                { title: 'Live Stream', time: 'Every Sunday', subtitle: 'Watch online', icon: 'live' }
+            ],
+            sermons: [
+                { title: 'Walking on Water', series: 'Faith Series • Part 1', image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600', link: '#' },
+                { title: 'The Power of the Seed', series: 'Financial Dominion', image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=600', link: '#' },
+                { title: 'Building a Godly Home', series: 'Family Life', image: 'https://images.unsplash.com/photo-1511649475669-e288648b2339?auto=format&fit=crop&q=80&w=600', link: '#' }
+            ],
+            events: [
+                { title: 'Easter Celebration', date: '2025-03-15', time: '9:00 AM', venue: 'Main Sanctuary', description: 'Join us for a powerful Easter service and family brunch.' },
+                { title: 'Leadership Summit', date: '2025-03-22', time: '10:00 AM', venue: 'Conference Hall', description: 'A day of equipping for ministry and marketplace leaders.' }
+            ],
+            give: {
+                momoNumber: '053 886 5290',
+                momoName: 'Grace City Finance',
+                whatsappNumber: '233538865290',
+                whatsappMessage: 'I have sent my tithe/offering. God bless you.'
+            },
+            footer: {
+                address: 'East Legon Hills, Near the British International School, Accra.',
+                phone: '+233 XX XXX XXXX',
+                email: 'info@gracecitychapel.org',
+                social: [
+                    { name: 'Facebook', url: '#', icon: 'facebook' },
+                    { name: 'YouTube', url: '#', icon: 'youtube' },
+                    { name: 'Instagram', url: '#', icon: 'instagram' }
+                ]
+            }
+        };
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed };
+                    if (parsed.services && parsed.services.length) data.services = parsed.services;
+                    if (parsed.sermons && parsed.sermons.length) data.sermons = parsed.sermons;
+                    if (parsed.events && parsed.events.length) data.events = parsed.events;
+                    if (parsed.footer && parsed.footer.social) data.footer.social = parsed.footer.social;
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        function previewSite() {
+            window.open('churchbiz.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                document.getElementById('sidebar').classList.remove('open');
+                const titles = {
+                    general: 'General',
+                    hero: 'Hero / Home',
+                    about: 'About & Vision',
+                    pastor: 'Our Pastor',
+                    services: 'Service Times',
+                    sermons: 'Sermons',
+                    events: 'Events',
+                    give: 'Give / MoMo / WhatsApp',
+                    footer: 'Footer & Contact'
+                };
+                document.getElementById('section-title').textContent = titles[id];
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-brand').value = data.site?.brand || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('site-about').value = data.site?.about || '';
+            document.getElementById('site-copyright').value = data.site?.copyright || '';
+        }
+
+        function renderHero() {
+            document.getElementById('hero-badge').value = data.hero?.badge || '';
+            document.getElementById('hero-title').value = data.hero?.title || 'A Place of Grace & Truth';
+            document.getElementById('hero-subtitle').value = data.hero?.subtitle || '';
+            document.getElementById('hero-image').value = data.hero?.image || '';
+            document.getElementById('hero-watch-url').value = data.hero?.watchUrl || '#';
+            document.getElementById('hero-preview').style.backgroundImage = data.hero?.image ? `url('${data.hero.image.replace(/'/g, "\\'")}')` : 'none';
+        }
+
+        function renderAbout() {
+            document.getElementById('about-intro').value = data.about?.intro || '';
+            document.getElementById('about-vision').value = data.about?.vision || '';
+            document.getElementById('about-mission').value = data.about?.mission || '';
+            document.getElementById('about-values').value = data.about?.values || '';
+        }
+
+        function renderPastor() {
+            document.getElementById('pastor-name').value = data.pastor?.name || '';
+            document.getElementById('pastor-bio').value = data.pastor?.bio || '';
+            document.getElementById('pastor-quote').value = data.pastor?.quote || '';
+            document.getElementById('pastor-image').value = data.pastor?.image || '';
+            document.getElementById('pastor-preview').style.backgroundImage = data.pastor?.image ? `url('${data.pastor.image.replace(/'/g, "\\'")}')` : 'none';
+        }
+
+        function renderServices() {
+            const container = document.getElementById('services-container');
+            const list = data.services || [];
+            container.innerHTML = list.map((s, i) => `
+                <div class="item-block">
+                    <div class="item-block-header"><strong>Service ${i + 1}</strong><button class="btn-small btn-danger" onclick="removeService(${i})">Remove</button></div>
+                    <div class="form-group"><label>Title</label><input type="text" value="${(s.title || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'title', this.value)"></div>
+                    <div class="form-group"><label>Time</label><input type="text" value="${(s.time || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'time', this.value)"></div>
+                    <div class="form-group"><label>Subtitle</label><input type="text" value="${(s.subtitle || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'subtitle', this.value)"></div>
+                    <div class="form-group"><label>Icon (sunday, midweek, live, calendar)</label><input type="text" value="${(s.icon || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'icon', this.value)"></div>
+                </div>
+            `).join('');
+        }
+
+        function updateService(i, field, val) {
+            if (!data.services) data.services = [];
+            data.services[i] = data.services[i] || {};
+            data.services[i][field] = val;
+        }
+        function addService() {
+            if (!data.services) data.services = [];
+            data.services.push({ title: 'New Service', time: '', subtitle: '', icon: 'calendar' });
+            renderServices();
+        }
+        function removeService(i) {
+            data.services.splice(i, 1);
+            renderServices();
+        }
+
+        function renderSermons() {
+            const container = document.getElementById('sermons-container');
+            const list = data.sermons || [];
+            container.innerHTML = list.map((s, i) => `
+                <div class="slide-item">
+                    <div class="slide-item-header"><strong>Sermon ${i + 1}</strong><button class="btn-small btn-danger" onclick="removeSermon(${i})">Remove</button></div>
+                    <div class="form-group"><label>Title</label><input type="text" value="${(s.title || '').replace(/"/g, '&quot;')}" onchange="updateSermon(${i}, 'title', this.value)"></div>
+                    <div class="form-group"><label>Series / Category</label><input type="text" value="${(s.series || '').replace(/"/g, '&quot;')}" onchange="updateSermon(${i}, 'series', this.value)"></div>
+                    <div class="form-group"><label>Image URL</label><input type="text" value="${(s.image || '').replace(/"/g, '&quot;')}" onchange="updateSermon(${i}, 'image', this.value)"></div>
+                    <div class="form-group"><label>Watch Link</label><input type="text" value="${(s.link || '').replace(/"/g, '&quot;')}" onchange="updateSermon(${i}, 'link', this.value)"></div>
+                    <div class="slide-preview" style="background-image:url('${(s.image || '').replace(/'/g, "\\'")}')"></div>
+                </div>
+            `).join('');
+        }
+        function updateSermon(i, field, val) {
+            if (!data.sermons) data.sermons = [];
+            data.sermons[i] = data.sermons[i] || {};
+            data.sermons[i][field] = val;
+        }
+        function addSermon() {
+            if (!data.sermons) data.sermons = [];
+            data.sermons.push({ title: 'New Message', series: '', image: '', link: '#' });
+            renderSermons();
+        }
+        function removeSermon(i) {
+            data.sermons.splice(i, 1);
+            renderSermons();
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('events-container');
+            const list = data.events || [];
+            container.innerHTML = list.map((e, i) => `
+                <div class="item-block">
+                    <div class="item-block-header"><strong>Event ${i + 1}</strong><button class="btn-small btn-danger" onclick="removeEvent(${i})">Remove</button></div>
+                    <div class="form-group"><label>Title</label><input type="text" value="${(e.title || '').replace(/"/g, '&quot;')}" onchange="updateEvent(${i}, 'title', this.value)"></div>
+                    <div class="form-group"><label>Date (YYYY-MM-DD)</label><input type="text" value="${(e.date || '').replace(/"/g, '&quot;')}" onchange="updateEvent(${i}, 'date', this.value)"></div>
+                    <div class="form-group"><label>Time</label><input type="text" value="${(e.time || '').replace(/"/g, '&quot;')}" onchange="updateEvent(${i}, 'time', this.value)"></div>
+                    <div class="form-group"><label>Venue</label><input type="text" value="${(e.venue || '').replace(/"/g, '&quot;')}" onchange="updateEvent(${i}, 'venue', this.value)"></div>
+                    <div class="form-group"><label>Description</label><input type="text" value="${(e.description || '').replace(/"/g, '&quot;')}" onchange="updateEvent(${i}, 'description', this.value)"></div>
+                </div>
+            `).join('');
+        }
+        function updateEvent(i, field, val) {
+            if (!data.events) data.events = [];
+            data.events[i] = data.events[i] || {};
+            data.events[i][field] = val;
+        }
+        function addEvent() {
+            if (!data.events) data.events = [];
+            data.events.push({ title: 'New Event', date: '', time: '', venue: '', description: '' });
+            renderEvents();
+        }
+        function removeEvent(i) {
+            data.events.splice(i, 1);
+            renderEvents();
+        }
+
+        function renderGive() {
+            document.getElementById('give-momo-number').value = data.give?.momoNumber || '';
+            document.getElementById('give-momo-name').value = data.give?.momoName || '';
+            document.getElementById('give-whatsapp-number').value = data.give?.whatsappNumber || '';
+            document.getElementById('give-whatsapp-message').value = data.give?.whatsappMessage || '';
+        }
+
+        function renderFooter() {
+            document.getElementById('footer-address').value = data.footer?.address || '';
+            document.getElementById('footer-phone').value = data.footer?.phone || '';
+            document.getElementById('footer-email').value = data.footer?.email || '';
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateSocial(${i}, 'name', this.value)">
+                    <input type="text" value="${(s.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateSocial(${i}, 'url', this.value)">
+                    <select onchange="updateSocial(${i}, 'icon', this.value)">
+                        <option value="facebook" ${(s.icon || '') === 'facebook' ? 'selected' : ''}>Facebook</option>
+                        <option value="youtube" ${(s.icon || '') === 'youtube' ? 'selected' : ''}>YouTube</option>
+                        <option value="instagram" ${(s.icon || '') === 'instagram' ? 'selected' : ''}>Instagram</option>
+                        <option value="twitter" ${(s.icon || '') === 'twitter' ? 'selected' : ''}>Twitter</option>
+                    </select>
+                    <button class="btn-small btn-danger" onclick="removeSocial(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+        function updateSocial(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+        function addSocialLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social.push({ name: 'New', url: '#', icon: 'instagram' });
+            renderFooter();
+        }
+        function removeSocial(i) {
+            data.footer.social.splice(i, 1);
+            renderFooter();
+        }
+
+        function collectAll() {
+            data.site = {
+                brand: document.getElementById('site-brand').value.trim() || 'GRACE CITY',
+                tagline: document.getElementById('site-tagline').value.trim() || '',
+                about: document.getElementById('site-about').value.trim() || '',
+                copyright: document.getElementById('site-copyright').value.trim() || ''
+            };
+            data.hero = {
+                badge: document.getElementById('hero-badge').value.trim() || 'Welcome Home',
+                title: document.getElementById('hero-title').value.trim() || 'A Place of Grace & Truth',
+                subtitle: document.getElementById('hero-subtitle').value.trim() || '',
+                image: document.getElementById('hero-image').value.trim() || '',
+                watchUrl: document.getElementById('hero-watch-url').value.trim() || '#'
+            };
+            data.about = {
+                intro: document.getElementById('about-intro').value.trim() || '',
+                vision: document.getElementById('about-vision').value.trim() || '',
+                mission: document.getElementById('about-mission').value.trim() || '',
+                values: document.getElementById('about-values').value.trim() || ''
+            };
+            data.pastor = {
+                name: document.getElementById('pastor-name').value.trim() || '',
+                bio: document.getElementById('pastor-bio').value.trim() || '',
+                quote: document.getElementById('pastor-quote').value.trim() || '',
+                image: document.getElementById('pastor-image').value.trim() || ''
+            };
+            data.give = {
+                momoNumber: document.getElementById('give-momo-number').value.trim() || '',
+                momoName: document.getElementById('give-momo-name').value.trim() || '',
+                whatsappNumber: document.getElementById('give-whatsapp-number').value.trim() || '',
+                whatsappMessage: document.getElementById('give-whatsapp-message').value.trim() || 'I have sent my tithe/offering. God bless you.'
+            };
+            data.footer = {
+                ...data.footer,
+                address: document.getElementById('footer-address').value.trim() || '',
+                phone: document.getElementById('footer-phone').value.trim() || '',
+                email: document.getElementById('footer-email').value.trim() || ''
+            };
+        }
+
+        function saveAll() {
+            collectAll();
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        renderGeneral();
+        renderHero();
+        renderAbout();
+        renderPastor();
+        renderServices();
+        renderSermons();
+        renderEvents();
+        renderGive();
+        renderFooter();
+
+        document.getElementById('hero-image').addEventListener('input', function() {
+            document.getElementById('hero-preview').style.backgroundImage = this.value ? `url('${this.value.replace(/'/g, "\\'")}')` : 'none';
+        });
+        document.getElementById('pastor-image').addEventListener('input', function() {
+            document.getElementById('pastor-preview').style.backgroundImage = this.value ? `url('${this.value.replace(/'/g, "\\'")}')` : 'none';
+        });
+    </script>
+</body>
+</html>

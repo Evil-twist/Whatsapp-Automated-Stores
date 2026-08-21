@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Clirspa Suite</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #faf9f7;
+            --bg-card: #ffffff;
+            --text-primary: #1c1917;
+            --text-secondary: #78716c;
+            --accent: #9f1239;
+            --accent-light: #fce7f3;
+            --border: #e7e5e4;
+            --nav-bg: rgba(255,255,255,0.92);
+            --footer-bg: #450a0a;
+            --footer-text: #fecdd3;
+        }
+        [data-theme="dark"] {
+            --bg-page: #0c0a09;
+            --bg-card: #1c1917;
+            --text-primary: #fafaf9;
+            --text-secondary: #a8a29e;
+            --accent: #fb7185;
+            --accent-light: #4c0519;
+            --border: #292524;
+            --nav-bg: rgba(28,25,23,0.95);
+            --footer-bg: #1c1917;
+            --footer-text: #fecdd3;
+        }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-page); color: var(--text-primary); transition: background 0.3s, color 0.3s; }
+        h1, h2, h3, .luxury-font { font-family: 'Cormorant Garamond', serif; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .theme-toggle { transition: transform 0.3s; }
+        .theme-toggle:hover { transform: rotate(15deg); }
+        /* Product grid: 2 cols mobile, 4 desktop */
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 0.75rem; }
+        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(4, 1fr); gap: 1.5rem 1rem; } }
+        .product-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: box-shadow 0.3s, border-color 0.3s; }
+        .product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); border-color: var(--accent); }
+        [data-theme="dark"] .product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- NAVIGATION -->
+    <nav class="sticky top-0 z-50 border-b transition-colors duration-300" style="background: var(--nav-bg); border-color: var(--border); backdrop-filter: blur(12px);">
+        <div class="px-4 py-3 flex justify-between items-center max-w-6xl mx-auto">
+            <div class="luxury-font text-2xl font-bold tracking-wider" style="color: var(--accent);" id="nav-brand">CLIRSPA<span class="opacity-70">.</span></div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="toggleTheme()" class="theme-toggle p-2 rounded-full transition-colors hover:opacity-80" style="color: var(--text-primary);" aria-label="Toggle theme">
+                    <i data-lucide="sun" class="w-5 h-5 theme-icon-light hidden"></i>
+                    <i data-lucide="moon" class="w-5 h-5 theme-icon-dark"></i>
+                </button>
+                <button onclick="scrollToSection('shop')" class="relative p-2 rounded-full transition-colors hover:opacity-80" style="color: var(--text-primary);">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span id="cart-badge" class="absolute top-0 right-0 w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px] font-bold" style="background: var(--accent); color: #fff;">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="relative h-[520px] md:h-[600px] overflow-hidden">
+        <img id="hero-img" src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=1000" class="absolute inset-0 w-full h-full object-cover" alt="">
+        <div class="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-900/50 to-transparent"></div>
+        <div class="absolute inset-0 flex flex-col justify-center px-6 md:px-12 text-white max-w-xl">
+            <div class="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-rose-200/90" id="hero-label">Total Beauty Care</div>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight" id="hero-title">Redefine <br>Your <span class="italic text-rose-300">Elegance</span></h1>
+            <p class="text-stone-200/95 mb-8 max-w-sm font-light text-sm md:text-base" id="hero-desc">Accra's premier destination for luxury nails, bespoke lashes, and flawless makeup artistry.</p>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="scrollToSection('services')" class="bg-rose-50 text-rose-950 px-6 py-3 rounded-lg font-semibold uppercase text-xs tracking-widest hover:bg-white transition shadow-lg">Book Service</button>
+                <button onclick="scrollToSection('shop')" class="border border-white/80 text-white px-6 py-3 rounded-lg font-semibold uppercase text-xs tracking-widest hover:bg-white/10 transition">Shop Products</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OWNER PROFILE -->
+    <section class="py-16 px-6 text-center" style="background: var(--bg-card); color: var(--text-primary); border-bottom: 1px solid var(--border);">
+        <div class="w-28 h-28 mx-auto p-1 rounded-full border-2 mb-6" style="border-color: var(--accent);">
+            <img id="owner-img" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=400" class="w-full h-full rounded-full object-cover" alt="">
+        </div>
+        <h2 class="luxury-font text-3xl font-bold mb-2" style="color: var(--accent);" id="owner-name">Hello, I'm Serwaa</h2>
+        <p class="text-sm max-w-md mx-auto leading-relaxed mb-6" style="color: var(--text-secondary);" id="owner-bio">"I believe beauty is a form of art. With certifications from Ghana, London & Dubai, my team and I are dedicated to giving you the 'Main Character' energy you deserve."</p>
+        <div class="flex justify-center gap-1">
+            <i data-lucide="star" class="w-4 h-4 text-rose-400 fill-rose-400"></i>
+            <i data-lucide="star" class="w-4 h-4 text-rose-400 fill-rose-400"></i>
+            <i data-lucide="star" class="w-4 h-4 text-rose-400 fill-rose-400"></i>
+            <i data-lucide="star" class="w-4 h-4 text-rose-400 fill-rose-400"></i>
+            <i data-lucide="star" class="w-4 h-4 text-rose-400 fill-rose-400"></i>
+        </div>
+    </section>
+
+    <!-- PORTFOLIO CAROUSEL -->
+    <section class="py-12" style="background: var(--bg-page);">
+        <div class="px-6 mb-6 flex justify-between items-end max-w-6xl mx-auto">
+            <div>
+                <div class="text-xs font-bold uppercase tracking-widest mb-1" style="color: var(--accent);">Portfolio</div>
+                <h2 class="luxury-font text-3xl font-bold" style="color: var(--text-primary);" id="portfolio-title">The Glam Gallery</h2>
+            </div>
+            <div class="text-xs italic" style="color: var(--text-secondary);">Swipe to see more →</div>
+        </div>
+        <div id="portfolio-carousel" class="flex overflow-x-auto gap-4 px-6 hide-scroll snap-x">
+            <!-- Injected by JS -->
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="py-16 px-6 max-w-4xl mx-auto">
+        <h2 class="luxury-font text-3xl font-bold text-center mb-8" style="color: var(--text-primary);">Book A Service</h2>
+        <div class="flex justify-center gap-2 mb-10 flex-wrap bg-opacity-50 p-1 rounded-full border w-fit mx-auto overflow-x-auto" style="background: var(--bg-card); border-color: var(--border);">
+            <button type="button" onclick="setServiceTab('Nails')" class="service-tab px-5 py-2 rounded-full text-sm font-bold transition-all">Nails</button>
+            <button type="button" onclick="setServiceTab('Lashes')" class="service-tab px-5 py-2 rounded-full text-sm font-bold transition-all">Lashes</button>
+            <button type="button" onclick="setServiceTab('Makeup')" class="service-tab px-5 py-2 rounded-full text-sm font-bold transition-all">Makeup</button>
+        </div>
+        <div id="service-list" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- SHOP -->
+    <section id="shop" class="py-16 px-6 border-t" style="background: var(--bg-card); border-color: var(--border);">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <div class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--accent);">The Store</div>
+                <h2 class="luxury-font text-4xl font-bold" style="color: var(--text-primary);" id="shop-title">Glam Essentials</h2>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scroll justify-start md:justify-center mb-10 pb-2" id="shop-categories">
+                <!-- Injected by JS -->
+            </div>
+            <div id="product-grid" class="product-grid fade-in"></div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 text-center" style="background: var(--footer-bg); color: var(--footer-text);">
+        <div class="luxury-font text-2xl font-bold text-white mb-4" id="footer-brand">CLIRSPA.</div>
+        <p class="text-sm opacity-80 mb-6" id="footer-address">Located in East Legon, Near American House.</p>
+        <div class="flex justify-center gap-6 mb-8" id="footer-social"></div>
+        <p class="text-[10px] uppercase tracking-widest opacity-60" id="footer-copyright">© 2026 The Clirspa Suite.</p>
+    </footer>
+
+    <!-- SERVICE BOOKING MODAL -->
+    <div id="service-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="w-full max-w-sm rounded-2xl p-6 animate-in slide-in-from-bottom duration-300 shadow-xl" style="background: var(--bg-card);">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 id="modal-service-name" class="luxury-font text-2xl font-bold" style="color: var(--text-primary);">Service Name</h3>
+                    <p id="modal-service-price" class="font-bold" style="color: var(--accent);">GHS 0</p>
+                </div>
+                <button type="button" onclick="closeModals()" class="p-2 rounded-full transition-colors" style="background: var(--border); color: var(--text-primary);"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="date" id="book-date" class="rounded-lg px-4 py-3 outline-none text-sm w-full border" style="background: var(--bg-page); border-color: var(--border); color: var(--text-primary);">
+                    <input type="time" id="book-time" class="rounded-lg px-4 py-3 outline-none text-sm w-full border" style="background: var(--bg-page); border-color: var(--border); color: var(--text-primary);">
+                </div>
+                <input type="text" id="book-name" placeholder="Your Name" class="w-full rounded-lg px-4 py-3 outline-none text-sm border" style="background: var(--bg-page); border-color: var(--border); color: var(--text-primary);">
+                <button type="button" onclick="confirmBooking()" class="w-full py-4 rounded-lg font-bold uppercase text-xs tracking-widest text-white shadow-lg transition opacity-90 hover:opacity-100" style="background: var(--accent);">Confirm Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 z-50 hidden flex justify-end">
+        <div onclick="closeModals()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-xs h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300" style="background: var(--bg-card);">
+            <div class="p-4 border-b flex justify-between items-center" style="background: var(--bg-page); border-color: var(--border);">
+                <h3 class="luxury-font text-xl font-bold" style="color: var(--text-primary);">Shopping Bag</h3>
+                <button type="button" onclick="closeModals()" style="color: var(--text-primary);"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+            <div class="p-4 border-t" style="border-color: var(--border); background: var(--bg-page);">
+                <div class="flex justify-between font-bold text-lg mb-4" style="color: var(--text-primary);">
+                    <span>Total</span>
+                    <span id="cart-total" style="color: var(--accent);">GHS 0</span>
+                </div>
+                <button type="button" onclick="checkoutCart()" class="w-full py-4 rounded-lg font-bold uppercase text-xs tracking-widest text-white shadow-lg transition" style="background: var(--accent);">Checkout Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCT DETAIL MODAL (multi-image + variants) -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl" style="background: var(--bg-card);">
+            <div class="relative">
+                <button type="button" onclick="closeProductModal()" class="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/50 text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div class="relative aspect-[4/5] bg-stone-100 overflow-hidden rounded-t-2xl">
+                    <img id="product-modal-img" src="" alt="" class="w-full h-full object-cover transition-opacity duration-300">
+                    <div id="product-modal-thumbs" class="absolute bottom-3 left-3 right-3 flex gap-2 overflow-x-auto hide-scroll"></div>
+                </div>
+            </div>
+            <div class="p-6">
+                <span id="product-modal-cat" class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-secondary);"></span>
+                <h3 id="product-modal-name" class="luxury-font text-2xl font-bold mt-1" style="color: var(--text-primary);"></h3>
+                <p id="product-modal-price" class="text-lg font-bold mt-2" style="color: var(--accent);"></p>
+                <div id="product-modal-variants" class="mt-4 space-y-2 hidden">
+                    <label class="text-sm font-medium" style="color: var(--text-secondary);">Options</label>
+                    <div id="product-modal-variants-list" class="flex flex-wrap gap-2"></div>
+                </div>
+                <button type="button" onclick="addToCartFromModal()" class="mt-6 w-full py-4 rounded-lg font-bold uppercase text-xs tracking-widest text-white flex items-center justify-center gap-2" style="background: var(--accent);">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> Add to Bag
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'clirspa_settings';
+        const BOOKINGS_KEY = 'clirspa_bookings';
+
+        const DEFAULTS = {
+            site: {
+                name: 'CLIRSPA',
+                tagline: 'Total Beauty Care',
+                whatsapp: '233538865290',
+                currency: 'GHS '
+            },
+            hero: {
+                image: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=1000',
+                label: 'Total Beauty Care',
+                title: 'Redefine Your Elegance',
+                titleAccent: 'Elegance',
+                description: "Accra's premier destination for luxury nails, bespoke lashes, and flawless makeup artistry.",
+                ctaBook: 'Book Service',
+                ctaShop: 'Shop Products'
+            },
+            owner: {
+                image: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=400',
+                name: "Hello, I'm Serwaa",
+                bio: '"I believe beauty is a form of art. With certifications from Ghana, London & Dubai, my team and I are dedicated to giving you the \'Main Character\' energy you deserve."'
+            },
+            portfolio: {
+                title: 'The Glam Gallery',
+                slides: [
+                    { image: 'https://images.unsplash.com/photo-1698308233758-d55c98fd7444?q=80&w=735', category: 'Nails', title: 'Milky White Acrylics' },
+                    { image: 'https://images.unsplash.com/photo-1647957902397-de1bd309fc21?q=80&w=1170', category: 'Lashes', title: 'Hybrid Volume Set' },
+                    { image: 'https://images.unsplash.com/photo-1640058909924-a5d943014d9c?q=80&w=687', category: 'Lashes', title: 'Hybrid Volume Set' },
+                    { image: 'https://images.unsplash.com/photo-1648844421727-cde6c4246b13?q=80&w=680', category: 'Nails', title: 'Acrylics' },
+                    { image: 'https://images.unsplash.com/photo-1604654894611-6973b376cbde?q=80&w=1170', category: 'Nails', title: 'Acrylics' },
+                    { image: 'https://images.unsplash.com/photo-1665810384829-23aa29f87b42?q=80&w=1170', category: 'Makeup', title: 'Soft Glam Bridal' }
+                ]
+            },
+            services: {
+                Nails: [
+                    { id: 1, name: 'Acrylic Full Set', price: 150, time: '90min' },
+                    { id: 2, name: 'Ombre Powder', price: 180, time: '90min' },
+                    { id: 3, name: 'Gel Polish (Manicure)', price: 80, time: '45min' },
+                    { id: 4, name: 'Pedicure Deluxe', price: 120, time: '60min' }
+                ],
+                Lashes: [
+                    { id: 5, name: 'Classic Set', price: 200, time: '2hr' },
+                    { id: 6, name: 'Hybrid Volume', price: 250, time: '2.5hr' },
+                    { id: 7, name: 'Wispy Set', price: 280, time: '2.5hr' },
+                    { id: 8, name: 'Lash Removal', price: 50, time: '30min' }
+                ],
+                Makeup: [
+                    { id: 9, name: 'Soft Glam', price: 350, time: '60min' },
+                    { id: 10, name: 'Bridal Consultation', price: 500, time: '90min' },
+                    { id: 11, name: 'Photoshoot Beat', price: 400, time: '90min' }
+                ]
+            },
+            shop: {
+                title: 'Glam Essentials',
+                categories: ['All', 'Wigs', 'Hair Care', 'Skin Care', 'Makeup'],
+                products: [
+                    { id: 101, name: 'Bone Straight (12")', category: 'Wigs', price: 1500, img: 'https://images.unsplash.com/photo-1683717909401-78ab2cbe178f?q=80&w=642', images: [], variants: [] },
+                    { id: 102, name: 'Body Wave (24")', category: 'Wigs', price: 2200, img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400', images: [], variants: [] },
+                    { id: 103, name: 'Argan Oil Serum', category: 'Hair Care', price: 120, img: 'https://images.unsplash.com/photo-1690197148040-8206be5cabc0?q=80&w=687', images: [], variants: [] },
+                    { id: 104, name: 'Edge Control', category: 'Hair Care', price: 50, img: 'https://images.unsplash.com/photo-1638609269267-f0128098a809?q=80&w=818', images: [], variants: [] },
+                    { id: 105, name: 'Luxury Cuticle Oil', category: 'Skin Care', price: 80, img: 'https://images.unsplash.com/photo-1671871695722-b91911e9c072?q=80&w=687', images: [], variants: [] },
+                    { id: 106, name: 'Hydrating Body Butter', category: 'Skin Care', price: 150, img: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&q=80&w=400', images: [], variants: [] },
+                    { id: 107, name: 'Mink Lashes (3D)', category: 'Makeup', price: 120, img: 'https://images.unsplash.com/photo-1630655491563-fe6ea47d06f5?q=80&w=880', images: [], variants: [] },
+                    { id: 108, name: 'Matte Lip Kit', category: 'Makeup', price: 90, img: 'https://images.unsplash.com/photo-1585387047269-e66bf53002f5?q=80&w=735', images: [], variants: [] }
+                ]
+            },
+            footer: {
+                brand: 'CLIRSPA.',
+                address: 'Located in East Legon, Near American House.',
+                copyright: '© 2026 The Clirspa Suite.',
+                social: [
+                    { name: 'Instagram', url: '#', icon: 'instagram' },
+                    { name: 'Facebook', url: '#', icon: 'facebook' },
+                    { name: 'Twitter', url: '#', icon: 'twitter' }
+                ]
+            }
+        };
+
+        let CONFIG = {};
+        let SERVICES = {};
+        let PRODUCTS = [];
+        let currentServiceCategory = 'Nails';
+        let currentShopCategory = 'All';
+        let cart = [];
+        let selectedService = null;
+        let selectedProduct = null;
+        let selectedVariant = null;
+
+        function loadConfig() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    CONFIG = { ...DEFAULTS.site, ...saved.site };
+                    SERVICES = saved.services ? { ...DEFAULTS.services, ...saved.services } : DEFAULTS.services;
+                    const shopData = saved.shop || DEFAULTS.shop;
+                    PRODUCTS = Array.isArray(shopData.products) ? shopData.products : DEFAULTS.shop.products;
+                    applyPageContent(saved);
+                    return;
+                }
+            } catch (e) {}
+            CONFIG = { ...DEFAULTS.site };
+            SERVICES = JSON.parse(JSON.stringify(DEFAULTS.services));
+            PRODUCTS = JSON.parse(JSON.stringify(DEFAULTS.shop.products));
+            applyPageContent(DEFAULTS);
+        }
+
+        function applyPageContent(data) {
+            const hero = data.hero || DEFAULTS.hero;
+            const owner = data.owner || DEFAULTS.owner;
+            const portfolio = data.portfolio || DEFAULTS.portfolio;
+            const shop = data.shop || DEFAULTS.shop;
+            const footer = data.footer || DEFAULTS.footer;
+
+            document.getElementById('nav-brand').innerHTML = (CONFIG.name || 'CLIRSPA') + '<span class="opacity-70">.</span>';
+            const heroImg = document.getElementById('hero-img');
+            if (hero.image) heroImg.src = hero.image;
+            setText('hero-label', hero.label);
+            setText('hero-desc', hero.description);
+            const titleEl = document.getElementById('hero-title');
+            if (titleEl && hero.title) {
+                const accent = hero.titleAccent || 'Elegance';
+                titleEl.innerHTML = hero.title.replace(accent, '<span class="italic text-rose-300">' + accent + '</span>');
+            }
+
+            const ownerImg = document.getElementById('owner-img');
+            if (owner.image) ownerImg.src = owner.image;
+            setText('owner-name', owner.name);
+            setText('owner-bio', owner.bio);
+
+            setText('portfolio-title', portfolio.title);
+            const carousel = document.getElementById('portfolio-carousel');
+            const slides = portfolio.slides || [];
+            carousel.innerHTML = slides.map(s => `
+                <div class="snap-center shrink-0 w-72 h-96 relative group overflow-hidden rounded-xl shadow-lg">
+                    <img src="${s.image || ''}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                        <span class="text-rose-300 text-xs font-bold uppercase">${s.category || ''}</span>
+                        <span class="text-white font-bold text-xl luxury-font">${s.title || ''}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            setText('shop-title', shop.title || 'Glam Essentials');
+            const catContainer = document.getElementById('shop-categories');
+            const cats = shop.categories && shop.categories.length ? shop.categories : DEFAULTS.shop.categories;
+            const allLabel = cats[0] === 'All' ? 'All Products' : cats[0];
+            catContainer.innerHTML = cats.map((c, i) => `
+                <button type="button" onclick="setShopCat('${c}')" class="shop-cat-btn px-5 py-2 rounded-full border text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${i === 0 ? 'bg-stone-800 text-white border-stone-800' : 'border-stone-200 bg-white text-stone-500 hover:border-rose-300'}" style="border-color: var(--border); background: var(--bg-card); color: var(--text-primary);">${c === 'All' ? 'All Products' : c}</button>
+            `).join('');
+
+            setText('footer-brand', footer.brand || 'CLIRSPA.');
+            setText('footer-address', footer.address || '');
+            setText('footer-copyright', footer.copyright || '');
+            const socialEl = document.getElementById('footer-social');
+            const social = footer.social || [];
+            socialEl.innerHTML = social.map(s => {
+                const icon = s.icon === 'instagram' ? 'instagram' : s.icon === 'facebook' ? 'facebook' : s.icon === 'twitter' ? 'twitter' : 'share-2';
+                return `<a href="${s.url || '#'}" target="_blank" rel="noopener" class="opacity-80 hover:opacity-100"><i data-lucide="${icon}" class="w-5 h-5"></i></a>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        // Theme
+        function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('clirspa_theme', theme);
+            const lightIcon = document.querySelector('.theme-icon-light');
+            const darkIcon = document.querySelector('.theme-icon-dark');
+            if (theme === 'dark') {
+                if (lightIcon) lightIcon.classList.remove('hidden');
+                if (darkIcon) darkIcon.classList.add('hidden');
+            } else {
+                if (lightIcon) lightIcon.classList.add('hidden');
+                if (darkIcon) darkIcon.classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+        function toggleTheme() {
+            setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+        }
+        if (localStorage.getItem('clirspa_theme') === 'dark') setTheme('dark');
+        else setTheme('light');
+
+        // Services
+        function setServiceTab(cat) {
+            currentServiceCategory = cat;
+            document.querySelectorAll('.service-tab').forEach(btn => {
+                const active = btn.innerText === cat;
+                btn.className = 'service-tab px-5 py-2 rounded-full text-sm font-bold transition-all ' + (active ? 'text-white shadow-md' : '');
+                btn.style.background = active ? 'var(--accent)' : 'transparent';
+                btn.style.color = active ? '#fff' : 'var(--text-secondary)';
+            });
+            renderServices();
+        }
+
+        function renderServices() {
+            const list = SERVICES[currentServiceCategory] || [];
+            const container = document.getElementById('service-list');
+            container.innerHTML = list.map(s => `
+                <div onclick="openServiceModal(${s.id})" class="flex justify-between items-center p-4 rounded-xl border cursor-pointer transition-all group" style="background: var(--bg-card); border-color: var(--border);">
+                    <div>
+                        <h4 class="font-bold transition" style="color: var(--text-primary);">${s.name}</h4>
+                        <span class="text-xs flex items-center gap-1" style="color: var(--text-secondary);"><i data-lucide="clock" class="w-3 h-3"></i> ${s.time || ''}</span>
+                    </div>
+                    <div class="font-bold text-sm" style="color: var(--accent);">${CONFIG.currency || 'GHS '}${s.price}</div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Products — 2 per row on mobile
+        function setShopCat(cat) {
+            currentShopCategory = cat;
+            document.querySelectorAll('.shop-cat-btn').forEach(btn => {
+                const isAll = (cat === 'All' && btn.innerText === 'All Products') || btn.innerText === cat;
+                btn.style.background = isAll ? 'var(--accent)' : 'var(--bg-card)';
+                btn.style.color = isAll ? '#fff' : 'var(--text-primary)';
+                btn.style.borderColor = isAll ? 'var(--accent)' : 'var(--border)';
+            });
+            renderProducts();
+        }
+
+        function getProductImages(p) {
+            const imgs = Array.isArray(p.images) && p.images.length ? p.images : [p.img].filter(Boolean);
+            return imgs.length ? imgs : [p.img || ''];
+        }
+
+        function renderProducts() {
+            const list = currentShopCategory === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.category === currentShopCategory);
+            const container = document.getElementById('product-grid');
+            container.classList.remove('fade-in');
+            void container.offsetWidth;
+            container.classList.add('fade-in');
+            container.innerHTML = list.map(p => {
+                const imgs = getProductImages(p);
+                const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+                const openDetail = hasVariants || imgs.length > 1 ? `openProductModal(${p.id})` : `addToCart(${p.id})`;
+                return `
+                <div class="product-card group cursor-pointer">
+                    <div class="relative aspect-[4/5] overflow-hidden rounded-t-xl" style="background: var(--bg-page);" onclick="openProductModal(${p.id})">
+                        <img src="${imgs[0] || p.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${(p.name || '').replace(/"/g, '&quot;')}">
+                        <div class="absolute top-2 left-2 px-2 py-1 rounded text-[10px] font-bold uppercase" style="background: var(--bg-card); color: var(--text-secondary);">${p.category || ''}</div>
+                        ${imgs.length > 1 ? '<span class="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white"><i data-lucide="images" class="w-3.5 h-3.5"></i></span>' : ''}
+                        <button type="button" onclick="event.stopPropagation(); addToCart(${p.id})" class="absolute bottom-3 right-3 p-2.5 rounded-full shadow-md transition flex items-center justify-center" style="background: var(--bg-card); color: var(--accent);"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="p-3" onclick="openProductModal(${p.id})">
+                        <h3 class="font-bold text-sm leading-tight" style="color: var(--text-primary);">${p.name || ''}</h3>
+                        <p class="font-bold text-sm mt-1" style="color: var(--accent);">${CONFIG.currency || 'GHS '}${p.price}</p>
+                    </div>
+                </div>
+            `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openProductModal(id) {
+            const p = PRODUCTS.find(x => x.id === id);
+            if (!p) return;
+            selectedProduct = p;
+            selectedVariant = null;
+            const imgs = getProductImages(p);
+            const mainImg = document.getElementById('product-modal-img');
+            mainImg.src = imgs[0] || p.img;
+            const thumbs = document.getElementById('product-modal-thumbs');
+            if (imgs.length > 1) {
+                thumbs.innerHTML = imgs.map((url, i) => `
+                    <button type="button" onclick="setProductModalImage('${url.replace(/'/g, "\\'")}')" class="shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 border-white shadow" style="border-color: var(--accent);">
+                        <img src="${url}" class="w-full h-full object-cover" alt="">
+                    </button>
+                `).join('');
+                thumbs.classList.remove('hidden');
+            } else {
+                thumbs.innerHTML = '';
+                thumbs.classList.add('hidden');
+            }
+            document.getElementById('product-modal-cat').textContent = p.category || '';
+            document.getElementById('product-modal-name').textContent = p.name || '';
+            document.getElementById('product-modal-price').textContent = (CONFIG.currency || 'GHS ') + (selectedVariant ? selectedVariant.price : p.price);
+            const variantsWrap = document.getElementById('product-modal-variants');
+            const variantsList = document.getElementById('product-modal-variants-list');
+            if (Array.isArray(p.variants) && p.variants.length > 0) {
+                variantsWrap.classList.remove('hidden');
+                variantsList.innerHTML = p.variants.map((v, i) => `
+                    <button type="button" onclick="selectProductVariant(${i})" class="product-variant-btn px-4 py-2 rounded-lg border text-sm font-medium transition" data-variant-idx="${i}">${v.label || v.name || v.color || 'Option ' + (i+1)}</button>
+                `).join('');
+                variantsWrap.classList.remove('hidden');
+            } else {
+                variantsWrap.classList.add('hidden');
+            }
+            document.getElementById('product-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function setProductModalImage(url) {
+            document.getElementById('product-modal-img').src = url;
+        }
+
+        function selectProductVariant(idx) {
+            const p = selectedProduct;
+            if (!p || !p.variants || !p.variants[idx]) return;
+            selectedVariant = p.variants[idx];
+            document.querySelectorAll('.product-variant-btn').forEach(btn => {
+                btn.style.background = parseInt(btn.dataset.variantIdx) === idx ? 'var(--accent)' : 'transparent';
+                btn.style.color = parseInt(btn.dataset.variantIdx) === idx ? '#fff' : 'var(--text-primary)';
+                btn.style.borderColor = 'var(--border)';
+            });
+            document.getElementById('product-modal-price').textContent = (CONFIG.currency || 'GHS ') + (selectedVariant.price != null ? selectedVariant.price : p.price);
+        }
+
+        function addToCartFromModal() {
+            if (!selectedProduct) return;
+            const p = selectedProduct;
+            const price = selectedVariant && selectedVariant.price != null ? selectedVariant.price : p.price;
+            const label = selectedVariant ? (p.name + ' — ' + (selectedVariant.label || selectedVariant.name || selectedVariant.color || '')) : p.name;
+            cart.push({ id: p.id, name: label, price, category: p.category, img: getProductImages(p)[0] });
+            updateCartUI();
+            closeProductModal();
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            selectedProduct = null;
+            selectedVariant = null;
+        }
+
+        function openServiceModal(id) {
+            const list = SERVICES[currentServiceCategory] || [];
+            selectedService = list.find(s => s.id === id);
+            if (!selectedService) return;
+            document.getElementById('modal-service-name').textContent = selectedService.name;
+            document.getElementById('modal-service-price').textContent = (CONFIG.currency || 'GHS ') + selectedService.price;
+            document.getElementById('service-modal').classList.remove('hidden');
+        }
+
+        // --- Booking regulation: prevent double-booking / overcrowding ---
+        function parseServiceDurationMinutes(timeStr) {
+            if (!timeStr || typeof timeStr !== 'string') return 60;
+            const s = timeStr.trim().toLowerCase();
+            const hrMatch = s.match(/(\d+(?:\.\d+)?)\s*hr/);
+            if (hrMatch) return Math.round(parseFloat(hrMatch[1]) * 60);
+            const minMatch = s.match(/(\d+)\s*min/);
+            if (minMatch) return parseInt(minMatch[1], 10) || 60;
+            return 60;
+        }
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr || !/^\d{1,2}:\d{2}$/.test(timeStr)) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function getBookings() {
+            try {
+                const raw = localStorage.getItem(BOOKINGS_KEY);
+                const list = raw ? JSON.parse(raw) : [];
+                return Array.isArray(list) ? list : [];
+            } catch (e) { return []; }
+        }
+
+        function saveBookings(list) {
+            localStorage.setItem(BOOKINGS_KEY, JSON.stringify(list));
+        }
+
+        function isSlotBlocked(date, time, slotMinutes) {
+            const bookings = getBookings().filter(b => b.date === date);
+            const newStart = timeToMinutes(time);
+            const newEnd = newStart + (slotMinutes || 60);
+            for (const b of bookings) {
+                const bStart = timeToMinutes(b.time);
+                const bEnd = bStart + (b.slotMinutes || 60);
+                if (newStart < bEnd && newEnd > bStart) return true;
+            }
+            return false;
+        }
+
+        function addBooking(entry) {
+            const list = getBookings();
+            list.push(entry);
+            saveBookings(list);
+        }
+
+        function confirmBooking() {
+            const date = document.getElementById('book-date').value;
+            const time = document.getElementById('book-time').value;
+            const name = document.getElementById('book-name').value;
+            if (!date || !time || !name) { alert('Please fill in date, time and your name.'); return; }
+            if (!selectedService) return;
+
+            const slotMinutes = parseServiceDurationMinutes(selectedService.time);
+            const minSlot = (CONFIG.bookingSlotMinutes && CONFIG.bookingSlotMinutes > 0) ? CONFIG.bookingSlotMinutes : null;
+            const blockMinutes = minSlot != null ? Math.max(slotMinutes, minSlot) : slotMinutes;
+
+            if (isSlotBlocked(date, time, blockMinutes)) {
+                alert('This time slot is no longer available. Someone has already booked between ' + time + ' and the next ' + (blockMinutes) + ' minutes. Please choose another date or time.');
+                return;
+            }
+
+            addBooking({
+                date,
+                time,
+                name,
+                serviceName: selectedService.name,
+                servicePrice: selectedService.price,
+                slotMinutes: blockMinutes
+            });
+
+            const msg = `💄 *NEW APPOINTMENT*\n👤 Name: ${name}\n✨ Service: ${selectedService.name}\n📅 Date: ${date} @ ${time}\n💰 Price: ${CONFIG.currency}${selectedService.price}\n\nIs this slot open?`;
+            window.open(`https://wa.me/${CONFIG.whatsapp || DEFAULTS.site.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+            closeModals();
+        }
+
+        function addToCart(id) {
+            const p = PRODUCTS.find(x => x.id === id);
+            if (!p) return;
+            cart.push({ id: p.id, name: p.name, price: p.price, category: p.category, img: getProductImages(p)[0] });
+            updateCartUI();
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cart-badge');
+            badge.textContent = cart.length;
+            badge.classList.toggle('hidden', cart.length === 0);
+            const container = document.getElementById('cart-items');
+            const curr = CONFIG.currency || 'GHS ';
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-center py-10" style="color: var(--text-secondary);">Your bag is empty.</div>';
+            } else {
+                container.innerHTML = cart.map((item, index) => `
+                    <div class="flex justify-between items-center p-3 rounded-lg border" style="background: var(--bg-page); border-color: var(--border);">
+                        <div>
+                            <div class="font-bold text-sm" style="color: var(--text-primary);">${item.name}</div>
+                            <div class="text-[10px] uppercase" style="color: var(--text-secondary);">${item.category || ''}</div>
+                            <div class="text-xs font-bold mt-1" style="color: var(--accent);">${curr}${item.price}</div>
+                        </div>
+                        <button type="button" onclick="removeFromCart(${index})" class="p-1 rounded border text-red-500 hover:bg-red-50" style="border-color: var(--border);"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cart-total').textContent = curr + total;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) return;
+            let msg = '🛍️ *SHOP ORDER*\n';
+            cart.forEach(p => msg += `• ${p.name} (${CONFIG.currency || 'GHS '}${p.price})\n`);
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            msg += `\nTotal: ${CONFIG.currency || 'GHS '}${total}`;
+            window.open(`https://wa.me/${CONFIG.whatsapp || DEFAULTS.site.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function closeModals() {
+            document.getElementById('service-modal').classList.add('hidden');
+            document.getElementById('cart-modal').classList.add('hidden');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        loadConfig();
+        renderServices();
+        renderProducts();
+        updateCartUI();
+    </script>
+</body>
+</html>

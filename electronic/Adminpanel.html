@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Clir Tech Hub</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; background: #e2e8f0; color: #1e293b; min-height: 100vh; }
+        /* Login / Setup screen */
+        .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .auth-box { background: #fff; border-radius: 16px; padding: 32px; max-width: 400px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .auth-box h1 { font-size: 1.5rem; margin-bottom: 8px; color: #1e293b; }
+        .auth-box .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 24px; }
+        .auth-form .form-group { margin-bottom: 16px; }
+        .auth-form label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+        .auth-form input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+        .auth-form input:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+        .auth-btn { width: 100%; padding: 14px; background: #f59e0b; color: #1e293b; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 8px; }
+        .auth-btn:hover { background: #fbbf24; }
+        .auth-error { color: #dc2626; font-size: 0.85rem; margin-top: 8px; display: none; }
+        .auth-error.show { display: block; }
+        .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; }
+        .auth-tab { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #64748b; }
+        .auth-tab.active { color: #f59e0b; border-bottom: 2px solid #f59e0b; margin-bottom: -1px; }
+        .auth-panel { display: none; }
+        .auth-panel.active { display: block; }
+        .admin-wrap { display: none; min-height: 100vh; }
+        .admin-wrap.logged-in { display: block; }
+        .sidebar { width: 240px; background: #1e293b; color: #94a3b8; padding: 20px 0; position: fixed; height: 100vh; z-index: 100; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .sidebar h2 { color: #f59e0b; font-size: 1.2rem; padding: 0 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+        .nav-item { display: block; width: 100%; padding: 12px 20px; border: none; background: none; color: #94a3b8; text-align: left; cursor: pointer; font-size: 0.95rem; }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .nav-item.active { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .sidebar-footer { position: absolute; bottom: 20px; left: 20px; right: 20px; }
+        .btn-preview { display: block; width: 100%; padding: 12px; background: #f59e0b; color: #1e293b; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; }
+        .btn-preview:hover { background: #fbbf24; }
+        .btn-logout { display: block; width: 100%; padding: 10px; background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-size: 0.9rem; cursor: pointer; margin-top: 8px; }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); color: #f87171; }
+        .main { margin-left: 240px; flex: 1; padding: 24px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .top-bar h1 { font-size: 1.5rem; }
+        .btn-save { padding: 12px 24px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-save:hover { background: #16a34a; }
+        .hamburger { display: none; padding: 10px; background: #1e293b; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 1.4rem; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+        .sidebar-overlay.show { display: block; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.3); }
+            .main { margin-left: 0; padding: 16px; }
+            .hamburger { display: flex; align-items: center; justify-content: center; }
+            .top-bar { display: flex; flex-direction: row; align-items: center; gap: 12px; }
+            .top-bar h1 { font-size: 1.2rem; flex: 1; }
+            .card { padding: 16px; }
+            .form-group input, .form-group textarea, .form-group select { font-size: 16px; }
+            .btn-save { flex: 1; }
+        }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .card h3 { font-size: 1.1rem; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+        .form-group textarea { min-height: 60px; resize: vertical; }
+        .form-hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #22c55e; color: #fff; padding: 16px 24px; border-radius: 8px; font-weight: 600; display: none; z-index: 9999; }
+        .toast.show { display: block; }
+        .cat-block { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .cat-head { background: #f1f5f9; padding: 14px 20px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .cat-head:hover { background: #e2e8f0; }
+        .cat-body { padding: 20px; }
+        .product-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+        .product-block h4 { margin-bottom: 12px; font-size: 0.95rem; }
+        .btn-sm { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .btn-danger { background: #fee2e2; color: #dc2626; }
+        .btn-add { background: #f59e0b; color: #1e293b; }
+        .img-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .img-preview img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<!-- Login / Setup screen -->
+<div id="auth-screen" class="auth-screen">
+    <div class="auth-box">
+        <h1>Admin Access</h1>
+        <p class="subtitle" id="auth-subtitle">Sign in to manage your store</p>
+        <div class="auth-tabs">
+            <button type="button" class="auth-tab active" data-tab="login">Login</button>
+            <button type="button" class="auth-tab" data-tab="setup">Setup</button>
+        </div>
+        <div id="auth-panel-login" class="auth-panel active">
+            <form class="auth-form" id="form-login">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Your username" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" required>
+                </div>
+                <p class="auth-error" id="login-error">Invalid username or password.</p>
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+        </div>
+        <div id="auth-panel-setup" class="auth-panel">
+            <form class="auth-form" id="form-setup">
+                <div class="form-group">
+                    <label for="setup-username">Choose a username</label>
+                    <input type="text" id="setup-username" placeholder="e.g. admin" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="setup-password">Choose a password</label>
+                    <input type="password" id="setup-password" placeholder="At least 4 characters" autocomplete="new-password" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label for="setup-password2">Confirm password</label>
+                    <input type="password" id="setup-password2" placeholder="Repeat password" autocomplete="new-password" required>
+                </div>
+                <p class="auth-error" id="setup-error"></p>
+                <button type="submit" class="auth-btn">Save & Sign In</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="admin-wrap" class="admin-wrap">
+<div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+<aside class="sidebar" id="sidebar">
+    <h2>Clir Tech Admin</h2>
+    <button type="button" class="nav-item active" data-section="general">General & WhatsApp</button>
+    <button type="button" class="nav-item" data-section="mainpage">Main Page Content</button>
+    <button type="button" class="nav-item" data-section="hero">Hero Carousel</button>
+    <button type="button" class="nav-item" data-section="products">Products</button>
+    <button type="button" class="nav-item" data-section="footer">Footer</button>
+    <button type="button" class="nav-item" data-section="admin-login">Change Login</button>
+    <div class="sidebar-footer">
+        <button type="button" class="btn-preview" id="btn-preview">Preview Store</button>
+        <button type="button" class="btn-logout" id="btn-logout">Logout</button>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="top-bar">
+        <button type="button" class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+        <h1 id="page-title">General & WhatsApp</h1>
+        <button type="button" class="btn-save" id="btn-save">Save All</button>
+    </div>
+
+    <section id="section-general" class="section active">
+        <div class="card">
+            <h3>Store identity</h3>
+            <div class="form-group">
+                <label>Store name</label>
+                <input type="text" id="site-name" placeholder="Clir Tech Hub">
+            </div>
+            <div class="form-group">
+                <label>Tagline</label>
+                <input type="text" id="site-tagline" placeholder="Phones · Laptops · Accessories">
+            </div>
+        </div>
+        <div class="card">
+            <h3>WhatsApp orders</h3>
+            <div class="form-group">
+                <label>WhatsApp number (country code + number, no + or spaces)</label>
+                <input type="text" id="whatsapp-number" placeholder="233538865290">
+            </div>
+            <div class="form-group">
+                <label>Currency (e.g. GHS)</label>
+                <input type="text" id="currency" placeholder="GHS">
+            </div>
+        </div>
+    </section>
+
+    <section id="section-mainpage" class="section">
+        <div class="card">
+            <h3>About / description</h3>
+            <div class="form-group">
+                <label>Store description (optional)</label>
+                <textarea id="site-about" placeholder="Your trusted electronics store."></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-hero" class="section">
+        <div class="card">
+            <h3>Hero carousel</h3>
+            <p class="form-hint" style="margin-bottom:12px;">Slides appear at the top of the store. Add at least one to show the hero.</p>
+            <div id="hero-container"></div>
+            <button type="button" class="btn-sm btn-add" id="btn-add-slide">+ Add slide</button>
+        </div>
+    </section>
+
+    <section id="section-products" class="section">
+        <div class="card">
+            <h3>Products &amp; categories</h3>
+            <p class="form-hint" style="margin-bottom:16px;">Products you add here appear on the main store. Each product can have multiple images and selectable options (e.g. Color, Memory, Battery Health). Save All to update the store.</p>
+            <button type="button" class="btn-sm btn-add" id="btn-add-cat">+ Add category</button>
+            <div id="products-container"></div>
+        </div>
+    </section>
+
+    <section id="section-footer" class="section">
+        <div class="card">
+            <h3>Footer (shown at bottom of main store)</h3>
+            <p class="form-hint" style="margin-bottom:12px;">Edit these and click Save All to update the footer on the main page.</p>
+            <div class="form-group">
+                <label>Footer brand name</label>
+                <input type="text" id="footer-brand" placeholder="Clir Tech Hub">
+            </div>
+            <div class="form-group">
+                <label>About / short description (shown in footer)</label>
+                <textarea id="footer-about" rows="3" placeholder="Your trusted electronics store. Phones, laptops, and accessories."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Copyright text</label>
+                <input type="text" id="footer-copyright" placeholder="© 2025 Clir Tech Hub. All rights reserved.">
+            </div>
+            <div class="form-group">
+                <label>Quick links (optional)</label>
+                <p class="form-hint">These appear as links in the footer. Add text and URL for each.</p>
+                <div id="footer-links-container"></div>
+                <button type="button" class="btn-sm btn-add" id="btn-add-footer-link" style="margin-top:8px;">+ Add link</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-admin-login" class="section">
+        <div class="card">
+            <h3>Change Admin Username & Password</h3>
+            <p class="form-hint" style="margin-bottom:16px;">Update your admin login credentials. Use these next time you sign in.</p>
+            <form id="form-change-login">
+                <div class="form-group">
+                    <label for="change-username">New username</label>
+                    <input type="text" id="change-username" placeholder="e.g. admin" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="change-password">New password</label>
+                    <input type="password" id="change-password" placeholder="At least 4 characters" autocomplete="new-password" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label for="change-password2">Confirm new password</label>
+                    <input type="password" id="change-password2" placeholder="Repeat password" autocomplete="new-password" required>
+                </div>
+                <p class="auth-error" id="change-login-error" style="margin-bottom:12px;"></p>
+                <button type="submit" class="btn-save">Update Login</button>
+            </form>
+        </div>
+    </section>
+</main>
+</div>
+
+<div id="toast" class="toast">Saved!</div>
+
+<script>
+(function() {
+    var STORAGE_KEY = 'electronics_store_settings';
+    var AUTH_KEY = 'electronics_admin_credentials';
+    var SESSION_KEY = 'electronics_admin_session';
+    var titles = { general: 'General & WhatsApp', mainpage: 'Main Page Content', hero: 'Hero Carousel', products: 'Products', footer: 'Footer', 'admin-login': 'Change Login' };
+    var defaultCatalog = {
+        Phones: [
+            { id: 1, name: 'iPhone 13 Pro Max', price: 9500, condition: 'UK Used', specs: '256GB · Sierra Blue', images: ['https://images.unsplash.com/photo-1641460232841-e283da213de6?w=400'], options: { 'Memory': ['256GB', '512GB'], 'Color': ['Sierra Blue', 'Gold', 'Graphite'], 'Battery Health': ['90%', '92%', '95%'] } },
+            { id: 2, name: 'Samsung S23 Ultra', price: 12500, condition: 'Brand New', specs: '512GB · Phantom Black', images: ['https://images.unsplash.com/photo-1678911820864-e2c567c655d7?w=400'], options: { 'Memory': ['256GB', '512GB'], 'Color': ['Phantom Black', 'Cream', 'Green'] } },
+            { id: 3, name: 'iPhone 14', price: 7200, condition: 'UK Used', specs: '128GB · Midnight', images: ['https://images.unsplash.com/photo-1663314326611-9e2fd4f11b1b?w=400'], options: { 'Memory': ['128GB', '256GB'], 'Color': ['Midnight', 'Blue', 'Starlight'], 'Battery Health': ['85%', '90%', '95%'] } },
+            { id: 4, name: 'Google Pixel 7 Pro', price: 5800, condition: 'UK Used', specs: '128GB · Hazel', images: ['https://images.unsplash.com/photo-1666238851883-1cdc90b547e4?w=400'], options: { 'Color': ['Hazel', 'Obsidian', 'Snow'] } },
+            { id: 5, name: 'Samsung Galaxy A54', price: 3800, condition: 'Brand New', specs: '256GB · Lime', images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'], options: { 'Memory': ['128GB', '256GB'], 'Color': ['Lime', 'Violet', 'Graphite'] } },
+            { id: 6, name: 'iPhone 11', price: 3200, condition: 'UK Used', specs: '64GB · Purple', images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400'], options: { 'Memory': ['64GB', '128GB'], 'Color': ['Purple', 'Black', 'White'], 'Battery Health': ['80%', '85%', '90%'] } }
+        ],
+        Laptops: [
+            { id: 7, name: 'MacBook Air M1', price: 8500, condition: 'UK Used', specs: '8GB · 256GB SSD', images: ['https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Space Grey', 'Gold', 'Silver'] } },
+            { id: 8, name: 'HP EliteBook 840 G6', price: 4200, condition: 'UK Used', specs: 'Core i7 · 16GB · Touchscreen', images: ['https://images.unsplash.com/photo-1544731612-de7f96afe55f?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Silver', 'Black'] } },
+            { id: 9, name: 'Dell XPS 13', price: 9800, condition: 'UK Used', specs: 'Core i7 · 4K · 512GB SSD', images: ['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Silver', 'Frost'] } },
+            { id: 10, name: 'Lenovo ThinkPad X1 Carbon', price: 5500, condition: 'UK Used', specs: 'Core i5 · Ultra Light', images: ['https://images.unsplash.com/photo-1626890871138-a286af648586?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Black'] } },
+            { id: 11, name: 'MacBook Pro 14 M1 Pro', price: 18500, condition: 'UK Used', specs: '16GB · 512GB · 120Hz', images: ['https://images.unsplash.com/photo-1658400274389-e7dbedd89b67?w=400'], options: { 'Memory': ['16GB', '32GB'], 'Color': ['Space Grey', 'Silver'] } },
+            { id: 12, name: 'HP Envy x360', price: 6500, condition: 'Brand New', specs: 'Ryzen 5 · Convertible', images: ['https://images.unsplash.com/photo-1583223667854-e0e05b1ad4f3?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Natural Silver', 'Pale Gold'] } }
+        ],
+        Accessories: [
+            { id: 13, name: 'Sony WH-1000XM5', price: 3800, condition: 'Brand New', specs: 'Noise Cancelling · 30hr', images: ['https://images.unsplash.com/photo-1761005653849-74d20f95ecc2?w=400'], options: { 'Color': ['Black', 'Silver', 'Midnight Blue'] } },
+            { id: 14, name: 'AirPods Pro 2', price: 2800, condition: 'Brand New', specs: 'USB-C · MagSafe · ANC', images: ['https://images.unsplash.com/photo-1606741965326-cb990ae01bb2?w=400'], options: { 'Color': ['White'] } },
+            { id: 15, name: 'Apple Watch Series 8', price: 4500, condition: 'UK Used', specs: '45mm · GPS · Midnight', images: ['https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400'], options: { 'Size': ['41mm', '45mm'], 'Color': ['Midnight', 'Starlight', 'Silver'] } },
+            { id: 16, name: 'JBL Flip 6', price: 1400, condition: 'Brand New', specs: 'Waterproof · Portable', images: ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400'], options: { 'Color': ['Blue', 'Black', 'Red', 'Squad'] } },
+            { id: 17, name: 'Samsung Galaxy Watch 6', price: 3200, condition: 'Brand New', specs: '44mm · LTE · Health', images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'], options: { 'Size': ['40mm', '44mm'], 'Color': ['Graphite', 'Silver', 'Gold'] } },
+            { id: 18, name: 'Anker PowerCore 20000', price: 450, condition: 'Brand New', specs: '20000mAh · Fast Charge', images: ['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400'], options: { 'Color': ['Black', 'White'] } }
+        ]
+    };
+    var data = {
+        site: { name: 'Clir Tech Hub', tagline: 'Phones · Laptops · Accessories', about: '', whatsapp: '233538865290', currency: 'GHS' },
+        hero: [],
+        footer: { brand: 'Clir Tech Hub', copyright: '© 2025 Clir Tech Hub. All rights reserved.', about: 'Your trusted electronics store. Phones, laptops, and accessories.', links: [{ text: 'Contact', url: '#' }, { text: 'Shipping', url: '#' }] },
+        catalog: JSON.parse(JSON.stringify(defaultCatalog))
+    };
+
+    function getCredentials() {
+        try {
+            var raw = localStorage.getItem(AUTH_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+
+    function setCredentials(username, password) {
+        try {
+            localStorage.setItem(AUTH_KEY, JSON.stringify({ username: username, password: password }));
+            return true;
+        } catch (e) { return false; }
+    }
+
+    function isLoggedIn() {
+        try {
+            return sessionStorage.getItem(SESSION_KEY) === '1';
+        } catch (e) { return false; }
+    }
+
+    function setLoggedIn(val) {
+        try { sessionStorage.setItem(SESSION_KEY, val ? '1' : '0'); } catch (e) {}
+    }
+
+    function showAuthScreen() {
+        document.getElementById('auth-screen').style.display = 'flex';
+        document.getElementById('admin-wrap').classList.remove('logged-in');
+    }
+
+    function showAdminPanel() {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('admin-wrap').classList.add('logged-in');
+    }
+
+    function initAuth() {
+        if (isLoggedIn()) {
+            showAdminPanel();
+            return;
+        }
+        var creds = getCredentials();
+        var sub = document.getElementById('auth-subtitle');
+        if (sub) sub.textContent = creds ? 'Sign in to manage your store' : 'Set up your admin login to get started';
+        document.getElementById('auth-panel-setup').querySelector('.auth-btn').textContent = creds ? 'Change credentials & Sign In' : 'Save & Sign In';
+        if (!creds) {
+            document.querySelector('.auth-tab[data-tab="setup"]').classList.add('active');
+            document.querySelector('.auth-tab[data-tab="login"]').classList.remove('active');
+            document.getElementById('auth-panel-setup').classList.add('active');
+            document.getElementById('auth-panel-login').classList.remove('active');
+        }
+        showAuthScreen();
+
+        document.querySelectorAll('.auth-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var t = tab.getAttribute('data-tab');
+                document.querySelectorAll('.auth-tab').forEach(function(x) { x.classList.remove('active'); });
+                document.querySelectorAll('.auth-panel').forEach(function(x) { x.classList.remove('active'); });
+                tab.classList.add('active');
+                document.getElementById('auth-panel-' + t).classList.add('active');
+                document.getElementById('login-error').classList.remove('show');
+                document.getElementById('setup-error').classList.remove('show');
+            });
+        });
+
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var u = document.getElementById('login-username').value.trim();
+            var p = document.getElementById('login-password').value;
+            var creds = getCredentials();
+            if (!creds || creds.username !== u || creds.password !== p) {
+                document.getElementById('login-error').classList.add('show');
+                return;
+            }
+            setLoggedIn(true);
+            showAdminPanel();
+        });
+
+        document.getElementById('form-setup').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var u = document.getElementById('setup-username').value.trim();
+            var p = document.getElementById('setup-password').value;
+            var p2 = document.getElementById('setup-password2').value;
+            var errEl = document.getElementById('setup-error');
+            if (!u || u.length < 2) {
+                errEl.textContent = 'Username must be at least 2 characters.';
+                errEl.classList.add('show');
+                return;
+            }
+            if (p.length < 4) {
+                errEl.textContent = 'Password must be at least 4 characters.';
+                errEl.classList.add('show');
+                return;
+            }
+            if (p !== p2) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.classList.add('show');
+                return;
+            }
+            setCredentials(u, p);
+            setLoggedIn(true);
+            showAdminPanel();
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', function() {
+            setLoggedIn(false);
+            showAuthScreen();
+        });
+    }
+
+    function load() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                var parsed = JSON.parse(raw);
+                if (parsed.site) data.site = parsed.site;
+                if (parsed.hero) data.hero = parsed.hero;
+                if (parsed.footer) {
+                data.footer = data.footer || {};
+                data.footer.brand = parsed.footer.brand != null ? parsed.footer.brand : data.footer.brand;
+                data.footer.copyright = parsed.footer.copyright != null ? parsed.footer.copyright : data.footer.copyright;
+                data.footer.about = parsed.footer.about != null ? parsed.footer.about : (data.footer.about || '');
+                data.footer.links = Array.isArray(parsed.footer.links) ? parsed.footer.links : (data.footer.links || []);
+            }
+                if (parsed.catalog && typeof parsed.catalog === 'object') data.catalog = parsed.catalog;
+            }
+        } catch (e) {}
+    }
+
+    function setVal(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.value = val || '';
+    }
+
+    function getVal(id) {
+        var el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    }
+
+    function fillForm() {
+        setVal('site-name', data.site.name);
+        setVal('site-tagline', data.site.tagline);
+        setVal('site-about', data.site.about);
+        setVal('whatsapp-number', data.site.whatsapp);
+        setVal('currency', data.site.currency);
+        setVal('footer-brand', data.footer.brand);
+        setVal('footer-copyright', data.footer.copyright);
+        setVal('footer-about', data.footer.about);
+        if (!data.footer.links) data.footer.links = [];
+        renderFooterLinks();
+    }
+
+    function collect() {
+        data.site = {
+            name: getVal('site-name') || 'Clir Tech Hub',
+            tagline: getVal('site-tagline') || 'Phones · Laptops · Accessories',
+            about: getVal('site-about'),
+            whatsapp: (getVal('whatsapp-number') || '').replace(/\D/g, ''),
+            currency: getVal('currency') || 'GHS'
+        };
+        var linkRows = document.querySelectorAll('.footer-link-row');
+        var links = [];
+        for (var i = 0; i < linkRows.length; i++) {
+            var textInp = linkRows[i].querySelector('.footer-link-text');
+            var urlInp = linkRows[i].querySelector('.footer-link-url');
+            if (textInp && textInp.value.trim()) links.push({ text: textInp.value.trim(), url: (urlInp && urlInp.value.trim()) || '#' });
+        }
+        data.footer = {
+            brand: getVal('footer-brand') || 'Clir Tech Hub',
+            copyright: getVal('footer-copyright') || '© 2025 Clir Tech Hub',
+            about: getVal('footer-about') || '',
+            links: links
+        };
+    }
+
+    function parseOptionsText(txt) {
+        var out = {};
+        if (!txt || !txt.trim()) return out;
+        var lines = txt.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            var colon = line.indexOf(':');
+            if (colon <= 0) continue;
+            var key = line.slice(0, colon).trim();
+            var rest = line.slice(colon + 1).trim().split(/[,;]/);
+            var vals = [];
+            for (var j = 0; j < rest.length; j++) {
+                var v = rest[j].trim();
+                if (v) vals.push(v);
+            }
+            if (key && vals.length) out[key] = vals;
+        }
+        return out;
+    }
+
+    function renderFooterLinks() {
+        var container = document.getElementById('footer-links-container');
+        if (!container) return;
+        var links = data.footer.links || [];
+        var html = '';
+        for (var i = 0; i < links.length; i++) {
+            var L = links[i];
+            html += '<div class="footer-link-row" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">';
+            html += '<input type="text" class="footer-link-text" placeholder="Link text" value="' + (L.text || '').replace(/"/g, '&quot;') + '" style="flex:1;">';
+            html += '<input type="text" class="footer-link-url" placeholder="URL" value="' + (L.url || '').replace(/"/g, '&quot;') + '" style="flex:1;">';
+            html += '<button type="button" class="btn-sm btn-danger footer-link-remove">Remove</button></div>';
+        }
+        container.innerHTML = html;
+        var removeBtns = container.querySelectorAll('.footer-link-remove');
+        for (var r = 0; r < removeBtns.length; r++) {
+            (function(idx) {
+                removeBtns[idx].addEventListener('click', function() {
+                    data.footer.links.splice(idx, 1);
+                    renderFooterLinks();
+                });
+            })(r);
+        }
+    }
+
+    function optionsToText(opts) {
+        if (!opts || typeof opts !== 'object') return '';
+        var lines = [];
+        for (var k in opts) {
+            if (opts[k] && Array.isArray(opts[k])) lines.push(k + ': ' + opts[k].join(', '));
+        }
+        return lines.join('\n');
+    }
+
+    function save() {
+        collect();
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            var t = document.getElementById('toast');
+            if (t) { t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2000); }
+        } catch (e) {}
+    }
+
+    function showSection(id) {
+        var navs = document.querySelectorAll('.nav-item');
+        for (var i = 0; i < navs.length; i++) navs[i].classList.toggle('active', navs[i].getAttribute('data-section') === id);
+        var sections = document.querySelectorAll('.section');
+        for (var j = 0; j < sections.length; j++) sections[j].classList.toggle('active', sections[j].id === 'section-' + id);
+        var titleEl = document.getElementById('page-title');
+        if (titleEl) titleEl.textContent = titles[id] || id;
+        var sb = document.getElementById('sidebar');
+        if (sb && sb.classList.contains('open')) sb.classList.remove('open');
+        if (id === 'admin-login') {
+            var creds = getCredentials();
+            var unEl = document.getElementById('change-username');
+            if (unEl && creds) unEl.value = creds.username || '';
+            var errEl = document.getElementById('change-login-error');
+            if (errEl) errEl.classList.remove('show');
+        }
+    }
+
+    function renderProducts() {
+        var container = document.getElementById('products-container');
+        if (!container) return;
+        var catalog = data.catalog || {};
+        var catNames = Object.keys(catalog);
+        var html = '';
+        for (var ci = 0; ci < catNames.length; ci++) {
+            var catName = catNames[ci];
+            var products = catalog[catName];
+            if (!Array.isArray(products)) products = [];
+            var prodHtml = '';
+            for (var pi = 0; pi < products.length; pi++) {
+                var p = products[pi];
+                var imgs = Array.isArray(p.images) ? p.images : [];
+                var imgText = imgs.join('\n');
+                var optsText = optionsToText(p.options || {});
+                prodHtml += '<div class="product-block" data-cat="' + ci + '" data-pi="' + pi + '">';
+                prodHtml += '<h4>Product ' + (pi + 1) + ' <button type="button" class="btn-sm btn-danger del-product">Delete</button></h4>';
+                prodHtml += '<div class="form-group"><label>Name</label><input type="text" class="p-name" value="' + (p.name || '').replace(/"/g, '&quot;') + '" placeholder="Product name"></div>';
+                prodHtml += '<div class="form-group"><label>Price</label><input type="number" class="p-price" value="' + (p.price != null ? p.price : '') + '" placeholder="0"></div>';
+                prodHtml += '<div class="form-group"><label>Condition</label><select class="p-condition"><option value="Brand New"' + (p.condition === 'Brand New' ? ' selected' : '') + '>Brand New</option><option value="UK Used"' + (p.condition === 'UK Used' ? ' selected' : '') + '>UK Used</option><option value="Refurbished"' + (p.condition === 'Refurbished' ? ' selected' : '') + '>Refurbished</option></select></div>';
+                prodHtml += '<div class="form-group"><label>Short specs (shown on card)</label><input type="text" class="p-specs" value="' + (p.specs || '').replace(/"/g, '&quot;') + '" placeholder="e.g. 256GB · Blue"></div>';
+                prodHtml += '<div class="form-group"><label>Image URLs (one per line, first = main)</label><textarea class="p-images" rows="3" placeholder="https://...">' + imgText.replace(/</g, '&lt;') + '</textarea><div class="img-preview" id="preview-' + ci + '-' + pi + '"></div></div>';
+                prodHtml += '<div class="form-group"><label>Options (one per line: OptionName: value1, value2)</label><textarea class="p-options" rows="3" placeholder="Color: Black, Blue, Red\nMemory: 128GB, 256GB\nBattery Health: 85%, 90%, 95%">' + optsText.replace(/</g, '&lt;') + '</textarea></div>';
+                prodHtml += '</div>';
+            }
+            html += '<div class="cat-block" data-cat-index="' + ci + '">';
+            html += '<div class="cat-head">' + catName.replace(/</g, '&lt;') + ' <button type="button" class="btn-sm btn-danger del-cat">Remove category</button></div>';
+            html += '<div class="cat-body">' + prodHtml + '<button type="button" class="btn-sm btn-add add-product" data-cat-index="' + ci + '">+ Add product</button></div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+
+        var addProductBtns = container.querySelectorAll('.add-product');
+        for (var a = 0; a < addProductBtns.length; a++) {
+            (function(btn) {
+                btn.addEventListener('click', function() {
+                    var ci = parseInt(btn.getAttribute('data-cat-index'), 10);
+                    var catName = catNames[ci];
+                    if (!data.catalog[catName]) data.catalog[catName] = [];
+                    var maxId = 0;
+                    for (var c in data.catalog) {
+                        var arr = data.catalog[c];
+                        for (var i = 0; i < arr.length; i++) if (arr[i].id > maxId) maxId = arr[i].id;
+                    }
+                    data.catalog[catName].push({ id: maxId + 1, name: 'New Product', price: 0, condition: 'UK Used', specs: '', images: [], options: {} });
+                    renderProducts();
+                });
+            })(addProductBtns[a]);
+        }
+
+        var delCatBtns = container.querySelectorAll('.del-cat');
+        for (var d = 0; d < delCatBtns.length; d++) {
+            (function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var block = btn.closest('.cat-block');
+                    var ci = parseInt(block.getAttribute('data-cat-index'), 10);
+                    var catName = catNames[ci];
+                    if (confirm('Remove category "' + catName + '" and all its products?')) {
+                        delete data.catalog[catName];
+                        renderProducts();
+                    }
+                });
+            })(delCatBtns[d]);
+        }
+
+        var delProductBtns = container.querySelectorAll('.del-product');
+        for (var dp = 0; dp < delProductBtns.length; dp++) {
+            (function(btn) {
+                btn.addEventListener('click', function() {
+                    var block = btn.closest('.product-block');
+                    var ci = parseInt(block.getAttribute('data-cat'), 10);
+                    var pi = parseInt(block.getAttribute('data-pi'), 10);
+                    var catName = catNames[ci];
+                    if (data.catalog[catName]) {
+                        data.catalog[catName].splice(pi, 1);
+                        renderProducts();
+                    }
+                });
+            })(delProductBtns[dp]);
+        }
+
+        function syncProduct(block) {
+            var ci = parseInt(block.getAttribute('data-cat'), 10);
+            var pi = parseInt(block.getAttribute('data-pi'), 10);
+            var catName = catNames[ci];
+            if (!data.catalog[catName] || !data.catalog[catName][pi]) return;
+            var p = data.catalog[catName][pi];
+            var nameInp = block.querySelector('.p-name');
+            var priceInp = block.querySelector('.p-price');
+            var condInp = block.querySelector('.p-condition');
+            var specsInp = block.querySelector('.p-specs');
+            var imagesInp = block.querySelector('.p-images');
+            var optionsInp = block.querySelector('.p-options');
+            if (nameInp) p.name = nameInp.value.trim();
+            if (priceInp) p.price = parseFloat(priceInp.value) || 0;
+            if (condInp) p.condition = condInp.value;
+            if (specsInp) p.specs = specsInp.value.trim();
+            if (imagesInp) {
+                p.images = imagesInp.value.split(/\r?\n/).map(function(s) { return s.trim(); }).filter(Boolean);
+            }
+            if (optionsInp) p.options = parseOptionsText(optionsInp.value);
+        }
+
+        var productBlocks = container.querySelectorAll('.product-block');
+        for (var pb = 0; pb < productBlocks.length; pb++) {
+            (function(block) {
+                var inputs = block.querySelectorAll('input, select, textarea');
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].addEventListener('change', function() { syncProduct(block); });
+                    inputs[i].addEventListener('blur', function() { syncProduct(block); });
+                }
+                var imagesInp = block.querySelector('.p-images');
+                if (imagesInp) {
+                    var previewId = block.querySelector('.img-preview');
+                    if (previewId) {
+                        function updatePreview() {
+                            var urls = imagesInp.value.split(/\r?\n/).map(function(s) { return s.trim(); }).filter(Boolean);
+                            previewId.innerHTML = '';
+                            for (var u = 0; u < urls.length; u++) {
+                                var im = document.createElement('img');
+                                im.src = urls[u];
+                                im.alt = '';
+                                im.onerror = function() { this.style.display = 'none'; };
+                                previewId.appendChild(im);
+                            }
+                        }
+                        imagesInp.addEventListener('blur', updatePreview);
+                        updatePreview();
+                    }
+                }
+            })(productBlocks[pb]);
+        }
+    }
+
+    document.getElementById('btn-add-cat').addEventListener('click', function() {
+        var name = prompt('Category name (e.g. Phones, Laptops, Accessories):');
+        if (name && name.trim()) {
+            if (!data.catalog) data.catalog = {};
+            data.catalog[name.trim()] = [];
+            renderProducts();
+        }
+    });
+
+    function renderHero() {
+        var container = document.getElementById('hero-container');
+        if (!container) return;
+        var html = '';
+        for (var i = 0; i < data.hero.length; i++) {
+            var s = data.hero[i];
+            html += '<div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:12px; background:#f8fafc;">';
+            html += '<strong>Slide ' + (i + 1) + '</strong> <button type="button" class="hero-remove btn-sm btn-danger" data-i="' + i + '" style="margin-left:8px;">Remove</button>';
+            html += '<div class="form-group" style="margin-top:12px;"><label>Title</label><input type="text" class="hero-title" data-i="' + i + '" value="' + (s.title || '').replace(/"/g, '&quot;') + '"></div>';
+            html += '<div class="form-group"><label>Image URL</label><input type="text" class="hero-image" data-i="' + i + '" value="' + (s.image || '').replace(/"/g, '&quot;') + '"></div></div>';
+        }
+        container.innerHTML = html;
+        container.querySelectorAll('.hero-remove').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var i = parseInt(btn.getAttribute('data-i'), 10);
+                data.hero.splice(i, 1);
+                renderHero();
+            });
+        });
+        container.querySelectorAll('.hero-title').forEach(function(inp) {
+            inp.addEventListener('change', function() {
+                var i = parseInt(inp.getAttribute('data-i'), 10);
+                if (data.hero[i]) data.hero[i].title = inp.value;
+            });
+        });
+        container.querySelectorAll('.hero-image').forEach(function(inp) {
+            inp.addEventListener('change', function() {
+                var i = parseInt(inp.getAttribute('data-i'), 10);
+                if (data.hero[i]) data.hero[i].image = inp.value;
+            });
+        });
+    }
+
+    initAuth();
+    load();
+    fillForm();
+    renderProducts();
+    renderHero();
+
+    (function() {
+        var ham = document.getElementById('hamburger');
+        var sb = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        function toggleSidebar() {
+            sb.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('show', sb.classList.contains('open'));
+        }
+        if (ham) ham.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', function() {
+            sb.classList.remove('open');
+            overlay.classList.remove('show');
+        });
+    })();
+
+    var navs = document.querySelectorAll('.nav-item');
+    for (var i = 0; i < navs.length; i++) {
+        (function(btn) {
+            btn.addEventListener('click', function() {
+                var id = btn.getAttribute('data-section');
+                if (id) showSection(id);
+            });
+        })(navs[i]);
+    }
+    document.getElementById('btn-save').addEventListener('click', function() {
+        var productBlocks = document.querySelectorAll('#products-container .product-block');
+        for (var b = 0; b < productBlocks.length; b++) {
+            var block = productBlocks[b];
+            var ci = parseInt(block.getAttribute('data-cat'), 10);
+            var pi = parseInt(block.getAttribute('data-pi'), 10);
+            var catNames = Object.keys(data.catalog || {});
+            var catName = catNames[ci];
+            if (!data.catalog[catName] || !data.catalog[catName][pi]) continue;
+            var p = data.catalog[catName][pi];
+            var nameInp = block.querySelector('.p-name');
+            var priceInp = block.querySelector('.p-price');
+            var condInp = block.querySelector('.p-condition');
+            var specsInp = block.querySelector('.p-specs');
+            var imagesInp = block.querySelector('.p-images');
+            var optionsInp = block.querySelector('.p-options');
+            if (nameInp) p.name = nameInp.value.trim();
+            if (priceInp) p.price = parseFloat(priceInp.value) || 0;
+            if (condInp) p.condition = condInp.value;
+            if (specsInp) p.specs = specsInp.value.trim();
+            if (imagesInp) p.images = imagesInp.value.split(/\r?\n/).map(function(s) { return s.trim(); }).filter(Boolean);
+            if (optionsInp) p.options = parseOptionsText(optionsInp.value);
+        }
+        save();
+    });
+    document.getElementById('btn-preview').addEventListener('click', function() { window.open('electronicstore.html', '_blank'); });
+    var addFooterLinkBtn = document.getElementById('btn-add-footer-link');
+    if (addFooterLinkBtn) addFooterLinkBtn.addEventListener('click', function() {
+        if (!data.footer.links) data.footer.links = [];
+        data.footer.links.push({ text: 'New link', url: '#' });
+        renderFooterLinks();
+    });
+    document.getElementById('form-change-login').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var u = document.getElementById('change-username').value.trim();
+        var p = document.getElementById('change-password').value;
+        var p2 = document.getElementById('change-password2').value;
+        var errEl = document.getElementById('change-login-error');
+        errEl.classList.remove('show');
+        if (!u || u.length < 2) {
+            errEl.textContent = 'Username must be at least 2 characters.';
+            errEl.classList.add('show');
+            return;
+        }
+        if (p.length < 4) {
+            errEl.textContent = 'Password must be at least 4 characters.';
+            errEl.classList.add('show');
+            return;
+        }
+        if (p !== p2) {
+            errEl.textContent = 'Passwords do not match.';
+            errEl.classList.add('show');
+            return;
+        }
+        setCredentials(u, p);
+        document.getElementById('change-password').value = '';
+        document.getElementById('change-password2').value = '';
+        var t = document.getElementById('toast');
+        if (t) { t.textContent = 'Login updated!'; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); t.textContent = 'Saved!'; }, 2000); }
+    });
+    document.getElementById('btn-add-slide').addEventListener('click', function() {
+        data.hero.push({ title: 'New slide', image: 'https://via.placeholder.com/1200x400' });
+        renderHero();
+    });
+})();
+</script>
+</body>
+</html>

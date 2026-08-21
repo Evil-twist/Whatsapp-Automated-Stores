@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClirNova</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #faf9f7;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #5c5c5c;
+            --accent: #8b6914;
+            --accent-light: #c9a227;
+            --border: #e8e6e3;
+            --header-bg: #ffffff;
+            --card-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --hero-overlay: rgba(0,0,0,0.35);
+        }
+        [data-theme="dark"] {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --text: #f5f5f5;
+            --text-muted: #a0a0a0;
+            --accent: #d4af37;
+            --accent-light: #e8c547;
+            --border: #2a2a2a;
+            --header-bg: #141414;
+            --card-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --hero-overlay: rgba(0,0,0,0.5);
+        }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+        .font-display { font-family: 'Cormorant Garamond', serif; }
+        .theme-transition * { transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s; }
+    </style>
+</head>
+<body class="theme-transition pb-24 min-h-screen" style="background: var(--bg); color: var(--text);">
+
+    <header class="sticky top-0 z-40 border-b transition-colors duration-300" style="background: var(--header-bg); border-color: var(--border);">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-display font-bold tracking-wide" style="color: var(--accent);">
+                <span id="site-name-main">CLIR</span><span id="site-name-accent">NOVA</span>
+            </h1>
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle" class="p-2 rounded-full hover:opacity-80 transition" style="background: var(--surface); color: var(--text);" aria-label="Toggle theme">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark-icon"></i>
+                    <i data-lucide="moon" class="w-5 h-5 hidden light-icon"></i>
+                </button>
+                <button onclick="checkout()" class="relative p-2 rounded-full transition" style="background: var(--surface); color: var(--text);">
+                    <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                    <span id="cart-count" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 text-xs font-semibold rounded-full flex items-center justify-center hidden text-white" style="background: var(--accent);">0</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex border-t" style="border-color: var(--border);">
+            <button onclick="setDept('Women')" class="dept-btn flex-1 py-4 text-sm font-semibold uppercase tracking-widest transition" data-dept="Women">Women</button>
+            <button onclick="setDept('Men')" class="dept-btn flex-1 py-4 text-sm font-semibold uppercase tracking-widest transition" data-dept="Men">Men</button>
+            <button onclick="setDept('Kids')" class="dept-btn flex-1 py-4 text-sm font-semibold uppercase tracking-widest transition" data-dept="Kids">Kids</button>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <div class="relative h-56 sm:h-72 overflow-hidden mb-8">
+        <div class="absolute inset-0 z-10" style="background: var(--hero-overlay);"></div>
+        <img id="hero-img" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover" alt="">
+        <div class="absolute inset-0 flex items-center justify-center z-20 text-white text-center px-4">
+            <div>
+                <h2 id="hero-title" class="font-display text-3xl sm:text-4xl font-bold mb-1">Women's Collection</h2>
+                <p id="hero-subtitle" class="text-sm sm:text-base opacity-90">New Arrivals</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="grid" class="max-w-6xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <!-- Injected -->
+    </div>
+
+    <!-- Product detail modal (multiple images + variants) -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeProductModal()"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div id="product-modal-content" class="relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl theme-transition" style="background: var(--surface);">
+                <button onclick="closeProductModal()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-black/60 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div id="modal-gallery" class="relative h-72 sm:h-96 bg-gray-900 overflow-hidden">
+                    <img id="modal-main-img" src="" class="w-full h-full object-cover" alt="">
+                    <div id="modal-thumbs" class="absolute bottom-3 left-0 right-0 flex justify-center gap-2 overflow-x-auto px-2 py-1"></div>
+                    <button type="button" id="modal-prev" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition hidden">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button type="button" id="modal-next" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition hidden">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 id="modal-title" class="font-display text-2xl font-semibold mb-2" style="color: var(--text);"></h3>
+                    <p id="modal-price" class="text-lg font-semibold mb-4" style="color: var(--accent);"></p>
+                    <div id="modal-sizes" class="mb-4 hidden">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-muted);">Size</label>
+                        <div id="modal-sizes-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div id="modal-colors" class="mb-4 hidden">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-muted);">Color</label>
+                        <div id="modal-colors-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div id="modal-features" class="mb-4 hidden">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-muted);">Features</label>
+                        <ul id="modal-features-list" class="text-sm space-y-1" style="color: var(--text-muted);"></ul>
+                    </div>
+                    <button type="button" id="modal-add-cart" class="w-full py-4 rounded-xl font-semibold text-white transition flex items-center justify-center gap-2" style="background: var(--accent);">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                        Add to Bag
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'clirnova_store_settings';
+        const FALLBACK_INVENTORY = [
+            { id: 1, name: "Classic Oxford Shirt", price: 180, dept: "Men", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=400" },
+            { id: 2, name: "Slim Fit Chinos", price: 220, dept: "Men", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&q=80&w=400" },
+            { id: 3, name: "Denim Trucker Jacket", price: 350, dept: "Men", img: "https://images.unsplash.com/photo-1653071163733-c3a803a896d0?q=80&w=687&auto=format&fit=crop" },
+            { id: 4, name: "Casual Polo Shirt", price: 120, dept: "Men", img: "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&q=80&w=400" },
+            { id: 5, name: "Tailored Navy Suit", price: 850, dept: "Men", img: "https://images.unsplash.com/photo-1656453260440-ae7817f559fd?q=80&w=764&auto=format&fit=crop" },
+            { id: 6, name: "Streetwear Hoodie", price: 200, dept: "Men", img: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80&w=400" },
+            { id: 7, name: "Cargo Shorts", price: 150, dept: "Men", img: "https://images.unsplash.com/photo-1719473458937-d42f1f9aad00?q=80&w=687&auto=format&fit=crop" },
+            { id: 8, name: "Graphic T-Shirt", price: 90, dept: "Men", img: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=400" },
+            { id: 9, name: "Floral Summer Dress", price: 160, dept: "Women", img: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=400" },
+            { id: 10, name: "Office Blazer Set", price: 420, dept: "Women", img: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?auto=format&fit=crop&q=80&w=400" },
+            { id: 11, name: "High-Waist Jeans", price: 210, dept: "Women", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=400" },
+            { id: 12, name: "Silk Blouse", price: 180, dept: "Women", img: "https://plus.unsplash.com/premium_photo-1691367279439-a4ac71e7c3ce?q=80&w=687&auto=format&fit=crop" },
+            { id: 13, name: "Boho Maxi Skirt", price: 140, dept: "Women", img: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&q=80&w=400" },
+            { id: 14, name: "Athletic Yoga Set", price: 195, dept: "Women", img: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=400" },
+            { id: 15, name: "Elegant Jumpsuit", price: 280, dept: "Women", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=400" },
+            { id: 16, name: "Knitted Cardigan", price: 130, dept: "Women", img: "https://images.unsplash.com/photo-1759873821400-389aa110eeef?q=80&w=687&auto=format&fit=crop" },
+            { id: 17, name: "Denim Overalls", price: 110, dept: "Kids", img: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&q=80&w=400" },
+            { id: 18, name: "Cotton Romper", price: 85, dept: "Kids", img: "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&q=80&w=400" },
+            { id: 19, name: "Princess Party Dress", price: 160, dept: "Kids", img: "https://images.unsplash.com/photo-1656741785524-1012253553b7?q=80&w=672&auto=format&fit=crop" },
+            { id: 20, name: "Boys' Polo Set", price: 120, dept: "Kids", img: "https://images.unsplash.com/photo-1720514496161-914011a9ee02?q=80&w=687&auto=format&fit=crop" },
+            { id: 21, name: "Cozy Pajamas", price: 95, dept: "Kids", img: "https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&q=80&w=400" },
+            { id: 22, name: "Hoodie & Joggers", price: 140, dept: "Kids", img: "https://images.unsplash.com/photo-1513223531100-3a6a93874b2a?auto=format&fit=crop&q=80&w=400" },
+            { id: 23, name: "Puffer Jacket", price: 480, dept: "Men", img: "https://images.unsplash.com/photo-1706765779494-2705542ebe74?q=80&w=1051&auto=format&fit=crop" },
+            { id: 24, name: "Graphic Tee", price: 70, dept: "Kids", img: "https://images.unsplash.com/photo-1626141705637-53beb43195d4?q=80&w=688&auto=format&fit=crop" }
+        ];
+
+        let cart = [];
+        let currentDept = "Women";
+        let storeSettings = null;
+        let INVENTORY = [];
+
+        function loadStoreSettings() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    storeSettings = JSON.parse(raw);
+                    INVENTORY = catalogToFlatInventory(storeSettings.catalog);
+                    if (storeSettings.site) {
+                        const n = (storeSettings.site.name || 'CLIRNOVA').replace(/<[^>]+>/g, '').trim();
+                        if (n.includes(' ')) {
+                            const [first, ...rest] = n.split(' ');
+                            document.getElementById('site-name-main').textContent = first || 'CLIR';
+                            document.getElementById('site-name-accent').textContent = rest.join(' ') || 'NOVA';
+                        } else if (n.length > 4) {
+                            document.getElementById('site-name-main').textContent = n.slice(0, 4);
+                            document.getElementById('site-name-accent').textContent = n.slice(4);
+                        } else {
+                            document.getElementById('site-name-main').textContent = n || 'CLIR';
+                            document.getElementById('site-name-accent').textContent = 'NOVA';
+                        }
+                    }
+                    if (storeSettings.hero && storeSettings.hero.length) {
+                        const first = storeSettings.hero[0];
+                        document.getElementById('hero-img').src = first.image || document.getElementById('hero-img').src;
+                        document.getElementById('hero-title').textContent = first.title || currentDept + "'s Collection";
+                        document.getElementById('hero-subtitle').textContent = first.subtitle || 'New Arrivals';
+                    }
+                    return;
+                }
+            } catch (e) {}
+            INVENTORY = FALLBACK_INVENTORY.slice();
+        }
+
+        function catalogToFlatInventory(catalog) {
+            if (!catalog || typeof catalog !== 'object') return [];
+            const flat = [];
+            for (const [catName, raw] of Object.entries(catalog)) {
+                const isObj = raw && typeof raw === 'object' && !Array.isArray(raw);
+                const products = isObj && Array.isArray(raw.products) ? raw.products : (Array.isArray(raw) ? raw : []);
+                const dept = (isObj && raw.department) ? raw.department : mapCategoryToDept(catName);
+                products.forEach(p => {
+                    flat.push({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        dept,
+                        img: p.img || (Array.isArray(p.images) && p.images[0]) || '',
+                        images: (p.img ? [p.img] : []).concat(Array.isArray(p.images) ? p.images : []).filter(Boolean),
+                        colors: p.colors || (p.variants && p.variants.find(v => v.type === 'Color') && p.variants.find(v => v.type === 'Color').options) || [],
+                        sizes: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : [],
+                        features: p.features || [],
+                        showMultipleImages: p.showMultipleImages !== false,
+                        showSizes: p.showSizes !== false,
+                        showColors: p.showColors !== false
+                    });
+                });
+            }
+            return flat;
+        }
+
+        function mapCategoryToDept(catName) {
+            const s = (catName || '').toLowerCase();
+            if (s.includes('women') || s.includes('ladies') || s.includes('woman')) return 'Women';
+            if (s.includes('men') || s.includes('man')) return 'Men';
+            if (s.includes('kid') || s.includes('child')) return 'Kids';
+            return 'Women';
+        }
+
+        function getCurrency() {
+            return (storeSettings?.site?.currency || 'GHS').trim() || 'GHS';
+        }
+
+        function getWhatsApp() {
+            const num = (storeSettings?.site?.whatsapp || '').trim();
+            return num || '233244000000';
+        }
+
+        function applyDeptHero() {
+            const heroByDept = storeSettings?.heroByDept;
+            if (heroByDept && heroByDept[currentDept]) {
+                const h = heroByDept[currentDept];
+                document.getElementById('hero-img').src = h.image || document.getElementById('hero-img').src;
+                document.getElementById('hero-title').textContent = h.title || currentDept + "'s Collection";
+                document.getElementById('hero-subtitle').textContent = h.subtitle || 'New Arrivals';
+            } else if (storeSettings?.hero?.length) {
+                const first = storeSettings.hero[0];
+                document.getElementById('hero-img').src = first.image || document.getElementById('hero-img').src;
+                document.getElementById('hero-title').textContent = (storeSettings.mainPage && storeSettings.mainPage.heroTitle) ? storeSettings.mainPage.heroTitle.replace('{dept}', currentDept) : (currentDept + "'s Collection");
+                document.getElementById('hero-subtitle').textContent = (storeSettings.mainPage && storeSettings.mainPage.heroSubtitle) || first.subtitle || 'New Arrivals';
+            } else {
+                const imgs = {
+                    Women: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000",
+                    Men: "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&q=80&w=1000",
+                    Kids: "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=1000"
+                };
+                document.getElementById('hero-img').src = imgs[currentDept];
+                document.getElementById('hero-title').textContent = currentDept + "'s Collection";
+                document.getElementById('hero-subtitle').textContent = 'New Arrivals';
+            }
+        }
+
+        function render() {
+            const filtered = INVENTORY.filter(i => i.dept === currentDept);
+            const currency = getCurrency();
+            document.getElementById('grid').innerHTML = filtered.map(i => {
+                const imgs = (i.images && i.images.length) ? i.images : (i.img ? [i.img] : []);
+                const hasGallery = (i.showMultipleImages && imgs.length > 1) || (i.showSizes && i.sizes && i.sizes.length) || (i.showColors && i.colors && i.colors.length) || (i.features && i.features.length);
+                const mainImg = imgs[0] || i.img || '';
+                return `
+                <div class="rounded-2xl overflow-hidden theme-transition" style="background: var(--surface); box-shadow: var(--card-shadow); border: 1px solid var(--border);">
+                    <div class="aspect-[3/4] overflow-hidden bg-gray-100 relative group">
+                        <img src="${mainImg}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${(i.name || '').replace(/"/g, '&quot;')}" loading="lazy">
+                        ${hasGallery ? `<span class="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs" style="background: var(--accent);"><i data-lucide="images" class="w-4 h-4"></i></span>` : ''}
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-display font-semibold text-lg line-clamp-2 mb-2 min-h-[2.5rem]" style="color: var(--text);">${(i.name || '').replace(/</g, '&lt;')}</h3>
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold" style="color: var(--accent);">${currency} ${i.price}</span>
+                            ${hasGallery
+                                ? `<button type="button" onclick='openProductModal(${JSON.stringify(i).replace(/'/g, "\\'")})' class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--accent); color: white;"><i data-lucide="plus" class="w-5 h-5"></i></button>`
+                                : `<button type="button" onclick="add('${(i.name || '').replace(/'/g, "\\'")}', ${i.price})" class="w-10 h-10 rounded-full flex items-center justify-center transition hover:opacity-90" style="background: var(--accent); color: white;"><i data-lucide="plus" class="w-5 h-5"></i></button>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+        }
+
+        let modalProduct = null;
+        let modalImageIndex = 0;
+
+        let modalSelectedSize = null;
+        let modalSelectedColor = null;
+
+        function openProductModal(product) {
+            modalProduct = product;
+            modalSelectedSize = null;
+            modalSelectedColor = null;
+            const showGallery = product.showMultipleImages && product.images && product.images.length > 1;
+            const imgs = (product.images && product.images.length) ? product.images : (product.img ? [product.img] : []);
+            modalImageIndex = 0;
+            document.getElementById('modal-main-img').src = imgs[0] || product.img || '';
+            document.getElementById('modal-title').textContent = product.name || '';
+            document.getElementById('modal-price').textContent = getCurrency() + ' ' + (product.price || 0);
+            document.getElementById('modal-add-cart').onclick = () => add(product.name, product.price, modalSelectedSize, modalSelectedColor);
+            const thumbs = document.getElementById('modal-thumbs');
+            const prevBtn = document.getElementById('modal-prev');
+            const nextBtn = document.getElementById('modal-next');
+            if (showGallery && imgs.length > 1) {
+                thumbs.innerHTML = imgs.map((url, idx) => `<button type="button" class="modal-thumb flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${idx === 0 ? 'border-white' : 'border-transparent'}" onclick="setModalImage(${idx})"><img src="${url}" class="w-full h-full object-cover" alt=""></button>`).join('');
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+            } else {
+                thumbs.innerHTML = '';
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
+            const sizesEl = document.getElementById('modal-sizes');
+            const sizesList = document.getElementById('modal-sizes-list');
+            const sizes = (product.showSizes && product.sizes && product.sizes.length) ? product.sizes : [];
+            if (sizes.length) {
+                sizesEl.classList.remove('hidden');
+                sizesList.innerHTML = sizes.map(s => `<button type="button" class="modal-size-btn px-3 py-1.5 rounded-lg text-sm border transition" style="border-color: var(--border); color: var(--text);" data-size="${(s||'').replace(/"/g,'&quot;')}" onclick="setModalSize('${(s||'').replace(/'/g,"\\'")}')">${(s || '').replace(/</g, '&lt;')}</button>`).join('');
+            } else {
+                sizesEl.classList.add('hidden');
+            }
+            const colorsEl = document.getElementById('modal-colors');
+            const colorsList = document.getElementById('modal-colors-list');
+            const colors = (product.showColors && product.colors && product.colors.length) ? product.colors : [];
+            if (colors.length) {
+                colorsEl.classList.remove('hidden');
+                colorsList.innerHTML = colors.map(c => `<button type="button" class="modal-color-btn px-3 py-1.5 rounded-lg text-sm border transition" style="border-color: var(--border); color: var(--text);" data-color="${(c||'').replace(/"/g,'&quot;')}" onclick="setModalColor('${(c||'').replace(/'/g,"\\'")}')">${(c || '').replace(/</g, '&lt;')}</button>`).join('');
+            } else {
+                colorsEl.classList.add('hidden');
+            }
+            const featuresEl = document.getElementById('modal-features');
+            const featuresList = document.getElementById('modal-features-list');
+            const features = product.features || [];
+            if (features.length) {
+                featuresEl.classList.remove('hidden');
+                featuresList.innerHTML = features.map(f => `<li>• ${(f || '').replace(/</g, '&lt;')}</li>`).join('');
+            } else {
+                featuresEl.classList.add('hidden');
+            }
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function setModalSize(size) {
+            modalSelectedSize = size;
+            document.querySelectorAll('.modal-size-btn').forEach(btn => {
+                const isSelected = btn.dataset.size === size;
+                btn.style.borderColor = isSelected ? 'var(--accent)' : 'var(--border)';
+                btn.style.background = isSelected ? 'rgba(201,162,39,0.15)' : 'transparent';
+            });
+        }
+
+        function setModalColor(color) {
+            modalSelectedColor = color;
+            document.querySelectorAll('.modal-color-btn').forEach(btn => {
+                const isSelected = btn.dataset.color === color;
+                btn.style.borderColor = isSelected ? 'var(--accent)' : 'var(--border)';
+                btn.style.background = isSelected ? 'rgba(201,162,39,0.15)' : 'transparent';
+            });
+        }
+
+        function setModalImage(idx) {
+            if (!modalProduct) return;
+            modalImageIndex = idx;
+            const imgs = (modalProduct.images && modalProduct.images.length) ? modalProduct.images : (modalProduct.img ? [modalProduct.img] : []);
+            document.getElementById('modal-main-img').src = imgs[idx] || '';
+            document.querySelectorAll('.modal-thumb').forEach((el, i) => {
+                el.classList.toggle('border-white', i === idx);
+                el.classList.toggle('border-transparent', i !== idx);
+            });
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('modal-prev').onclick = () => {
+            const imgs = (modalProduct && modalProduct.images && modalProduct.images.length) ? modalProduct.images : (modalProduct?.img ? [modalProduct.img] : []);
+            if (imgs.length <= 1) return;
+            modalImageIndex = (modalImageIndex - 1 + imgs.length) % imgs.length;
+            setModalImage(modalImageIndex);
+        };
+        document.getElementById('modal-next').onclick = () => {
+            const imgs = (modalProduct && modalProduct.images && modalProduct.images.length) ? modalProduct.images : (modalProduct?.img ? [modalProduct.img] : []);
+            if (imgs.length <= 1) return;
+            modalImageIndex = (modalImageIndex + 1) % imgs.length;
+            setModalImage(modalImageIndex);
+        };
+
+        function setDept(dept) {
+            currentDept = dept;
+            document.querySelectorAll('.dept-btn').forEach(btn => {
+                const isActive = btn.dataset.dept === dept;
+                btn.style.borderBottom = isActive ? '2px solid var(--accent)' : '2px solid transparent';
+                btn.style.color = isActive ? 'var(--accent)' : 'var(--text-muted)';
+                btn.style.background = isActive ? 'rgba(201,162,39,0.08)' : 'transparent';
+            });
+            applyDeptHero();
+            render();
+        }
+
+        function add(name, price, size, color) {
+            cart.push({ name, price, size: size || null, color: color || null });
+            const el = document.getElementById('cart-count');
+            el.innerText = cart.length;
+            el.classList.remove('hidden');
+            closeProductModal();
+        }
+
+        function checkout() {
+            if (cart.length === 0) return alert('Your bag is empty');
+            const currency = getCurrency();
+            let msg = `🛍️ *ORDER*\n`;
+            cart.forEach(i => {
+                let line = `• ${i.name} (${currency} ${i.price})`;
+                if (i.size) line += ` - Size: ${i.size}`;
+                if (i.color) line += ` - Color: ${i.color}`;
+                msg += line + '\n';
+            });
+            msg += `Total: ${currency} ${cart.reduce((a, b) => a + b.price, 0)}`;
+            window.open(`https://wa.me/${getWhatsApp()}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // Theme toggle
+        function initTheme() {
+            const isDark = localStorage.getItem('clirnova_theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            document.querySelectorAll('.dark-icon').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.light-icon').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll(isDark ? '.light-icon' : '.dark-icon').forEach(el => el.classList.remove('hidden'));
+        }
+
+        document.getElementById('theme-toggle').onclick = () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const next = !isDark;
+            document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
+            localStorage.setItem('clirnova_theme', next ? 'dark' : 'light');
+            document.querySelectorAll('.dark-icon, .light-icon').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll(next ? '.light-icon' : '.dark-icon').forEach(el => el.classList.remove('hidden'));
+        };
+
+        loadStoreSettings();
+        initTheme();
+        setDept(currentDept);
+        render();
+    </script>
+</body>
+</html>

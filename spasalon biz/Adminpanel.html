@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Clirspa Suite</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <script>
+        (function(){
+            var session = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('clirspa_admin_session') === '1';
+            var cred = null;
+            try { var r = localStorage.getItem('clirspa_admin_credentials'); cred = r ? JSON.parse(r) : null; } catch(e){}
+            var show = session ? 'dashboard' : (cred && cred.user && cred.hash) ? 'login' : 'setup';
+            document.documentElement.setAttribute('data-auth-screen', show);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #9f1239;
+            --accent-light: #fce7f3;
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --border: #e5e5e5;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(159,18,57,0.2); color: #f9a8d4; }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #666; margin-top: 6px; display: block; }
+        .slide-item, .portfolio-item {
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .slide-preview, .img-preview {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: #fff; }
+        .btn-add:hover { opacity: 0.9; }
+        .category-block {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #f0f0f0;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .category-header:hover { background: #ebebeb; }
+        .category-body { padding: 20px; }
+        .service-row, .product-row {
+            display: grid;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .service-row:last-child, .product-row:last-child { border-bottom: none; }
+        .service-row { grid-template-columns: 1fr 100px 100px 50px; }
+        .product-row { grid-template-columns: 60px 1fr 100px 100px 80px 50px; }
+        .product-row img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-row input, .service-row input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+        }
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 180px 50px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .link-row input, .link-row select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+        .sub-card {
+            background: #fafafa;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .variant-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .variant-row input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .images-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .images-list .thumb {
+            width: 60px; height: 60px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .images-list .thumb .remove-img { position: absolute; top: 2px; right: 2px; background: var(--danger); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 5px; }
+        .tabs-inline { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tabs-inline button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-weight: 500; }
+        .tabs-inline button.active { background: var(--sidebar-active); color: #fff; border-color: var(--sidebar-active); }
+
+        /* Login / Setup screens — initial state from data-auth-screen (avoids flash) */
+        .auth-screen {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a0a0f 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        html[data-auth-screen="login"] #login-screen { display: flex; }
+        html[data-auth-screen="login"] #setup-screen { display: none; }
+        html[data-auth-screen="login"] #admin-dashboard { display: none; }
+        html[data-auth-screen="setup"] #setup-screen { display: flex; }
+        html[data-auth-screen="setup"] #login-screen { display: none; }
+        html[data-auth-screen="setup"] #admin-dashboard { display: none; }
+        html[data-auth-screen="dashboard"] #admin-dashboard { display: flex; }
+        html[data-auth-screen="dashboard"] #login-screen { display: none; }
+        html[data-auth-screen="dashboard"] #setup-screen { display: none; }
+        .auth-screen.active { display: flex !important; }
+        #admin-dashboard.logged-in { display: flex !important; }
+        .auth-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .auth-card h1 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--sidebar-active);
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+        .auth-card .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
+        .auth-card .form-group { margin-bottom: 18px; }
+        .auth-card input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        .auth-card .btn-auth {
+            width: 100%;
+            padding: 14px;
+            background: var(--sidebar-active);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .auth-card .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+        .auth-error.show { display: block; }
+
+        /* Dashboard wrapper (hidden until logged in) */
+        .admin-dashboard { display: none; min-height: 100vh; flex-wrap: wrap; }
+        .admin-dashboard.logged-in { display: flex; }
+
+        /* Mobile: sidebar as overlay */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 280px;
+                left: 0;
+                top: 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            }
+            body.sidebar-open .sidebar { transform: translateX(0); }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            body.sidebar-open .sidebar-overlay { display: block; }
+            .main {
+                margin-left: 0;
+                padding: 16px;
+                padding-top: 56px;
+            }
+            .page-header {
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .page-title { font-size: 1.35rem; }
+            .save-btn { width: 100%; justify-content: center; }
+            .service-row { grid-template-columns: 1fr 80px 80px 44px); gap: 8px; }
+            .product-row { grid-template-columns: 50px 1fr 70px 70px 1fr 44px; gap: 8px; font-size: 0.85rem; }
+            .product-row input { padding: 6px 8px; font-size: 0.85rem; }
+            .link-row { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .service-row { grid-template-columns: 1fr 70px 70px 40px; }
+            .product-row { grid-template-columns: 36px 1fr 60px 60px minmax(0,1fr) 36px; gap: 6px; }
+            .product-row img { width: 32px; height: 32px; }
+            .product-row .btn-small { font-size: 0.7rem; padding: 6px 8px; white-space: nowrap; }
+            .auth-card { padding: 24px; }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        @media (max-width: 768px) { .menu-toggle { display: flex; } }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            background: rgba(239,68,68,0.15);
+            color: var(--danger);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.25); }
+    </style>
+</head>
+<body>
+    <!-- Login screen -->
+    <div id="login-screen" class="auth-screen">
+        <div class="auth-card">
+            <h1>Clirspa Admin</h1>
+            <p class="subtitle">Sign in to manage your store</p>
+            <form id="login-form" onsubmit="return doLogin(event)">
+                <div class="form-group">
+                    <label for="login-user">Username</label>
+                    <input type="text" id="login-user" placeholder="Your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Password</label>
+                    <input type="password" id="login-pass" placeholder="Your password" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="auth-error">Invalid username or password.</p>
+                <button type="submit" class="btn-auth" id="login-btn">Sign in</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- First-time setup screen -->
+    <div id="setup-screen" class="auth-screen">
+        <div class="auth-card">
+            <h1>Create admin login</h1>
+            <p class="subtitle">Set the username and password you'll use to access the admin panel. Keep them safe.</p>
+            <form id="setup-form" onsubmit="return doSetup(event)">
+                <div class="form-group">
+                    <label for="setup-user">Username</label>
+                    <input type="text" id="setup-user" placeholder="Choose a username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="setup-pass">Password</label>
+                    <input type="password" id="setup-pass" placeholder="Choose a password" required minlength="4" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="setup-confirm">Confirm password</label>
+                    <input type="password" id="setup-confirm" placeholder="Confirm password" required autocomplete="new-password">
+                </div>
+                <p id="setup-error" class="auth-error"></p>
+                <button type="submit" class="btn-auth" id="setup-btn">Create login</button>
+                <p class="subtitle" style="margin-top: 16px; font-size: 0.85rem;">Use this username and password whenever you open the admin panel.</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-dashboard" class="admin-dashboard">
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <button type="button" class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+    <aside class="sidebar">
+        <div class="sidebar-logo">Clirspa Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General Settings</span>
+            </div>
+            <div class="nav-item" data-section="homepage">
+                <i class="fa-solid fa-home"></i>
+                <span>Home Page Content</span>
+            </div>
+            <div class="nav-item" data-section="services">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Services</span>
+            </div>
+            <div class="nav-item" data-section="products">
+                <i class="fa-solid fa-box"></i>
+                <span>Products & Store</span>
+            </div>
+            <div class="nav-item" data-section="footer">
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Footer & Social</span>
+            </div>
+            <div class="nav-item" data-section="bookings">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Bookings</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Preview Store
+            </button>
+            <button type="button" class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Log out
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+
+        <!-- General -->
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store / Brand Name (e.g. CLIRSPA)</label>
+                    <input type="text" id="site-name" placeholder="CLIRSPA">
+                </div>
+                <div class="form-group">
+                    <label>Tagline (short line under logo)</label>
+                    <input type="text" id="site-tagline" placeholder="Total Beauty Care">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code + number, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233538865290">
+                    <small>Example: 233501234567 for Ghana. Orders and bookings will open WhatsApp with this number.</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency Label (e.g. GHS or GH₵)</label>
+                    <input type="text" id="currency" placeholder="GHS " maxlength="10">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Booking slot regulation</h3>
+                <div class="form-group">
+                    <label>Minimum slot length (minutes) — leave empty to use service duration only</label>
+                    <input type="number" id="booking-slot-minutes" placeholder="e.g. 30" min="0" max="240" step="5">
+                    <small>Each booking blocks this many minutes (or the service duration, whichever is larger). E.g. 30 means 12:30 blocks 12:30–13:00 so 12:40 and 12:50 cannot be booked. Prevents overcrowding.</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Home Page -->
+        <section class="section" id="section-homepage">
+            <div class="card">
+                <h3 class="card-title">Hero Section</h3>
+                <div class="form-group">
+                    <label>Hero Background Image URL</label>
+                    <input type="text" id="hero-image" placeholder="https://..." oninput="document.getElementById('hero-image-preview').style.backgroundImage = this.value ? 'url(' + JSON.stringify(this.value) + ')' : 'none'">
+                </div>
+                <div class="form-group">
+                    <label>Hero Label (small text above title)</label>
+                    <input type="text" id="hero-label" placeholder="Total Beauty Care">
+                </div>
+                <div class="form-group">
+                    <label>Hero Title (main headline)</label>
+                    <input type="text" id="hero-title" placeholder="Redefine Your Elegance">
+                </div>
+                <div class="form-group">
+                    <label>Word to highlight in title (e.g. Elegance)</label>
+                    <input type="text" id="hero-title-accent" placeholder="Elegance">
+                </div>
+                <div class="form-group">
+                    <label>Hero Description (paragraph under title)</label>
+                    <textarea id="hero-description" placeholder="Accra's premier destination for luxury nails..."></textarea>
+                </div>
+                <div class="img-preview" id="hero-image-preview"></div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Owner / About Section</h3>
+                <div class="form-group">
+                    <label>Owner Photo URL</label>
+                    <input type="text" id="owner-image" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Owner Name / Heading</label>
+                    <input type="text" id="owner-name" placeholder="Hello, I'm Serwaa">
+                </div>
+                <div class="form-group">
+                    <label>Owner Bio (quote or short about)</label>
+                    <textarea id="owner-bio" placeholder="I believe beauty is a form of art..."></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <div class="form-group">
+                    <label>Portfolio Section Title</label>
+                    <input type="text" id="portfolio-title" placeholder="The Glam Gallery" onchange="updatePortfolioTitle(this.value)">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Portfolio / Gallery Slides</h3>
+                    <button class="btn-small btn-add" onclick="addPortfolioSlide()"><i class="fa-solid fa-plus"></i> Add Slide</button>
+                </div>
+                <div id="portfolio-slides-container"></div>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section class="section" id="section-services">
+            <div class="card">
+                <h3 class="card-title">Service Categories (Nails, Lashes, Makeup)</h3>
+                <p class="text-sm text-gray-600 mb-4">Edit services per category. Changes apply to the main site immediately after Save.</p>
+                <div class="tabs-inline" id="service-tabs">
+                    <button type="button" class="active" data-cat="Nails">Nails</button>
+                    <button type="button" data-cat="Lashes">Lashes</button>
+                    <button type="button" data-cat="Makeup">Makeup</button>
+                </div>
+                <div id="service-list-container"></div>
+                <div class="sub-card">
+                    <label class="font-medium mb-2 block">Add service to <span id="current-service-cat">Nails</span></label>
+                    <div class="flex gap-2 flex-wrap">
+                        <input type="text" id="new-service-name" placeholder="Service name" class="flex-1 min-w-40">
+                        <input type="number" id="new-service-price" placeholder="Price" min="0" class="w-24">
+                        <input type="text" id="new-service-time" placeholder="e.g. 90min" class="w-24">
+                        <button type="button" class="btn-small btn-add" onclick="addService()"><i class="fa-solid fa-plus"></i> Add</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Shop Categories & Products</h3>
+                    <button class="btn-small btn-add" onclick="addShopCategory()"><i class="fa-solid fa-plus"></i> Add Category</button>
+                </div>
+                <div class="form-group">
+                    <label>Shop Section Title (e.g. Glam Essentials)</label>
+                    <input type="text" id="shop-title" placeholder="Glam Essentials">
+                </div>
+                <div id="shop-categories-list" class="mb-6"></div>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <!-- Bookings -->
+        <section class="section" id="section-bookings">
+            <div class="card">
+                <h3 class="card-title">Upcoming & past bookings</h3>
+                <p class="text-sm text-gray-600 mb-4">Slots are blocked on the main site so customers cannot double-book. Remove a booking here if it was cancelled (e.g. via WhatsApp) to free the slot.</p>
+                <div id="bookings-list"></div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Footer Content</h3>
+                <div class="form-group">
+                    <label>Footer Brand Name</label>
+                    <input type="text" id="footer-brand" placeholder="CLIRSPA.">
+                </div>
+                <div class="form-group">
+                    <label>Address / Location Line</label>
+                    <input type="text" id="footer-address" placeholder="Located in East Legon, Near American House.">
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2026 The Clirspa Suite.">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> Add Social</button>
+            </div>
+        </section>
+    </main>
+    </div><!-- /#admin-dashboard -->
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <!-- Product edit modal (multi-image + variants) -->
+    <div id="product-edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" style="display: none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto m-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Edit Product</h3>
+                    <button type="button" onclick="closeProductEditModal()" class="text-gray-500 hover:text-black"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <input type="hidden" id="pe-cat-idx">
+                <input type="hidden" id="pe-prod-idx">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="pe-name" placeholder="Product name">
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" id="pe-price" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Main Image URL</label>
+                    <input type="text" id="pe-img" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Extra Images (one URL per line — for product gallery)</label>
+                    <textarea id="pe-extra-images" placeholder="https://...\nhttps://..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Variants (e.g. Color/Size with optional price) — one per line: <code>Label</code> or <code>Label | Price</code></label>
+                    <textarea id="pe-variants" placeholder="Red\nBlue | 50\nLarge" rows="3"></textarea>
+                    <small>Leave empty if product has no options. Example: "Red", "Blue | 120" (different price).</small>
+                </div>
+                <button type="button" class="btn-small btn-add w-full mt-4" onclick="saveProductEdit()"><i class="fa-solid fa-check"></i> Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'clirspa_settings';
+        const AUTH_CREDENTIALS_KEY = 'clirspa_admin_credentials';
+        const AUTH_SESSION_KEY = 'clirspa_admin_session';
+
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = enc.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return btoa(String.fromCharCode(...new Uint8Array(hash)));
+        }
+
+        function getCredentials() {
+            try {
+                const raw = localStorage.getItem(AUTH_CREDENTIALS_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function setCredentials(user, hash) {
+            localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify({ user: user.trim(), hash }));
+        }
+
+        function setSession() {
+            sessionStorage.setItem(AUTH_SESSION_KEY, '1');
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem(AUTH_SESSION_KEY);
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem(AUTH_SESSION_KEY) === '1';
+        }
+
+        function showScreen(id) {
+            document.documentElement.setAttribute('data-auth-screen', id);
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('setup-screen').classList.remove('active');
+            document.getElementById('admin-dashboard').classList.remove('logged-in');
+            if (id === 'login') {
+                document.getElementById('login-screen').classList.add('active');
+                document.getElementById('login-error').classList.remove('show');
+            } else if (id === 'setup') {
+                document.getElementById('setup-screen').classList.add('active');
+                document.getElementById('setup-error').classList.remove('show');
+            } else if (id === 'dashboard') {
+                document.getElementById('admin-dashboard').classList.add('logged-in');
+            }
+        }
+
+        async function doLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const cred = getCredentials();
+            if (!cred) { document.getElementById('login-error').classList.add('show'); return false; }
+            const hash = await hashPassword(pass);
+            if (cred.user !== user || cred.hash !== hash) {
+                document.getElementById('login-error').classList.add('show');
+                return false;
+            }
+            setSession();
+            showScreen('dashboard');
+            document.body.classList.remove('sidebar-open');
+            return false;
+        }
+
+        async function doSetup(e) {
+            e.preventDefault();
+            const user = document.getElementById('setup-user').value.trim();
+            const pass = document.getElementById('setup-pass').value;
+            const confirm = document.getElementById('setup-confirm').value;
+            const errEl = document.getElementById('setup-error');
+            if (pass !== confirm) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (pass.length < 4) {
+                errEl.textContent = 'Password must be at least 4 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const hash = await hashPassword(pass);
+            setCredentials(user, hash);
+            setSession();
+            showScreen('dashboard');
+            document.body.classList.remove('sidebar-open');
+            return false;
+        }
+
+        function logout() {
+            clearSession();
+            showScreen('login');
+            document.getElementById('login-pass').value = '';
+            document.body.classList.remove('sidebar-open');
+        }
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-open');
+        }
+
+        function checkAuth() {
+            if (isLoggedIn()) {
+                showScreen('dashboard');
+                return;
+            }
+            const cred = getCredentials();
+            if (!cred || !cred.user || !cred.hash) {
+                showScreen('setup');
+            } else {
+                showScreen('login');
+            }
+        }
+        const DEFAULT_DATA = {
+            site: { name: 'CLIRSPA', tagline: 'Total Beauty Care', whatsapp: '233538865290', currency: 'GHS ' },
+            hero: {
+                image: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=1000',
+                label: 'Total Beauty Care',
+                title: 'Redefine Your Elegance',
+                titleAccent: 'Elegance',
+                description: "Accra's premier destination for luxury nails, bespoke lashes, and flawless makeup artistry."
+            },
+            owner: {
+                image: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=400',
+                name: "Hello, I'm Serwaa",
+                bio: '"I believe beauty is a form of art. With certifications from Ghana, London & Dubai, my team and I are dedicated to giving you the \'Main Character\' energy you deserve."'
+            },
+            portfolio: {
+                title: 'The Glam Gallery',
+                slides: [
+                    { image: 'https://images.unsplash.com/photo-1698308233758-d55c98fd7444?q=80&w=735', category: 'Nails', title: 'Milky White Acrylics' },
+                    { image: 'https://images.unsplash.com/photo-1647957902397-de1bd309fc21?q=80&w=1170', category: 'Lashes', title: 'Hybrid Volume Set' },
+                    { image: 'https://images.unsplash.com/photo-1665810384829-23aa29f87b42?q=80&w=1170', category: 'Makeup', title: 'Soft Glam Bridal' }
+                ]
+            },
+            services: {
+                Nails: [
+                    { id: 1, name: 'Acrylic Full Set', price: 150, time: '90min' },
+                    { id: 2, name: 'Ombre Powder', price: 180, time: '90min' },
+                    { id: 3, name: 'Gel Polish (Manicure)', price: 80, time: '45min' },
+                    { id: 4, name: 'Pedicure Deluxe', price: 120, time: '60min' }
+                ],
+                Lashes: [
+                    { id: 5, name: 'Classic Set', price: 200, time: '2hr' },
+                    { id: 6, name: 'Hybrid Volume', price: 250, time: '2.5hr' },
+                    { id: 7, name: 'Wispy Set', price: 280, time: '2.5hr' },
+                    { id: 8, name: 'Lash Removal', price: 50, time: '30min' }
+                ],
+                Makeup: [
+                    { id: 9, name: 'Soft Glam', price: 350, time: '60min' },
+                    { id: 10, name: 'Bridal Consultation', price: 500, time: '90min' },
+                    { id: 11, name: 'Photoshoot Beat', price: 400, time: '90min' }
+                ]
+            },
+            shop: {
+                title: 'Glam Essentials',
+                categories: ['All', 'Wigs', 'Hair Care', 'Skin Care', 'Makeup'],
+                products: [
+                    { id: 101, name: 'Bone Straight (12")', category: 'Wigs', price: 1500, img: 'https://images.unsplash.com/photo-1683717909401-78ab2cbe178f?q=80&w=642', images: [], variants: [] },
+                    { id: 102, name: 'Body Wave (24")', category: 'Wigs', price: 2200, img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400', images: [], variants: [] },
+                    { id: 103, name: 'Argan Oil Serum', category: 'Hair Care', price: 120, img: 'https://images.unsplash.com/photo-1690197148040-8206be5cabc0?q=80&w=687', images: [], variants: [] },
+                    { id: 104, name: 'Edge Control', category: 'Hair Care', price: 50, img: 'https://images.unsplash.com/photo-1638609269267-f0128098a809?q=80&w=818', images: [], variants: [] },
+                    { id: 105, name: 'Luxury Cuticle Oil', category: 'Skin Care', price: 80, img: 'https://images.unsplash.com/photo-1671871695722-b91911e9c072?q=80&w=687', images: [], variants: [] },
+                    { id: 106, name: 'Hydrating Body Butter', category: 'Skin Care', price: 150, img: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&q=80&w=400', images: [], variants: [] },
+                    { id: 107, name: 'Mink Lashes (3D)', category: 'Makeup', price: 120, img: 'https://images.unsplash.com/photo-1630655491563-fe6ea47d06f5?q=80&w=880', images: [], variants: [] },
+                    { id: 108, name: 'Matte Lip Kit', category: 'Makeup', price: 90, img: 'https://images.unsplash.com/photo-1585387047269-e66bf53002f5?q=80&w=735', images: [], variants: [] }
+                ]
+            },
+            footer: {
+                brand: 'CLIRSPA.',
+                address: 'Located in East Legon, Near American House.',
+                copyright: '© 2026 The Clirspa Suite.',
+                social: [
+                    { name: 'Instagram', url: '#', icon: 'instagram' },
+                    { name: 'Facebook', url: '#', icon: 'facebook' },
+                    { name: 'Twitter', url: '#', icon: 'twitter' }
+                ]
+            }
+        };
+
+        const ICON_OPTIONS = ['instagram', 'facebook', 'twitter', 'tiktok', 'youtube', 'pinterest', 'snapchat'];
+        let data = {};
+        let currentServiceCat = 'Nails';
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed };
+                    if (parsed.shop && parsed.shop.products) data.shop.products = parsed.shop.products;
+                    if (parsed.services) data.services = { ...DEFAULT_DATA.services, ...parsed.services };
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('clirspa.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.body.classList.remove('sidebar-open');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = {
+                    general: 'General Settings',
+                    homepage: 'Home Page Content',
+                    services: 'Services',
+                    products: 'Products & Store',
+                    footer: 'Footer & Social',
+                    bookings: 'Bookings'
+                };
+                document.getElementById('section-title').textContent = titles[id] || id;
+                if (id === 'bookings') renderBookings();
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS ';
+            const slotVal = data.site?.bookingSlotMinutes;
+            document.getElementById('booking-slot-minutes').value = (slotVal != null && slotVal > 0) ? slotVal : '';
+            document.getElementById('footer-brand').value = data.footer?.brand || '';
+            document.getElementById('footer-address').value = data.footer?.address || '';
+            document.getElementById('footer-copyright').value = data.footer?.copyright || '';
+        }
+
+        function renderHomepage() {
+            const hero = data.hero || {};
+            document.getElementById('hero-image').value = hero.image || '';
+            document.getElementById('hero-label').value = hero.label || '';
+            document.getElementById('hero-title').value = hero.title || '';
+            document.getElementById('hero-title-accent').value = hero.titleAccent || 'Elegance';
+            document.getElementById('hero-description').value = hero.description || '';
+            document.getElementById('hero-image-preview').style.backgroundImage = hero.image ? `url('${hero.image.replace(/'/g, "\\'")}')` : 'none';
+
+            const owner = data.owner || {};
+            document.getElementById('owner-image').value = owner.image || '';
+            document.getElementById('owner-name').value = owner.name || '';
+            document.getElementById('owner-bio').value = owner.bio || '';
+
+            document.getElementById('portfolio-title').value = (data.portfolio && data.portfolio.title) || 'The Glam Gallery';
+            const slides = (data.portfolio && data.portfolio.slides) || [];
+            document.getElementById('portfolio-slides-container').innerHTML = slides.map((s, i) => `
+                <div class="portfolio-item">
+                    <div class="flex justify-between items-center mb-2">
+                        <strong>Slide ${i + 1}</strong>
+                        <button type="button" class="btn-small btn-danger" onclick="removePortfolioSlide(${i})">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" value="${(s.image || '').replace(/"/g, '&quot;')}" onchange="updatePortfolioSlide(${i}, 'image', this.value)">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="form-group">
+                            <label>Category label</label>
+                            <input type="text" value="${(s.category || '').replace(/"/g, '&quot;')}" onchange="updatePortfolioSlide(${i}, 'category', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" value="${(s.title || '').replace(/"/g, '&quot;')}" onchange="updatePortfolioSlide(${i}, 'title', this.value)">
+                        </div>
+                    </div>
+                    <div class="slide-preview" style="background-image:url('${(s.image || '').replace(/'/g, "\\'")}')"></div>
+                </div>
+            `).join('');
+        }
+
+        function updatePortfolioSlide(i, field, val) {
+            if (!data.portfolio) data.portfolio = { title: 'The Glam Gallery', slides: [] };
+            if (!data.portfolio.slides) data.portfolio.slides = [];
+            data.portfolio.slides[i] = data.portfolio.slides[i] || {};
+            data.portfolio.slides[i][field] = val;
+        }
+
+        function addPortfolioSlide() {
+            if (!data.portfolio) data.portfolio = { title: 'The Glam Gallery', slides: [] };
+            if (!data.portfolio.slides) data.portfolio.slides = [];
+            data.portfolio.slides.push({ image: 'https://via.placeholder.com/800x600?text=Slide', category: 'Nails', title: 'New Slide' });
+            renderHomepage();
+        }
+
+        function removePortfolioSlide(i) {
+            data.portfolio.slides.splice(i, 1);
+            renderHomepage();
+        }
+
+        function updatePortfolioTitle(val) {
+            if (!data.portfolio) data.portfolio = { title: 'The Glam Gallery', slides: [] };
+            data.portfolio.title = val || 'The Glam Gallery';
+        }
+
+        function renderServices() {
+            document.getElementById('current-service-cat').textContent = currentServiceCat;
+            document.querySelectorAll('#service-tabs button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cat === currentServiceCat);
+            });
+            const list = (data.services && data.services[currentServiceCat]) || [];
+            document.getElementById('service-list-container').innerHTML = list.map((s, i) => `
+                <div class="service-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'name', this.value)" placeholder="Service name">
+                    <input type="number" value="${s.price}" onchange="updateService(${i}, 'price', parseFloat(this.value))" placeholder="Price">
+                    <input type="text" value="${(s.time || '').replace(/"/g, '&quot;')}" onchange="updateService(${i}, 'time', this.value)" placeholder="Time">
+                    <button type="button" class="btn-icon" onclick="removeService(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('#service-tabs button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentServiceCat = btn.dataset.cat;
+                renderServices();
+            });
+        });
+
+        function updateService(i, field, val) {
+            if (!data.services) data.services = { ...DEFAULT_DATA.services };
+            if (!data.services[currentServiceCat]) data.services[currentServiceCat] = [];
+            data.services[currentServiceCat][i] = data.services[currentServiceCat][i] || {};
+            data.services[currentServiceCat][i][field] = val;
+            if (field === 'price') data.services[currentServiceCat][i].price = Number(val) || 0;
+        }
+
+        function addService() {
+            const name = document.getElementById('new-service-name').value.trim();
+            const price = parseFloat(document.getElementById('new-service-price').value) || 0;
+            const time = document.getElementById('new-service-time').value.trim() || '60min';
+            if (!name) return;
+            if (!data.services) data.services = { ...DEFAULT_DATA.services };
+            if (!data.services[currentServiceCat]) data.services[currentServiceCat] = [];
+            const maxId = Math.max(0, ...Object.values(data.services).flat().map(s => s.id || 0)) + 1;
+            data.services[currentServiceCat].push({ id: maxId, name, price, time });
+            document.getElementById('new-service-name').value = '';
+            document.getElementById('new-service-price').value = '';
+            document.getElementById('new-service-time').value = '';
+            renderServices();
+        }
+
+        function removeService(i) {
+            data.services[currentServiceCat].splice(i, 1);
+            renderServices();
+        }
+
+        function renderProducts() {
+            document.getElementById('shop-title').value = (data.shop && data.shop.title) || 'Glam Essentials';
+
+            const cats = (data.shop && data.shop.categories) || DEFAULT_DATA.shop.categories;
+            const catList = cats.filter(c => c !== 'All');
+            document.getElementById('shop-categories-list').innerHTML = `
+                <label class="block font-medium mb-2">Category Tabs (first is "All Products")</label>
+                <div class="flex flex-wrap gap-2">
+                    ${catList.map((c, i) => `
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 border">
+                            ${c.replace(/</g, '&lt;')}
+                            <button type="button" class="text-red-500 hover:text-red-700" onclick="removeShopCategory('${c.replace(/'/g, "\\'")}')">&times;</button>
+                        </span>
+                    `).join('')}
+                    <button type="button" class="btn-small btn-add" onclick="addShopCategory()">+ Category</button>
+                </div>
+            `;
+
+            const products = (data.shop && data.shop.products) || [];
+            const byCat = {};
+            products.forEach(p => {
+                const c = p.category || 'Other';
+                if (!byCat[c]) byCat[c] = [];
+                byCat[c].push(p);
+            });
+            const catNames = [...new Set(products.map(p => p.category).filter(Boolean))];
+            if (!catNames.length) catNames.push('General');
+
+            document.getElementById('products-container').innerHTML = catNames.map(catName => {
+                const list = byCat[catName] || [];
+                return `
+                    <div class="category-block">
+                        <div class="category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${catName.replace(/</g, '&lt;')}</strong>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="category-body">
+                            ${list.map((p, pi) => {
+                                const catIdx = catNames.indexOf(catName);
+                                const prodIdx = (data.shop.products || []).findIndex(pr => pr.id === p.id);
+                                const hasExtra = (p.images && p.images.length) || (p.variants && p.variants.length);
+                                return `
+                                <div class="product-row">
+                                    <img src="${(p.img || '').replace(/"/g, '&quot;')}" alt="" onerror="this.src='https://via.placeholder.com/50'">
+                                    <input type="text" value="${(p.name || '').replace(/"/g, '&quot;')}" onchange="updateProductField(${p.id}, 'name', this.value)" placeholder="Name">
+                                    <input type="number" value="${p.price}" onchange="updateProductField(${p.id}, 'price', parseFloat(this.value))" placeholder="Price">
+                                    <input type="text" value="${(p.img || '').replace(/"/g, '&quot;')}" onchange="updateProductField(${p.id}, 'img', this.value)" placeholder="Image URL">
+                                    <button type="button" class="btn-small" style="background:#f0f0f0;color:#333;" onclick="openProductEditModal(${p.id})">${hasExtra ? 'Edit details' : 'Images/Variants'}</button>
+                                    <button type="button" class="btn-icon" onclick="removeProductById(${p.id})"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            `}).join('')}
+                            <div class="mt-4 pt-4 border-t border-dashed">
+                                <button type="button" class="btn-small btn-add" onclick="addProduct('${catName.replace(/'/g, "\\'")}')"><i class="fa-solid fa-plus"></i> Add Product</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateProductField(id, field, val) {
+            const p = (data.shop.products || []).find(pr => pr.id === id);
+            if (p) {
+                if (field === 'price') val = parseFloat(val) || 0;
+                p[field] = val;
+            }
+        }
+
+        function openProductEditModal(prodId) {
+            const p = (data.shop.products || []).find(pr => pr.id === prodId);
+            if (!p) return;
+            const catIdx = (data.shop.categories || []).filter(c => c !== 'All').indexOf(p.category) + 1;
+            const prodIdx = data.shop.products.findIndex(pr => pr.id === prodId);
+            document.getElementById('pe-cat-idx').value = prodIdx;
+            document.getElementById('pe-prod-idx').value = prodIdx;
+            document.getElementById('pe-name').value = p.name || '';
+            document.getElementById('pe-price').value = p.price || '';
+            document.getElementById('pe-img').value = p.img || '';
+            document.getElementById('pe-extra-images').value = (p.images || []).join('\n');
+            document.getElementById('pe-variants').value = (p.variants || []).map(v => (v.price != null && v.price !== p.price) ? `${v.label || v.name || ''} | ${v.price}` : (v.label || v.name || v.color || '')).join('\n');
+            document.getElementById('product-edit-modal').classList.remove('hidden');
+            document.getElementById('product-edit-modal').style.display = 'flex';
+        }
+
+        function closeProductEditModal() {
+            document.getElementById('product-edit-modal').classList.add('hidden');
+            document.getElementById('product-edit-modal').style.display = 'none';
+        }
+
+        function saveProductEdit() {
+            const prodIdx = parseInt(document.getElementById('pe-prod-idx').value, 10);
+            const p = data.shop.products[prodIdx];
+            if (!p) { closeProductEditModal(); return; }
+            p.name = document.getElementById('pe-name').value.trim();
+            p.price = parseFloat(document.getElementById('pe-price').value) || 0;
+            p.img = document.getElementById('pe-img').value.trim();
+            const extra = document.getElementById('pe-extra-images').value.trim().split('\n').map(s => s.trim()).filter(Boolean);
+            p.images = extra;
+            const variantLines = document.getElementById('pe-variants').value.trim().split('\n').map(s => s.trim()).filter(Boolean);
+            p.variants = variantLines.map(line => {
+                const parts = line.split('|').map(s => s.trim());
+                const label = parts[0] || '';
+                const price = parts.length > 1 ? parseFloat(parts[1]) : null;
+                return { label, name: label, price: price != null && !isNaN(price) ? price : undefined };
+            });
+            closeProductEditModal();
+            renderProducts();
+        }
+
+        function addProduct(catName) {
+            if (!data.shop) data.shop = { ...DEFAULT_DATA.shop };
+            if (!data.shop.products) data.shop.products = [];
+            const maxId = Math.max(100, ...(data.shop.products.map(pr => pr.id) || [0])) + 1;
+            data.shop.products.push({
+                id: maxId,
+                name: 'New Product',
+                category: catName,
+                price: 0,
+                img: '',
+                images: [],
+                variants: []
+            });
+            renderProducts();
+        }
+
+        function removeProductById(id) {
+            if (!confirm('Remove this product?')) return;
+            data.shop.products = (data.shop.products || []).filter(p => p.id !== id);
+            renderProducts();
+        }
+
+        function addShopCategory() {
+            const name = prompt('New category name (e.g. Wigs, Hair Care):');
+            if (!name) return;
+            if (!data.shop) data.shop = { ...DEFAULT_DATA.shop };
+            if (!data.shop.categories) data.shop.categories = ['All', ...(DEFAULT_DATA.shop.categories.filter(c => c !== 'All'))];
+            if (!data.shop.categories.includes(name)) {
+                data.shop.categories = [...data.shop.categories.filter(c => c !== 'All'), name];
+                data.shop.categories.sort((a, b) => a === 'All' ? -1 : (b === 'All' ? 1 : 0));
+                if (!data.shop.categories.includes('All')) data.shop.categories.unshift('All');
+            }
+            renderProducts();
+        }
+
+        function removeShopCategory(name) {
+            if (!data.shop || !data.shop.categories) return;
+            data.shop.categories = data.shop.categories.filter(c => c !== name);
+            data.shop.products = (data.shop.products || []).filter(p => p.category !== name);
+            renderProducts();
+        }
+
+        function renderFooter() {
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateSocial(${i}, 'name', this.value)">
+                    <input type="text" value="${(s.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateSocial(${i}, 'url', this.value)">
+                    <select onchange="updateSocial(${i}, 'icon', this.value)">
+                        ${ICON_OPTIONS.map(ico => `<option value="${ico}" ${(s.icon || '') === ico ? 'selected' : ''}>${ico}</option>`).join('')}
+                    </select>
+                    <button type="button" class="btn-icon" onclick="removeSocial(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function updateSocial(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+
+        function addSocialLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social.push({ name: 'New', url: '#', icon: 'instagram' });
+            renderFooter();
+        }
+
+        function removeSocial(i) {
+            data.footer.social.splice(i, 1);
+            renderFooter();
+        }
+
+        const BOOKINGS_KEY = 'clirspa_bookings';
+        function getBookingsList() {
+            try {
+                const raw = localStorage.getItem(BOOKINGS_KEY);
+                const list = raw ? JSON.parse(raw) : [];
+                return Array.isArray(list) ? list : [];
+            } catch (e) { return []; }
+        }
+        function saveBookingsList(list) {
+            localStorage.setItem(BOOKINGS_KEY, JSON.stringify(list));
+        }
+        function renderBookings() {
+            const list = getBookingsList();
+            const container = document.getElementById('bookings-list');
+            const today = new Date().toISOString().slice(0, 10);
+            const sorted = [...list].sort((a, b) => (a.date || '') + (a.time || '') > (b.date || '') + (b.time || '') ? 1 : -1);
+            if (sorted.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No bookings yet. Bookings appear here when customers confirm on the main site.</p>';
+                return;
+            }
+            container.innerHTML = sorted.map((b, i) => {
+                const isPast = (b.date || '') < today;
+                return `
+                    <div class="border rounded-lg p-4 mb-3 flex justify-between items-start flex-wrap gap-2 ${isPast ? 'bg-gray-50 opacity-80' : ''}" style="border-color: var(--border);">
+                        <div>
+                            <strong>${(b.date || '').replace(/</g, '&lt;')} ${(b.time || '').replace(/</g, '&lt;')}</strong>
+                            <span class="text-gray-600"> — ${(b.name || '').replace(/</g, '&lt;')}</span><br>
+                            <span class="text-sm text-gray-500">${(b.serviceName || '').replace(/</g, '&lt;')} (${b.slotMinutes || 0} min)</span>
+                        </div>
+                        <button type="button" class="btn-small btn-danger" onclick="removeBooking(${i})">Remove</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        function removeBooking(index) {
+            const list = getBookingsList();
+            const sorted = [...list].sort((a, b) => (a.date || '') + (a.time || '') > (b.date || '') + (b.time || '') ? 1 : -1);
+            const toRemove = sorted[index];
+            if (!toRemove) return;
+            const idx = list.findIndex(b => b.date === toRemove.date && b.time === toRemove.time && b.name === toRemove.name && b.serviceName === toRemove.serviceName);
+            if (idx === -1) return;
+            list.splice(idx, 1);
+            saveBookingsList(list);
+            renderBookings();
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'CLIRSPA';
+            data.site.tagline = document.getElementById('site-tagline').value.trim() || '';
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim() || '';
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS ';
+            const slotInput = document.getElementById('booking-slot-minutes').value.trim();
+            data.site.bookingSlotMinutes = slotInput ? parseInt(slotInput, 10) : null;
+            data.footer = data.footer || {};
+            data.footer.brand = document.getElementById('footer-brand').value.trim() || 'CLIRSPA.';
+            data.footer.address = document.getElementById('footer-address').value.trim() || '';
+            data.footer.copyright = document.getElementById('footer-copyright').value.trim() || '';
+
+            data.hero = data.hero || {};
+            data.hero.image = document.getElementById('hero-image').value.trim() || data.hero.image;
+            data.hero.label = document.getElementById('hero-label').value.trim() || '';
+            data.hero.title = document.getElementById('hero-title').value.trim() || '';
+            data.hero.titleAccent = document.getElementById('hero-title-accent').value.trim() || 'Elegance';
+            data.hero.description = document.getElementById('hero-description').value.trim() || '';
+
+            data.owner = data.owner || {};
+            data.owner.image = document.getElementById('owner-image').value.trim() || data.owner.image;
+            data.owner.name = document.getElementById('owner-name').value.trim() || '';
+            data.owner.bio = document.getElementById('owner-bio').value.trim() || '';
+
+            data.shop = data.shop || {};
+            data.shop.title = document.getElementById('shop-title').value.trim() || 'Glam Essentials';
+            if (data.portfolio) data.portfolio.title = document.getElementById('portfolio-title').value.trim() || 'The Glam Gallery';
+        }
+
+        function saveAll() {
+            collectGeneral();
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        renderGeneral();
+        renderHomepage();
+        renderServices();
+        renderProducts();
+        renderFooter();
+        checkAuth();
+    </script>
+</body>
+</html>

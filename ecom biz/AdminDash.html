@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Dashboard — Store Settings</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f12;
+            --surface: #18181c;
+            --border: #2a2a30;
+            --text: #f4f4f5;
+            --muted: #71717a;
+            --accent: #c9a962;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        /* ----- Login / Setup screens ----- */
+        .auth-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 28px;
+        }
+        .auth-card h1 {
+            font-size: 1.35rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .auth-card .auth-sub {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .auth-card .form-row { margin-bottom: 18px; }
+        .auth-card .form-row label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .auth-card input[type="text"],
+        .auth-card input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+        }
+        .auth-card input:focus { outline: none; border-color: var(--accent); }
+        .auth-card .btn-block {
+            width: 100%;
+            justify-content: center;
+            padding: 14px;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+        .auth-error {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .auth-screen.hidden { display: none; }
+        .dashboard-wrap { display: none; min-height: 100vh; }
+        .dashboard-wrap.visible { display: block; }
+        /* ----- Layout: desktop = sidebar + main; mobile = main + bottom nav ----- */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            flex-shrink: 0;
+        }
+        .sidebar .brand {
+            padding: 0 24px 24px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s, background 0.2s;
+        }
+        .sidebar nav a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+        .sidebar nav a.active { color: var(--accent); background: rgba(201,169,98,0.1); }
+        .sidebar nav a i { width: 20px; text-align: center; }
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px 100px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 { font-size: 1.35rem; font-weight: 700; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s, background 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { opacity: 0.95; }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--surface); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 8px 14px; font-size: 13px; }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .panel h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+        }
+        .panel-hint { color: var(--muted); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+        .form-row { margin-bottom: 16px; }
+        .form-row label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .form-row input,
+        .form-row textarea,
+        .form-row select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 16px;
+        }
+        .form-row textarea { min-height: 80px; resize: vertical; }
+        .form-row input:focus,
+        .form-row textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .item-list { margin-top: 12px; }
+        .item-card {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .item-card .slide-edit-form, .item-card .cat-edit-form { flex-basis: 100%; }
+        .item-card .info { font-size: 14px; }
+        .item-card .actions { display: flex; gap: 8px; }
+        .card-form, .add-form { background: var(--bg); border: 1px dashed var(--border); border-radius: 10px; padding: 16px; margin-top: 12px; }
+        .card-form .form-row { margin-bottom: 12px; }
+        .card-form .form-row:last-of-type { margin-bottom: 0; }
+        .slide-edit-form, .cat-edit-form { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .slide-edit-form .form-row, .cat-edit-form .form-row { margin-bottom: 10px; }
+        code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .product-table th,
+        .product-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-table th { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+        .product-table td { font-size: 14px; }
+        .product-table img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 16px;
+            right: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            background: var(--surface);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            color: var(--text);
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .link-bar { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .link-bar a, .link-bar .logout-btn {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .link-bar a:hover, .link-bar .logout-btn:hover { text-decoration: underline; }
+        /* Mobile: hide sidebar, show bottom nav */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 16px 16px 88px; }
+            .grid2 { grid-template-columns: 1fr; }
+            .product-table th:nth-child(2), .product-table td:nth-child(2) { min-width: 100px; }
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                border-top: 1px solid var(--border);
+                z-index: 100;
+                padding: 8px 0;
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
+            .bottom-nav a {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 10px 8px;
+                color: var(--muted);
+                text-decoration: none;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            .bottom-nav a i { font-size: 1.25rem; }
+            .bottom-nav a:hover { color: var(--text); }
+            .bottom-nav a.active { color: var(--accent); }
+        }
+        @media (min-width: 769px) {
+            .bottom-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login screen (shown when credentials exist but not logged in) -->
+    <div id="loginScreen" class="auth-screen hidden">
+        <div class="auth-card">
+            <h1>Admin login</h1>
+            <p class="auth-sub">Enter the username and password you created when you first set up the admin page. You change them under <strong>Site Settings → Admin login</strong> after logging in.</p>
+            <div id="loginError" class="auth-error" style="display:none;"></div>
+            <form id="loginForm">
+                <div class="form-row">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" autocomplete="username" required placeholder="Your admin username">
+                </div>
+                <div class="form-row">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password" required placeholder="Your admin password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Log in</button>
+            </form>
+        </div>
+    </div>
+    <!-- Setup screen (first time: set username & password) -->
+    <div id="setupScreen" class="auth-screen hidden">
+        <div class="auth-card">
+            <h1>Set your admin login</h1>
+            <p class="auth-sub">This is where you create your admin username and password. You will use these every time you open the admin page. To change them later, go to <strong>Site Settings → Admin login</strong>.</p>
+            <div id="setupError" class="auth-error" style="display:none;"></div>
+            <form id="setupForm">
+                <div class="form-row">
+                    <label>Choose a username</label>
+                    <input type="text" id="setupUsername" autocomplete="username" required minlength="2" placeholder="e.g. admin">
+                </div>
+                <div class="form-row">
+                    <label>Choose a password (min 6 characters)</label>
+                    <input type="password" id="setupPassword" autocomplete="new-password" required minlength="6" placeholder="••••••••">
+                </div>
+                <div class="form-row">
+                    <label>Confirm password</label>
+                    <input type="password" id="setupPasswordConfirm" autocomplete="new-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-lock"></i> Create login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboardWrap" class="dashboard-wrap">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">Admin Dashboard</div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-section="settings"><i class="fas fa-cog"></i> Site Settings</a>
+                <a href="#" class="nav-link" data-section="home"><i class="fas fa-home"></i> Home Page</a>
+                <a href="#" class="nav-link" data-section="products"><i class="fas fa-box"></i> Products</a>
+            </nav>
+        </aside>
+        <main class="main">
+            <div class="link-bar">
+                <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> View Store</a>
+                <button type="button" class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Log out</button>
+            </div>
+            <header class="header">
+                <h1 id="sectionTitle">Site Settings</h1>
+                <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save All</button>
+            </header>
+
+            <!-- Site Settings -->
+            <div id="section-settings" class="section-content active">
+                <div class="panel">
+                    <h2><i class="fas fa-user-lock" style="margin-right:8px;"></i>Admin login</h2>
+                    <p class="panel-hint">Change the username and password you use to log in to this admin page. You set them when you first opened the admin.</p>
+                    <div id="changeLoginError" class="auth-error" style="display:none;margin-bottom:12px;"></div>
+                    <div class="form-row">
+                        <label>Current password</label>
+                        <input type="password" id="changeLoginCurrentPass" placeholder="Enter current password">
+                    </div>
+                    <div class="form-row">
+                        <label>New username</label>
+                        <input type="text" id="changeLoginNewUser" placeholder="New username">
+                    </div>
+                    <div class="form-row">
+                        <label>New password (leave blank to keep current)</label>
+                        <input type="password" id="changeLoginNewPass" placeholder="New password">
+                    </div>
+                    <div class="form-row">
+                        <label>Confirm new password</label>
+                        <input type="password" id="changeLoginNewPassConfirm" placeholder="Confirm new password">
+                    </div>
+                    <button type="button" class="btn btn-primary" id="changeLoginBtn"><i class="fas fa-save"></i> Update login</button>
+                </div>
+                <div class="panel">
+                    <h2>Store identity</h2>
+                    <div class="form-row">
+                        <label>Store name</label>
+                        <input type="text" id="storeName" placeholder="e.g. VELOUR">
+                    </div>
+                    <div class="form-row">
+                        <label>Promo bar text (top of page)</label>
+                        <input type="text" id="promoText" placeholder="Free Delivery within Accra for orders over GHS 500">
+                    </div>
+                    <div class="form-row">
+                        <label>Currency code</label>
+                        <input type="text" id="currency" placeholder="GHS" maxlength="6">
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>WhatsApp order automation</h2>
+                    <div class="form-row">
+                        <label>WhatsApp number (with country code, no + or spaces)</label>
+                        <input type="text" id="whatsappNumber" placeholder="233538865290">
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>Footer</h2>
+                    <div class="form-row">
+                        <label>Copyright / footer text</label>
+                        <input type="text" id="footerCopy" placeholder="© 2025 VELOUR. All Rights Reserved.">
+                    </div>
+                    <div class="form-row">
+                        <label>Social links (one per line: instagram|url, snapchat|url, tiktok|url, whatsapp|number)</label>
+                        <textarea id="socialLinksRaw" placeholder="instagram|https://instagram.com/yourstore&#10;whatsapp|233538865290"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label>Footer links (label|url one per line)</label>
+                        <textarea id="footerLinksRaw" placeholder="About Us|#about&#10;Shipping|#shipping&#10;Contact|#contact"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Page -->
+            <div id="section-home" class="section-content">
+                <div class="panel">
+                    <h2>Carousel slides (banner on store homepage)</h2>
+                    <p class="panel-hint">Add or edit slides. Each has an image, a title, and a button. Use one line per slide below or the form to add new.</p>
+                    <div id="carouselList" class="item-list"></div>
+                    <div class="add-form card-form">
+                        <div class="form-row">
+                            <label>Image URL</label>
+                            <input type="text" id="newSlideImage" placeholder="https://...">
+                        </div>
+                        <div class="form-row">
+                            <label>Title (e.g. New Season)</label>
+                            <input type="text" id="newSlideTitle" placeholder="Slide title">
+                        </div>
+                        <div class="form-row">
+                            <label>Button text</label>
+                            <input type="text" id="newSlideBtn" placeholder="Shop Now">
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" id="addSlide"><i class="fas fa-plus"></i> Add slide</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>Categories (tabs and grid on store)</h2>
+                    <p class="panel-hint">Categories appear in the store navigation and category grid. ID is used internally (e.g. dress, beauty); name is what customers see.</p>
+                    <div id="categoriesList" class="item-list"></div>
+                    <div class="add-form card-form">
+                        <div class="form-row">
+                            <label>Category ID (short name, e.g. dress)</label>
+                            <input type="text" id="newCatId" placeholder="dress">
+                        </div>
+                        <div class="form-row">
+                            <label>Display name (e.g. Dresses)</label>
+                            <input type="text" id="newCatName" placeholder="Dresses">
+                        </div>
+                        <div class="form-row">
+                            <label>Image URL</label>
+                            <input type="text" id="newCatImage" placeholder="https://...">
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" id="addCategory"><i class="fas fa-plus"></i> Add category</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>Subcategories (optional filters under a category)</h2>
+                    <p class="panel-hint">One line per subcategory: <code>categoryId|subId|Label</code>. Example: <code>dress|maxi|Maxi</code>, <code>beauty|hair|Hair</code></p>
+                    <textarea id="subCategoriesRaw" rows="6" placeholder="dress|maxi|Maxi&#10;dress|mini|Mini&#10;beauty|hair|Hair"></textarea>
+                </div>
+                <div class="panel">
+                    <h2>Section labels</h2>
+                    <div class="grid2">
+                        <div class="form-row">
+                            <label>Flash / deals section title</label>
+                            <input type="text" id="flashTitle" placeholder="Super Deals">
+                        </div>
+                        <div class="form-row">
+                            <label>Flash timer text</label>
+                            <input type="text" id="flashTimer" placeholder="02 : 14 : 55">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>Main product grid title</label>
+                        <input type="text" id="gridTitle" placeholder="Just For You">
+                    </div>
+                    <div class="form-row">
+                        <label><input type="checkbox" id="showFlash" checked> Show flash/deals section (if products have oldPrice)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div id="section-products" class="section-content">
+                <div class="panel">
+                    <h2>Products</h2>
+                    <p class="panel-hint">Add products with name, price, and category. Set a sale price to show a discount badge. Click Save All at the top when done.</p>
+                    <button type="button" class="btn btn-primary" id="addProductBtn" style="margin-bottom:16px;"><i class="fas fa-plus"></i> Add product</button>
+                    <div style="overflow-x:auto;">
+                        <table class="product-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Mobile bottom nav -->
+    <nav class="bottom-nav" aria-label="Admin sections">
+        <a href="#" class="nav-link active" data-section="settings"><i class="fas fa-cog"></i> Settings</a>
+        <a href="#" class="nav-link" data-section="home"><i class="fas fa-home"></i> Home</a>
+        <a href="#" class="nav-link" data-section="products"><i class="fas fa-box"></i> Products</a>
+    </nav>
+    </div>
+
+    <!-- Product edit modal -->
+    <div id="productModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:520px;width:100%;max-height:min(90vh,800px);overflow-y:auto;margin:auto;">
+            <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <strong id="productModalTitle">Edit product</strong>
+                <button type="button" class="btn btn-ghost btn-sm" id="closeProductModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:20px;">
+                <input type="hidden" id="editProductId">
+                <div class="form-row">
+                    <label>Product name</label>
+                    <input type="text" id="editName" placeholder="e.g. Satin Slip Dress">
+                </div>
+                <div class="grid2">
+                    <div class="form-row">
+                        <label>Price</label>
+                        <input type="number" id="editPrice" step="0.01" min="0" placeholder="29.99">
+                    </div>
+                    <div class="form-row">
+                        <label>Original price (optional — for discount badge when on sale)</label>
+                        <input type="number" id="editOldPrice" step="0.01" min="0" placeholder="Leave empty if not on sale">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Category</label>
+                    <select id="editCategory">
+                        <option value="">— Select category —</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Subcategory (optional, e.g. maxi, mini)</label>
+                    <input type="text" id="editSub" placeholder="e.g. maxi">
+                </div>
+                <div class="form-row">
+                    <label>Main image URL</label>
+                    <input type="text" id="editImg" placeholder="https://...">
+                </div>
+                <div class="form-row">
+                    <label>Extra image URLs (one per line, optional)</label>
+                    <textarea id="editImages" rows="2" placeholder="https://..."></textarea>
+                </div>
+                <div class="form-row">
+                    <label>Description (shown on product page)</label>
+                    <textarea id="editDesc" rows="2" placeholder="Short description"></textarea>
+                </div>
+                <div class="form-row">
+                    <label>Options (e.g. Size: S,M,L — one per line, optional)</label>
+                    <textarea id="editOptions" rows="3" placeholder="Size: S,M,L,XL&#10;Color: Black,Red"></textarea>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-primary" id="saveProductBtn"><i class="fas fa-save"></i> Save product</button>
+                    <button type="button" class="btn btn-danger" id="deleteProductBtn"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const STORAGE_KEY = 'ecom_store_data';
+        const AUTH_KEY = 'ecom_admin_auth';
+        const SESSION_KEY = 'ecom_admin_session';
+
+        async function hashPassword(password) {
+            const buf = new TextEncoder().encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getStoredAuth() {
+            try {
+                const raw = localStorage.getItem(AUTH_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function setStoredAuth(user, passHash) {
+            localStorage.setItem(AUTH_KEY, JSON.stringify({ user, passHash }));
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem(SESSION_KEY) === '1';
+        }
+
+        function setLoggedIn(value) {
+            if (value) sessionStorage.setItem(SESSION_KEY, '1');
+            else sessionStorage.removeItem(SESSION_KEY);
+        }
+
+        function showScreen(id) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('dashboardWrap').classList.remove('visible');
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                if (id === 'dashboardWrap') document.getElementById('dashboardWrap').classList.add('visible');
+            }
+        }
+
+        function initAuth() {
+            const auth = getStoredAuth();
+            if (isLoggedIn()) {
+                showScreen('dashboardWrap');
+                initDashboard();
+                return;
+            }
+            if (!auth || !auth.user || !auth.passHash) {
+                showScreen('setupScreen');
+                return;
+            }
+            showScreen('loginScreen');
+        }
+
+        document.getElementById('setupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const user = document.getElementById('setupUsername').value.trim();
+            const pass = document.getElementById('setupPassword').value;
+            const confirmPass = document.getElementById('setupPasswordConfirm').value;
+            const errEl = document.getElementById('setupError');
+            if (pass !== confirmPass) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.style.display = 'block';
+                return;
+            }
+            if (pass.length < 6) {
+                errEl.textContent = 'Password must be at least 6 characters.';
+                errEl.style.display = 'block';
+                return;
+            }
+            const passHash = await hashPassword(pass);
+            setStoredAuth(user, passHash);
+            setLoggedIn(true);
+            errEl.style.display = 'none';
+            showScreen('dashboardWrap');
+            initDashboard();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUsername').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('loginError');
+            const auth = getStoredAuth();
+            if (!auth || auth.user !== user) {
+                errEl.textContent = 'Invalid username or password.';
+                errEl.style.display = 'block';
+                return;
+            }
+            const passHash = await hashPassword(pass);
+            if (passHash !== auth.passHash) {
+                errEl.textContent = 'Invalid username or password.';
+                errEl.style.display = 'block';
+                return;
+            }
+            setLoggedIn(true);
+            errEl.style.display = 'none';
+            showScreen('dashboardWrap');
+            initDashboard();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            setLoggedIn(false);
+            showScreen('loginScreen');
+            document.getElementById('loginPassword').value = '';
+        });
+
+        document.getElementById('changeLoginBtn').addEventListener('click', async function() {
+            const currentPass = document.getElementById('changeLoginCurrentPass').value;
+            const newUser = document.getElementById('changeLoginNewUser').value.trim();
+            const newPass = document.getElementById('changeLoginNewPass').value;
+            const newPassConfirm = document.getElementById('changeLoginNewPassConfirm').value;
+            const errEl = document.getElementById('changeLoginError');
+            const auth = getStoredAuth();
+            if (!auth) return;
+            const currentHash = await hashPassword(currentPass);
+            if (currentHash !== auth.passHash) {
+                errEl.textContent = 'Current password is wrong.';
+                errEl.style.display = 'block';
+                return;
+            }
+            if (newPass && newPass !== newPassConfirm) {
+                errEl.textContent = 'New passwords do not match.';
+                errEl.style.display = 'block';
+                return;
+            }
+            if (newPass && newPass.length < 6) {
+                errEl.textContent = 'New password must be at least 6 characters.';
+                errEl.style.display = 'block';
+                return;
+            }
+            const passHash = newPass ? await hashPassword(newPass) : auth.passHash;
+            setStoredAuth(newUser || auth.user, passHash);
+            errEl.style.display = 'none';
+            document.getElementById('changeLoginCurrentPass').value = '';
+            document.getElementById('changeLoginNewUser').value = '';
+            document.getElementById('changeLoginNewPass').value = '';
+            document.getElementById('changeLoginNewPassConfirm').value = '';
+            toast('Login updated. Use your new credentials next time.');
+        });
+
+        function initDashboard() {
+            loadSettings();
+            loadCarousel();
+            loadCategories();
+            loadSubCategories();
+            loadSections();
+            loadProducts();
+            bindSectionSwitching();
+        }
+
+        function getData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) { return {}; }
+        }
+
+        function setData(obj) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+        }
+
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function bindSectionSwitching() {
+            if (window._navBound) return;
+            window._navBound = true;
+            function goToSection(section) {
+                document.querySelectorAll('.nav-link').forEach(l => {
+                    l.classList.toggle('active', l.getAttribute('data-section') === section);
+                });
+                document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+                const el = document.getElementById('section-' + section);
+                if (el) el.classList.add('active');
+                const titles = { settings: 'Site Settings', home: 'Home Page', products: 'Products' };
+                document.getElementById('sectionTitle').textContent = titles[section] || section;
+            }
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToSection(this.getAttribute('data-section'));
+                });
+            });
+        }
+
+        // --- Site Settings ---
+        function loadSettings() {
+            const d = getData();
+            const s = d.settings || {};
+            document.getElementById('storeName').value = s.storeName || 'VELOUR';
+            document.getElementById('promoText').value = s.promoText || '';
+            document.getElementById('currency').value = s.currency || 'GHS';
+            document.getElementById('whatsappNumber').value = s.whatsappNumber || '233538865290';
+            document.getElementById('footerCopy').value = s.footerCopy || '';
+            const sl = s.socialLinks || {};
+            document.getElementById('socialLinksRaw').value = [
+                sl.instagram ? 'instagram|' + sl.instagram : '',
+                sl.snapchat ? 'snapchat|' + sl.snapchat : '',
+                sl.tiktok ? 'tiktok|' + sl.tiktok : '',
+                sl.whatsapp ? 'whatsapp|' + sl.whatsapp : ''
+            ].filter(Boolean).join('\n');
+            const fl = s.footerLinks || [];
+            document.getElementById('footerLinksRaw').value = fl.map(l => (l.label || '') + '|' + (l.url || '')).join('\n');
+        }
+
+        function saveSettings() {
+            const lines = document.getElementById('socialLinksRaw').value.split('\n').filter(Boolean);
+            const socialLinks = {};
+            lines.forEach(line => {
+                const idx = line.indexOf('|');
+                if (idx > 0) {
+                    const key = line.slice(0, idx).trim().toLowerCase();
+                    const val = line.slice(idx + 1).trim();
+                    socialLinks[key] = val;
+                }
+            });
+            const flLines = document.getElementById('footerLinksRaw').value.split('\n').filter(Boolean);
+            const footerLinks = flLines.map(line => {
+                const idx = line.indexOf('|');
+                return { label: idx > 0 ? line.slice(0, idx).trim() : line.trim(), url: idx > 0 ? line.slice(idx + 1).trim() : '#' };
+            });
+            return {
+                storeName: document.getElementById('storeName').value.trim() || 'VELOUR',
+                promoText: document.getElementById('promoText').value.trim(),
+                currency: document.getElementById('currency').value.trim() || 'GHS',
+                whatsappNumber: (document.getElementById('whatsappNumber').value || '').replace(/\D/g, '') || '233538865290',
+                footerCopy: document.getElementById('footerCopy').value.trim(),
+                socialLinks,
+                footerLinks
+            };
+        }
+
+        // --- Home: Carousel ---
+        function loadCarousel() {
+            const d = getData();
+            const slides = d.carousel || [
+                { image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80', title: 'New Season', buttonText: 'Shop Now' },
+                { image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=800&q=80', title: 'Glow Up', buttonText: 'View Beauty' }
+            ];
+            window._carouselSlides = slides;
+            const list = document.getElementById('carouselList');
+            list.innerHTML = slides.map((s, i) => {
+                const editing = list.querySelector('[data-slide-index="' + i + '"] .slide-edit-form');
+                const isOpen = editing && editing.style.display !== 'none';
+                return `
+                <div class="item-card" data-slide-index="${i}">
+                    <div class="info">
+                        ${s.image ? '<img src="' + s.image.replace(/"/g, '&quot;') + '" alt="" style="width:48px;height:32px;object-fit:cover;border-radius:6px;margin-right:10px;vertical-align:middle;">' : ''}
+                        <strong>${(s.title || 'Slide ' + (i+1)).replace(/</g, '&lt;')}</strong> — ${(s.buttonText || '').replace(/</g, '&lt;')}
+                    </div>
+                    <div class="actions">
+                        <button type="button" class="btn btn-ghost btn-sm edit-slide" data-index="${i}">Edit</button>
+                        <button type="button" class="btn btn-ghost btn-sm remove-slide" data-index="${i}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="slide-edit-form" data-slide-index="${i}" style="display:none;width:100%;">
+                        <div class="form-row"><label>Image URL</label><input type="text" class="slide-input-image" value="${(s.image || '').replace(/"/g, '&quot;')}" placeholder="https://..."></div>
+                        <div class="form-row"><label>Title</label><input type="text" class="slide-input-title" value="${(s.title || '').replace(/"/g, '&quot;')}" placeholder="Slide title"></div>
+                        <div class="form-row"><label>Button text</label><input type="text" class="slide-input-btn" value="${(s.buttonText || '').replace(/"/g, '&quot;')}" placeholder="Shop Now"></div>
+                        <button type="button" class="btn btn-primary btn-sm apply-slide" data-index="${i}">Save</button>
+                    </div>
+                </div>`;
+            }).join('');
+            list.querySelectorAll('.edit-slide').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const card = btn.closest('.item-card');
+                    const form = card.querySelector('.slide-edit-form');
+                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+            list.querySelectorAll('.apply-slide').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const i = parseInt(this.getAttribute('data-index'), 10);
+                    const card = this.closest('.item-card');
+                    window._carouselSlides[i] = {
+                        image: card.querySelector('.slide-input-image').value.trim(),
+                        title: card.querySelector('.slide-input-title').value.trim(),
+                        buttonText: card.querySelector('.slide-input-btn').value.trim() || 'Shop Now'
+                    };
+                    loadCarousel();
+                });
+            });
+            list.querySelectorAll('.remove-slide').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const i = parseInt(btn.getAttribute('data-index'), 10);
+                    window._carouselSlides = window._carouselSlides.filter((_, j) => j !== i);
+                    loadCarousel();
+                });
+            });
+        }
+
+        document.getElementById('addSlide').addEventListener('click', () => {
+            const image = document.getElementById('newSlideImage').value.trim();
+            const title = document.getElementById('newSlideTitle').value.trim();
+            const buttonText = document.getElementById('newSlideBtn').value.trim() || 'Shop Now';
+            if (!image) { toast('Enter an image URL.'); return; }
+            window._carouselSlides = window._carouselSlides || [];
+            window._carouselSlides.push({ image, title, buttonText });
+            document.getElementById('newSlideImage').value = '';
+            document.getElementById('newSlideTitle').value = '';
+            document.getElementById('newSlideBtn').value = 'Shop Now';
+            loadCarousel();
+            toast('Slide added. Click Save All to update the store.');
+        });
+
+        // --- Home: Categories ---
+        function loadCategories() {
+            const d = getData();
+            const cats = d.categories || [
+                { id: 'dress', name: 'Dresses', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=100' },
+                { id: 'set', name: 'Sets', image: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=100' },
+                { id: 'beauty', name: 'Beauty', image: 'https://images.unsplash.com/photo-1596462502278-27bfdd403cc2?w=100' },
+                { id: 'bags', name: 'Bags', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=100' },
+                { id: 'jewelry', name: 'Jewelry', image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=100' }
+            ];
+            window._categories = cats;
+            const list = document.getElementById('categoriesList');
+            list.innerHTML = cats.map((c, i) => `
+                <div class="item-card" data-cat-index="${i}">
+                    <div class="info">
+                        ${c.image ? '<img src="' + c.image.replace(/"/g, '&quot;') + '" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:50%;margin-right:10px;vertical-align:middle;">' : ''}
+                        <strong>${(c.name || '').replace(/</g, '&lt;')}</strong> <span style="color:var(--muted);">(${c.id || ''})</span>
+                    </div>
+                    <div class="actions">
+                        <button type="button" class="btn btn-ghost btn-sm edit-cat" data-index="${i}">Edit</button>
+                        <button type="button" class="btn btn-ghost btn-sm remove-cat" data-index="${i}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="cat-edit-form" data-cat-index="${i}" style="display:none;">
+                        <div class="form-row"><label>Category ID</label><input type="text" class="cat-input-id" value="${(c.id || '').replace(/"/g, '&quot;')}" placeholder="dress"></div>
+                        <div class="form-row"><label>Display name</label><input type="text" class="cat-input-name" value="${(c.name || '').replace(/"/g, '&quot;')}" placeholder="Dresses"></div>
+                        <div class="form-row"><label>Image URL</label><input type="text" class="cat-input-image" value="${(c.image || '').replace(/"/g, '&quot;')}" placeholder="https://..."></div>
+                        <button type="button" class="btn btn-primary btn-sm apply-cat" data-index="${i}">Save</button>
+                    </div>
+                </div>
+            `).join('');
+            list.querySelectorAll('.edit-cat').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.item-card');
+                    const form = card.querySelector('.cat-edit-form');
+                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+            list.querySelectorAll('.apply-cat').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const i = parseInt(this.getAttribute('data-index'), 10);
+                    const card = this.closest('.item-card');
+                    window._categories[i] = {
+                        id: card.querySelector('.cat-input-id').value.trim() || window._categories[i].id,
+                        name: card.querySelector('.cat-input-name').value.trim() || window._categories[i].name,
+                        image: card.querySelector('.cat-input-image').value.trim()
+                    };
+                    loadCategories();
+                });
+            });
+            list.querySelectorAll('.remove-cat').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const i = parseInt(btn.getAttribute('data-index'), 10);
+                    window._categories = window._categories.filter((_, j) => j !== i);
+                    loadCategories();
+                });
+            });
+        }
+
+        document.getElementById('addCategory').addEventListener('click', () => {
+            const id = document.getElementById('newCatId').value.trim();
+            const name = document.getElementById('newCatName').value.trim();
+            const image = document.getElementById('newCatImage').value.trim();
+            if (!id || !name) { toast('Enter category ID and display name.'); return; }
+            window._categories = window._categories || [];
+            window._categories.push({ id, name, image });
+            document.getElementById('newCatId').value = '';
+            document.getElementById('newCatName').value = '';
+            document.getElementById('newCatImage').value = '';
+            loadCategories();
+            toast('Category added. Click Save All to update the store.');
+        });
+
+        // Subcategories raw
+        function loadSubCategories() {
+            const d = getData();
+            const sub = d.subCategories || {};
+            const lines = [];
+            for (const [catId, arr] of Object.entries(sub)) {
+                (arr || []).forEach(s => {
+                    if (s.id && s.name) lines.push(catId + '|' + s.id + '|' + s.name);
+                });
+            }
+            document.getElementById('subCategoriesRaw').value = lines.join('\n');
+        }
+
+        function saveSubCategories() {
+            const text = document.getElementById('subCategoriesRaw').value;
+            const sub = {};
+            const catNames = (window._categories || []).reduce((acc, c) => { acc[c.id] = c.name; return acc; }, {});
+            text.split('\n').filter(Boolean).forEach(line => {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 3) {
+                    const [catId, id, name] = parts;
+                    if (!sub[catId]) sub[catId] = [{ id: 'all_sub', name: 'All ' + (catNames[catId] || catId) }];
+                    if (id !== 'all_sub') sub[catId].push({ id, name });
+                }
+            });
+            return sub;
+        }
+
+        // Sections
+        function loadSections() {
+            const d = getData();
+            const s = d.sections || {};
+            document.getElementById('flashTitle').value = s.flashTitle || 'Super Deals';
+            document.getElementById('flashTimer').value = s.flashTimer || '02 : 14 : 55';
+            document.getElementById('gridTitle').value = s.gridTitle || 'Just For You';
+            document.getElementById('showFlash').checked = s.showFlash !== false;
+        }
+
+        function saveSections() {
+            return {
+                flashTitle: document.getElementById('flashTitle').value.trim() || 'Super Deals',
+                flashTimer: document.getElementById('flashTimer').value.trim() || '02 : 14 : 55',
+                gridTitle: document.getElementById('gridTitle').value.trim() || 'Just For You',
+                showFlash: document.getElementById('showFlash').checked
+            };
+        }
+
+        // --- Products ---
+        function loadProducts() {
+            const d = getData();
+            window._products = (d.products || []).map(p => ({ ...p, userReviews: p.userReviews || [] }));
+            renderProductsTable();
+        }
+
+        function renderProductsTable() {
+            const products = window._products || [];
+            const tbody = document.getElementById('productsTableBody');
+            const currency = (getData().settings || {}).currency || 'GHS';
+            if (!products.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:24px;text-align:center;">No products. Click Add product.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = products.map((p, i) => `
+                <tr>
+                    <td><img src="${(p.img || '').replace(/"/g, '&quot;')}" alt="" onerror="this.style.background='var(--border)'"></td>
+                    <td>${(p.name || '').replace(/</g, '&lt;')}</td>
+                    <td>${currency} ${Number(p.price)}</td>
+                    <td>${(p.category || '').replace(/</g, '&lt;')}</td>
+                    <td>
+                        <button type="button" class="btn btn-ghost btn-sm edit-product" data-index="${i}">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+            tbody.querySelectorAll('.edit-product').forEach(btn => {
+                btn.addEventListener('click', () => openProductModal(parseInt(btn.getAttribute('data-index'))));
+            });
+        }
+
+        function fillCategorySelect() {
+            const sel = document.getElementById('editCategory');
+            const cats = window._categories || [];
+            const current = sel.value;
+            sel.innerHTML = '<option value="">— Select category —</option>' + cats.map(c => '<option value="' + (c.id || '').replace(/"/g, '&quot;') + '">' + (c.name || c.id || '').replace(/</g, '&lt;') + '</option>').join('');
+            if (current) sel.value = current;
+        }
+
+        function openProductModal(index) {
+            const products = window._products || [];
+            const p = products[index];
+            if (!p) return;
+            window._editingProductIndex = index;
+            fillCategorySelect();
+            document.getElementById('productModal').style.display = 'flex';
+            document.getElementById('productModalTitle').textContent = 'Edit product';
+            document.getElementById('editProductId').value = p.id;
+            document.getElementById('editName').value = p.name || '';
+            document.getElementById('editPrice').value = p.price ?? '';
+            document.getElementById('editOldPrice').value = p.oldPrice ?? '';
+            document.getElementById('editCategory').value = p.category || '';
+            document.getElementById('editSub').value = p.sub || '';
+            document.getElementById('editImg').value = p.img || '';
+            document.getElementById('editImages').value = (p.images || []).filter(u => u !== p.img).join('\n');
+            document.getElementById('editDesc').value = p.desc || '';
+            if (p.options && typeof p.options === 'object') {
+                document.getElementById('editOptions').value = Object.entries(p.options)
+                    .map(([k, v]) => k + ': ' + (Array.isArray(v) ? v.join(',') : v)).join('\n');
+            } else {
+                document.getElementById('editOptions').value = '';
+            }
+        }
+
+        document.getElementById('addProductBtn').addEventListener('click', () => {
+            const products = window._products || [];
+            const maxId = products.length ? Math.max(...products.map(p => p.id || 0)) : 0;
+            window._editingProductIndex = -1;
+            fillCategorySelect();
+            document.getElementById('productModal').style.display = 'flex';
+            document.getElementById('productModalTitle').textContent = 'Add product';
+            document.getElementById('editProductId').value = maxId + 1;
+            document.getElementById('editName').value = '';
+            document.getElementById('editPrice').value = '';
+            document.getElementById('editOldPrice').value = '';
+            document.getElementById('editCategory').value = '';
+            document.getElementById('editSub').value = '';
+            document.getElementById('editImg').value = '';
+            document.getElementById('editImages').value = '';
+            document.getElementById('editDesc').value = '';
+            document.getElementById('editOptions').value = '';
+        });
+
+        document.getElementById('closeProductModal').addEventListener('click', () => {
+            document.getElementById('productModal').style.display = 'none';
+        });
+
+        document.getElementById('saveProductBtn').addEventListener('click', () => {
+            const products = window._products || [];
+            const id = parseInt(document.getElementById('editProductId').value, 10) || products.length + 1;
+            const name = document.getElementById('editName').value.trim();
+            const price = parseFloat(document.getElementById('editPrice').value) || 0;
+            const oldPrice = document.getElementById('editOldPrice').value.trim();
+            const category = document.getElementById('editCategory').value.trim();
+            const sub = document.getElementById('editSub').value.trim();
+            const img = document.getElementById('editImg').value.trim();
+            const imagesText = document.getElementById('editImages').value.trim();
+            const images = imagesText ? [img, ...imagesText.split('\n').map(u => u.trim()).filter(Boolean)] : [img].filter(Boolean);
+            const desc = document.getElementById('editDesc').value.trim();
+            const optionsText = document.getElementById('editOptions').value.trim();
+            let options = null;
+            if (optionsText) {
+                options = {};
+                optionsText.split('\n').forEach(line => {
+                    const colon = line.indexOf(':');
+                    if (colon > 0) {
+                        const key = line.slice(0, colon).trim();
+                        const val = line.slice(colon + 1).trim().split(/[,;]/).map(v => v.trim()).filter(Boolean);
+                        if (key && val.length) options[key] = val;
+                    }
+                });
+            }
+            const entry = {
+                id, name, price, category, sub, img,
+                images: images.length ? images : [img],
+                desc, options, userReviews: []
+            };
+            if (oldPrice) entry.oldPrice = parseFloat(oldPrice);
+            const idx = window._editingProductIndex;
+            if (idx >= 0 && products[idx]) {
+                entry.userReviews = products[idx].userReviews || [];
+                products[idx] = entry;
+            } else {
+                products.push(entry);
+            }
+            window._products = products;
+            document.getElementById('productModal').style.display = 'none';
+            renderProductsTable();
+            toast('Product saved. Click "Save All" to update the store.');
+        });
+
+        document.getElementById('deleteProductBtn').addEventListener('click', () => {
+            const idx = window._editingProductIndex;
+            if (idx < 0) return;
+            if (!confirm('Delete this product?')) return;
+            const products = (window._products || []).filter((_, i) => i !== idx);
+            window._products = products;
+            document.getElementById('productModal').style.display = 'none';
+            renderProductsTable();
+            toast('Product removed. Click "Save All" to update the store.');
+        });
+
+        // Save All
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const data = getData();
+            data.settings = saveSettings();
+            data.carousel = (window._carouselSlides || []).length ? window._carouselSlides : data.carousel;
+            data.categories = (window._categories || []).length ? window._categories : data.categories;
+            data.subCategories = saveSubCategories();
+            data.sections = saveSections();
+            data.products = window._products || [];
+            setData(data);
+            toast('All settings saved. Refresh your store page to see changes.');
+        });
+
+        // Init: show login/setup or dashboard
+        initAuth();
+    </script>
+</body>
+</html>

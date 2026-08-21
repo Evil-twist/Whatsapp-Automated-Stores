@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Clirsmoke</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #c9a227;
+            --bg: #f5f5f4;
+            --card: #ffffff;
+            --border: #e7e5e4;
+            --text: #1c1917;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(201,162,39,0.15); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: var(--sidebar);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .slide-item {
+            background: #fafaf9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .slide-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .slide-preview {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: var(--sidebar); }
+        .btn-add:hover { opacity: 0.9; }
+        .category-block {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #fafaf9;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .category-header:hover { background: #f5f5f4; }
+        .category-body { padding: 20px; }
+        .product-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-row:last-child { border-bottom: none; }
+        .product-row .thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .product-row .main-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+            min-width: 200px;
+        }
+        .product-row .main-fields input { flex: 1; min-width: 120px; }
+        .product-row input, .product-row textarea {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .product-row .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+        }
+        .add-product-row { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 180px 50px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .link-row input, .link-row select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+        .product-extra { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .img-url-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .img-url-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f5f5f4;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .img-url-item input { flex: 1; min-width: 120px; padding: 4px 8px; }
+        .variants-input { margin-top: 8px; }
+        .variants-input input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        small { color: #78716c; font-size: 0.8rem; margin-top: 4px; display: block; }
+
+        /* Login screen - must fully cover page */
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .login-box h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+            color: var(--sidebar-active);
+        }
+        .login-box .subtitle { color: #78716c; font-size: 0.9rem; margin-bottom: 28px; }
+        .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+        .login-error.show { display: block; }
+        .admin-dashboard { display: none; }
+        .admin-dashboard.logged-in { display: flex; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                top: 0;
+            }
+            .sidebar.open { left: 0; }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .sidebar-overlay.open { display: block; }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .page-header { flex-wrap: wrap; gap: 12px; }
+            .page-title { font-size: 1.25rem; }
+            .save-btn { width: 100%; justify-content: center; }
+            .link-row { grid-template-columns: 1fr 1fr auto auto; }
+            .card { padding: 20px; }
+        }
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .link-row { grid-template-columns: 1fr 1fr auto auto; gap: 8px; }
+        }
+        @media (max-width: 480px) {
+            .link-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN / SETUP SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-box">
+            <div id="login-form-wrap">
+                <h1>Clirsmoke Admin</h1>
+                <p class="subtitle" id="login-subtitle">Sign in to manage your store</p>
+                <form id="login-form" onsubmit="return doLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="login-username" placeholder="Enter username" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="Enter password" required autocomplete="current-password">
+                    </div>
+                    <p class="login-error" id="login-error">Invalid username or password</p>
+                    <button type="submit" class="save-btn" style="width:100%; justify-content:center; margin-top:8px;">
+                        <i class="fa-solid fa-sign-in-alt"></i> Log In
+                    </button>
+                </form>
+            </div>
+            <div id="setup-form-wrap" style="display:none;">
+                <h1>Set Up Admin</h1>
+                <p class="subtitle">Create your admin username and password</p>
+                <form id="setup-form" onsubmit="return doSetup(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="setup-username" placeholder="Choose a username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="setup-password" placeholder="Choose a password" required minlength="4">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="setup-confirm" placeholder="Confirm password" required>
+                    </div>
+                    <p class="login-error" id="setup-error">Passwords do not match</p>
+                    <button type="submit" class="save-btn" style="width:100%; justify-content:center; margin-top:8px;">
+                        <i class="fa-solid fa-lock"></i> Create Admin Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="admin-dashboard" class="admin-dashboard" style="min-height:100vh; flex:1; display:none; flex-wrap:wrap;">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">Clirsmoke Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General Settings</span>
+            </div>
+            <div class="nav-item" data-section="hero">
+                <i class="fa-solid fa-images"></i>
+                <span>Hero Carousel</span>
+            </div>
+            <div class="nav-item" data-section="products">
+                <i class="fa-solid fa-box"></i>
+                <span>Products & Categories</span>
+            </div>
+            <div class="nav-item" data-section="homepage">
+                <i class="fa-solid fa-home"></i>
+                <span>Homepage Content</span>
+            </div>
+            <div class="nav-item" data-section="footer">
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Footer & Social</span>
+            </div>
+            <div class="nav-item" data-section="security">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Admin Login</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Preview Store
+            </button>
+            <button class="preview-btn" onclick="logout()" style="margin-top:8px; background:#444; color:#fff;">
+                <i class="fa-solid fa-sign-out-alt"></i>
+                Log Out
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+
+        <!-- General Settings -->
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store Name</label>
+                    <input type="text" id="site-name" placeholder="Clirsmoke">
+                </div>
+                <div class="form-group">
+                    <label>Tagline</label>
+                    <input type="text" id="site-tagline" placeholder="Premium Hookah & Shisha">
+                </div>
+                <div class="form-group">
+                    <label>About / Description (Footer)</label>
+                    <textarea id="site-about" placeholder="Your premium destination for hookah, shisha, and vaping products..."></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (with country code, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233538865290">
+                    <small>Example: 233501234567 for Ghana. Orders will be sent to this number via WhatsApp.</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <input type="text" id="currency" placeholder="GHS" maxlength="10">
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero Carousel -->
+        <section class="section" id="section-hero">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Hero Slides (Main Page Banners)</h3>
+                    <button class="btn-small btn-add" onclick="addSlide()">
+                        <i class="fa-solid fa-plus"></i> Add Slide
+                    </button>
+                </div>
+                <div id="hero-slides-container"></div>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Categories & Products</h3>
+                    <button class="btn-small btn-add" onclick="addCategory()">
+                        <i class="fa-solid fa-plus"></i> Add Category
+                    </button>
+                </div>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <!-- Homepage Content -->
+        <section class="section" id="section-homepage">
+            <div class="card">
+                <h3 class="card-title">Main Page Content</h3>
+                <div class="form-group">
+                    <label>Collection Section Title</label>
+                    <input type="text" id="homepage-collection-title" placeholder="Our Collection">
+                </div>
+                <div class="form-group">
+                    <label>Featured / Promo Text (optional)</label>
+                    <textarea id="homepage-promo" placeholder="Discover our premium selection..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Footer Content</h3>
+                <div class="form-group">
+                    <label>Footer Brand Name</label>
+                    <input type="text" id="footer-brand" placeholder="Clirsmoke">
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2025 Clirsmoke. All Rights Reserved.">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Social
+                </button>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Footer Quick Links</h3>
+                <div id="footer-links-container"></div>
+                <button class="btn-small btn-add" onclick="addFooterLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Link
+                </button>
+            </div>
+        </section>
+
+        <!-- Admin Login / Security -->
+        <section class="section" id="section-security">
+            <div class="card">
+                <h3 class="card-title">Change Admin Username & Password</h3>
+                <p style="color:#78716c; font-size:0.9rem; margin-bottom:20px;">Update your admin login credentials. You will need to sign in again after changing.</p>
+                <div class="form-group">
+                    <label>New Username</label>
+                    <input type="text" id="new-username" placeholder="Enter new username">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="new-password" placeholder="Enter new password" minlength="4">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="new-password-confirm" placeholder="Confirm new password">
+                </div>
+                <p class="login-error" id="security-error" style="margin-bottom:12px;"></p>
+                <button class="save-btn" onclick="changeCredentials()">
+                    <i class="fa-solid fa-key"></i> Update Credentials
+                </button>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <script>
+        const STORAGE_KEY = 'clirsmoke_store_settings';
+        const AUTH_KEY = 'clirsmoke_admin_auth';
+        const SESSION_KEY = 'clirsmoke_admin_session';
+
+        function getAuth() {
+            try {
+                const s = localStorage.getItem(AUTH_KEY);
+                return s ? JSON.parse(s) : null;
+            } catch (e) { return null; }
+        }
+        function setAuth(username, password) {
+            localStorage.setItem(AUTH_KEY, JSON.stringify({ u: username, p: password }));
+        }
+        function isLoggedIn() {
+            return sessionStorage.getItem(SESSION_KEY) === '1';
+        }
+        function setLoggedIn(v) {
+            sessionStorage.setItem(SESSION_KEY, v ? '1' : '0');
+        }
+        function showLoginOrSetup() {
+            const auth = getAuth();
+            document.getElementById('login-form-wrap').style.display = auth ? 'block' : 'none';
+            document.getElementById('setup-form-wrap').style.display = auth ? 'none' : 'block';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('admin-dashboard').classList.remove('logged-in');
+            document.getElementById('admin-dashboard').style.display = 'none';
+        }
+        function showDashboard() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-dashboard').classList.add('logged-in');
+            document.getElementById('admin-dashboard').style.display = 'flex';
+        }
+        function doSetup(e) {
+            e.preventDefault();
+            const user = document.getElementById('setup-username').value.trim();
+            const pass = document.getElementById('setup-password').value;
+            const confirm = document.getElementById('setup-confirm').value;
+            const err = document.getElementById('setup-error');
+            if (pass !== confirm) { err.textContent = 'Passwords do not match'; err.classList.add('show'); return false; }
+            if (pass.length < 4) { err.textContent = 'Password must be at least 4 characters'; err.classList.add('show'); return false; }
+            setAuth(user, pass);
+            setLoggedIn(true);
+            err.classList.remove('show');
+            showDashboard();
+            return false;
+        }
+        function doLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const auth = getAuth();
+            const err = document.getElementById('login-error');
+            if (!auth || auth.u !== user || auth.p !== pass) {
+                err.classList.add('show');
+                return false;
+            }
+            err.classList.remove('show');
+            setLoggedIn(true);
+            showDashboard();
+            return false;
+        }
+        function logout() {
+            setLoggedIn(false);
+            showLoginOrSetup();
+        }
+        function changeCredentials() {
+            const user = document.getElementById('new-username').value.trim();
+            const pass = document.getElementById('new-password').value;
+            const confirm = document.getElementById('new-password-confirm').value;
+            const err = document.getElementById('security-error');
+            err.classList.remove('show');
+            err.style.color = '';
+            if (!user && !pass) { err.textContent = 'Enter a new username and/or password'; err.classList.add('show'); return; }
+            if (pass && pass !== confirm) { err.textContent = 'Passwords do not match'; err.classList.add('show'); return; }
+            if (pass && pass.length < 4) { err.textContent = 'Password must be at least 4 characters'; err.classList.add('show'); return; }
+            const auth = getAuth();
+            setAuth(user || auth.u, pass || auth.p);
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('new-password-confirm').value = '';
+            err.textContent = 'Credentials updated. You will need to log in again.';
+            err.style.color = '#22c55e';
+            err.classList.add('show');
+            setTimeout(() => { setLoggedIn(false); showLoginOrSetup(); }, 1500);
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('open');
+        }
+        const DEFAULT_DATA = {
+            site: {
+                name: 'Clirsmoke',
+                tagline: 'Premium Hookah & Shisha',
+                about: 'Your premium destination for hookah, shisha, and vaping products. Quality you can trust.',
+                whatsapp: '233538865290',
+                currency: 'GHS'
+            },
+            hero: [
+                { title: 'Premium Hookah & Shisha', image: 'https://images.unsplash.com/photo-1635547821500-77542481940c?w=1200' },
+                { title: 'Exclusive Flavors', image: 'https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=1200' },
+                { title: 'Vape Collection', image: 'https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=1200' }
+            ],
+            homepage: {
+                collectionTitle: 'Our Collection',
+                promo: ''
+            },
+            footer: {
+                brand: 'Clirsmoke',
+                copyright: '© 2025 Clirsmoke. All Rights Reserved.',
+                social: [
+                    { name: 'Instagram', url: '#', icon: 'fa-brands fa-instagram' },
+                    { name: 'TikTok', url: '#', icon: 'fa-brands fa-tiktok' },
+                    { name: 'Facebook', url: '#', icon: 'fa-brands fa-facebook-f' }
+                ],
+                links: [
+                    { text: 'Order Tracking', url: '#' },
+                    { text: 'Contact Support', url: '#' }
+                ]
+            },
+            catalog: {
+                "Hookah": [
+                    { id: 1, name: "Khalil Mamoon Classic", price: 450, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 2, name: "Khalil Mamoon Oxidized", price: 520, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: ["Gold", "Silver", "Black"], variantType: "Color" },
+                    { id: 3, name: "Egyptian Shisha Pipe", price: 380, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 4, name: "Syrian Hookah Large", price: 490, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 5, name: "Turkish Nargile", price: 410, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 6, name: "Pharaoh's Hookah", price: 550, images: ["https://images.unsplash.com/photo-1697018636636-2687e6c441a2?w=400"], variants: [], variantType: "Option" },
+                    { id: 7, name: "Starbuzz Carbine", price: 680, images: ["https://images.unsplash.com/photo-1662805522314-d316b95046b1?w=400"], variants: ["Chrome", "Matte Black"], variantType: "Color" },
+                    { id: 8, name: "MOB Hookah", price: 420, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 9, name: "Cloud One Hookah", price: 590, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 10, name: "Aeon Lounge 4", price: 720, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 11, name: "Amira Hookah", price: 395, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 12, name: "Mya Gelato", price: 320, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 13, name: "Shika Hookah", price: 480, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 14, name: "Smokezilla Portable", price: 180, images: ["https://images.unsplash.com/photo-1629398781765-d6d0c14445b7?w=400"], variants: [], variantType: "Option" }
+                ],
+                "Vapes": [
+                    { id: 20, name: "Vape 5000 Puffs", price: 150, images: ["https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=400"], variants: ["Blue Razz", "Grape", "Mango", "Strawberry", "Mint"], variantType: "Flavor" },
+                    { id: 21, name: "Elf Bar BC5000", price: 180, images: ["https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=400"], variants: ["Watermelon", "Blueberry", "Peach Ice"], variantType: "Flavor" },
+                    { id: 22, name: "Lost Mary Disposable", price: 160, images: ["https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=400"], variants: ["Cherry", "Mango", "Mixed Berry"], variantType: "Flavor" },
+                    { id: 23, name: "Geek Bar Meloso", price: 140, images: ["https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=400"], variants: ["Cola", "Pineapple", "Blueberry Ice"], variantType: "Flavor" },
+                    { id: 24, name: "RandM Tornado 7000", price: 170, images: ["https://images.unsplash.com/photo-1629398775304-bf8309e3e20d?w=400"], variants: ["Gummy Bear", "Peach", "Lychee"], variantType: "Flavor" },
+                    { id: 25, name: "Refillable Pod Kit", price: 220, images: ["https://images.unsplash.com/photo-1662738412406-d929c3b25796?w=400"], variants: [], variantType: "Option" },
+                    { id: 26, name: "OOKA Disposable Hookah", price: 150, images: ["https://images.unsplash.com/photo-1702889369889-2b467b5d1aaf?w=400"], variants: [], variantType: "Option" }
+                ],
+                "Hookah Accessories": [
+                    { id: 30, name: "Clay Phunnel Bowl", price: 90, images: ["https://images.unsplash.com/photo-1681219577911-1fcb5a4e353e?w=400"], variants: ["Blue", "Red", "Gold", "White"], variantType: "Color" },
+                    { id: 31, name: "Silicone Bowl", price: 65, images: ["https://images.unsplash.com/photo-1681219577911-1fcb5a4e353e?w=400"], variants: ["Black", "Rainbow"], variantType: "Color" },
+                    { id: 32, name: "Egyptian Clay Bowl", price: 55, images: ["https://images.unsplash.com/photo-1681219577911-1fcb5a4e353e?w=400"], variants: [], variantType: "Option" },
+                    { id: 33, name: "Silicone Washable Hose", price: 45, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: ["Black", "Blue", "Red", "Gold"], variantType: "Color" },
+                    { id: 34, name: "Traditional Leather Hose", price: 85, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 35, name: "D-Hose Aluminum", price: 120, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 36, name: "Charcoal Tongs", price: 25, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 37, name: "Wind Cover", price: 40, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: ["Chrome", "Black"], variantType: "Color" },
+                    { id: 38, name: "Heat Management Device", price: 75, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 39, name: "Heavy Duty Foil (5m)", price: 20, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 40, name: "Rubber Grommets (Set)", price: 15, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 41, name: "Silicone Mouthpiece (5-pack)", price: 25, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: ["Assorted"], variantType: "Option" },
+                    { id: 42, name: "Diffuser", price: 18, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 43, name: "Cleaning Brush Set", price: 22, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 44, name: "Hookah Mat", price: 35, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 45, name: "Carrying Case", price: 95, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" }
+                ],
+                "Flavours": [
+                    { id: 50, name: "Adalya Love 66", price: 80, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g", "250g"], variantType: "Size" },
+                    { id: 51, name: "Al Fakher Double Apple", price: 75, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g", "250g"], variantType: "Size" },
+                    { id: 52, name: "Al Fakher Mint", price: 75, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g", "250g"], variantType: "Size" },
+                    { id: 53, name: "Al Fakher Grape", price: 75, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g", "250g"], variantType: "Size" },
+                    { id: 54, name: "Al Fakher Blueberry", price: 75, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g", "250g"], variantType: "Size" },
+                    { id: 55, name: "Starbuzz Blue Mist", price: 120, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["100g", "200g"], variantType: "Size" },
+                    { id: 56, name: "Fumari Ambrosia", price: 95, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["100g"], variantType: "Size" },
+                    { id: 57, name: "Fumari Mint Chocolate", price: 95, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["100g"], variantType: "Size" },
+                    { id: 58, name: "Social Smoke Absolute Zero", price: 110, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["100g"], variantType: "Size" },
+                    { id: 59, name: "Trifecta Blonde", price: 100, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["75g"], variantType: "Size" },
+                    { id: 60, name: "Azure Lemon Muffin", price: 105, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["100g"], variantType: "Size" },
+                    { id: 61, name: "Serbetli Strawberry", price: 85, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g"], variantType: "Size" },
+                    { id: 62, name: "Nakhla Mango", price: 65, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g"], variantType: "Size" },
+                    { id: 63, name: "Nakhla Double Apple", price: 65, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: ["50g"], variantType: "Size" }
+                ],
+                "Hookah Charcoal": [
+                    { id: 70, name: "Coconut Charcoal (1kg)", price: 45, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" },
+                    { id: 71, name: "Quick Light Charcoal (24pcs)", price: 30, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" },
+                    { id: 72, name: "Coconut Cube Charcoal (1kg)", price: 55, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" },
+                    { id: 73, name: "Black Coco Charcoal (2kg)", price: 85, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" },
+                    { id: 74, name: "Charcoal Storage Box", price: 35, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" },
+                    { id: 75, name: "Premium Coconut Charcoal (2kg)", price: 90, images: ["https://images.unsplash.com/photo-1668420688150-6e21fd093ef1?w=400"], variants: [], variantType: "Option" }
+                ],
+                "More": [
+                    { id: 80, name: "Base Liquid (Glycerin)", price: 28, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 81, name: "Starter Kit - Basic", price: 380, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 82, name: "Starter Kit - Premium", price: 650, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" },
+                    { id: 83, name: "Flavor Sample Pack (5 flavours)", price: 120, images: ["https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400"], variants: [], variantType: "Option" },
+                    { id: 84, name: "Complete Hookah Bundle", price: 420, images: ["https://images.unsplash.com/photo-1635547821500-77542481940c?w=400"], variants: [], variantType: "Option" }
+                ]
+            }
+        };
+
+        const ICON_OPTIONS = [
+            'fa-brands fa-tiktok', 'fa-brands fa-instagram', 'fa-brands fa-facebook-f',
+            'fa-brands fa-snapchat', 'fa-brands fa-twitter', 'fa-brands fa-youtube',
+            'fa-brands fa-pinterest', 'fa-brands fa-linkedin-in'
+        ];
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = deepMerge(DEFAULT_DATA, parsed);
+                    const totalProducts = Object.values(data.catalog || {}).reduce((sum, arr) => sum + (arr?.length || 0), 0);
+                    const hasNewStructure = (data.catalog || {}).Hookah && (data.catalog || {}).Flavours;
+                    if (totalProducts < 35 || !hasNewStructure) {
+                        data.catalog = JSON.parse(JSON.stringify(DEFAULT_DATA.catalog));
+                        saveData();
+                    }
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                    saveData();
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                saveData();
+            }
+        }
+
+        function deepMerge(target, source) {
+            const out = { ...target };
+            for (const k of Object.keys(source)) {
+                if (source[k] && typeof source[k] === 'object' && !Array.isArray(source[k]) && source[k] !== null) {
+                    out[k] = deepMerge(target[k] || {}, source[k]);
+                } else if (source[k] !== undefined) {
+                    out[k] = source[k];
+                }
+            }
+            return out;
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('Clirsmoke.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General Settings', hero: 'Hero Carousel', products: 'Products & Categories', homepage: 'Homepage Content', footer: 'Footer & Social', security: 'Admin Login' };
+                document.getElementById('section-title').textContent = titles[id];
+                if (window.innerWidth <= 768) toggleSidebar();
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('site-about').value = data.site?.about || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS';
+            document.getElementById('footer-brand').value = data.footer?.brand || '';
+            document.getElementById('footer-copyright').value = data.footer?.copyright || '';
+            document.getElementById('homepage-collection-title').value = data.homepage?.collectionTitle || 'Our Collection';
+            document.getElementById('homepage-promo').value = data.homepage?.promo || '';
+        }
+
+        function renderHero() {
+            const container = document.getElementById('hero-slides-container');
+            const slides = data.hero || [];
+            container.innerHTML = slides.map((s, i) => `
+                <div class="slide-item" data-index="${i}">
+                    <div class="slide-item-header">
+                        <strong>Slide ${i + 1}</strong>
+                        <button class="btn-small btn-danger" onclick="removeSlide(${i})">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" value="${(s.title || '').replace(/"/g, '&quot;')}" onchange="updateSlide(${i}, 'title', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" value="${(s.image || '').replace(/"/g, '&quot;')}" onchange="updateSlide(${i}, 'image', this.value)">
+                    </div>
+                    <div class="slide-preview" style="background-image:url('${(s.image || '').replace(/'/g, "\\'")}')"></div>
+                </div>
+            `).join('');
+        }
+
+        function updateSlide(i, field, val) {
+            if (!data.hero) data.hero = [];
+            data.hero[i] = data.hero[i] || {};
+            data.hero[i][field] = val;
+        }
+
+        function addSlide() {
+            if (!data.hero) data.hero = [];
+            data.hero.push({ title: 'New Slide', image: 'https://via.placeholder.com/1200x600?text=Slide' });
+            renderHero();
+        }
+
+        function removeSlide(i) {
+            data.hero.splice(i, 1);
+            renderHero();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            const catalog = data.catalog || {};
+            const catNames = Object.keys(catalog);
+            container.innerHTML = catNames.map((catName, catIdx) => {
+                const products = catalog[catName] || [];
+                const productsHtml = products.map((p, pi) => {
+                    const imgs = p.images && p.images.length ? p.images : (p.img ? [p.img] : ['']);
+                    const thumbSrc = imgs[0] && imgs[0].startsWith('http') ? imgs[0] : 'https://via.placeholder.com/50';
+                    const safeName = String(p.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                    const variants = (p.variants || []).join(', ');
+                    const variantType = p.variantType || 'Option';
+                    const imgsHtml = imgs.map((url, ii) => `
+                        <div class="img-url-item">
+                            <input type="text" value="${(url || '').replace(/"/g, '&quot;')}" placeholder="Image URL" onchange="updateProductImage(${catIdx}, ${pi}, ${ii}, this.value)">
+                            <button type="button" class="btn-icon" onclick="removeProductImage(${catIdx}, ${pi}, ${ii})"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                    `).join('') + `<button type="button" class="btn-small btn-add" style="margin-top:6px;" onclick="addProductImage(${catIdx}, ${pi})"><i class="fa-solid fa-plus"></i> Add Image</button>`;
+                    return `
+                    <div class="product-row">
+                        <img src="${thumbSrc}" alt="" class="thumb">
+                        <div class="main-fields">
+                            <input type="text" value="${safeName}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'name', this.value)" placeholder="Product name">
+                            <input type="number" value="${p.price}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'price', parseFloat(this.value)||0)" placeholder="Price" style="max-width:100px;">
+                        </div>
+                        <button class="btn-icon" onclick="removeProductByIndex(${catIdx}, ${pi})"><i class="fa-solid fa-trash"></i></button>
+                        <div class="product-extra">
+                            <label class="text-xs font-medium">Images (add multiple for product gallery)</label>
+                            <div class="img-url-list">${imgsHtml}</div>
+                            <label class="text-xs font-medium mt-4">Variants (comma-separated: Red, Blue, or Mint, Melon)</label>
+                            <input type="text" value="${variants.replace(/"/g, '&quot;')}" onchange="updateProductVariants(${catIdx}, ${pi}, this.value)" placeholder="Leave empty if no variants">
+                            <label class="text-xs font-medium mt-2">Variant Type Label</label>
+                            <input type="text" value="${(variantType || '').replace(/"/g, '&quot;')}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'variantType', this.value)" placeholder="e.g. Color, Flavor, Size" style="max-width:200px;">
+                        </div>
+                    </div>
+                `}).join('');
+                return `
+                    <div class="category-block" data-cat-idx="${catIdx}">
+                        <div class="category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${(catName || '').replace(/</g, '&lt;')}</strong>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="category-body">
+                            ${productsHtml}
+                            <div class="add-product-row">
+                                <button class="btn-small btn-add" onclick="addProductByIndex(${catIdx})">
+                                    <i class="fa-solid fa-plus"></i> Add Product
+                                </button>
+                            </div>
+                            <button class="btn-small btn-danger" style="margin-top:12px;" onclick="removeCategoryByIndex(${catIdx})">Remove Category</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCatName(idx) { return Object.keys(data.catalog || {})[idx]; }
+
+        function updateProductByIndex(catIdx, prodIdx, field, val) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            if (!data.catalog) data.catalog = {};
+            if (!data.catalog[cat]) data.catalog[cat] = [];
+            data.catalog[cat][prodIdx] = data.catalog[cat][prodIdx] || {};
+            data.catalog[cat][prodIdx][field] = val;
+        }
+
+        function updateProductImage(catIdx, prodIdx, imgIdx, val) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            if (!data.catalog[cat][prodIdx].images) data.catalog[cat][prodIdx].images = data.catalog[cat][prodIdx].img ? [data.catalog[cat][prodIdx].img] : [];
+            while (data.catalog[cat][prodIdx].images.length <= imgIdx) data.catalog[cat][prodIdx].images.push('');
+            data.catalog[cat][prodIdx].images[imgIdx] = val;
+        }
+
+        function addProductImage(catIdx, prodIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            if (!data.catalog[cat][prodIdx].images) data.catalog[cat][prodIdx].images = [];
+            data.catalog[cat][prodIdx].images.push('');
+            renderProducts();
+        }
+
+        function removeProductImage(catIdx, prodIdx, imgIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat][prodIdx].images.splice(imgIdx, 1);
+            if (data.catalog[cat][prodIdx].images.length === 0) data.catalog[cat][prodIdx].images = [''];
+            renderProducts();
+        }
+
+        function updateProductVariants(catIdx, prodIdx, val) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            const arr = val.split(',').map(s => s.trim()).filter(Boolean);
+            data.catalog[cat][prodIdx].variants = arr;
+        }
+
+        function removeProductByIndex(catIdx, prodIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat].splice(prodIdx, 1);
+            if (data.catalog[cat].length === 0) delete data.catalog[cat];
+            renderProducts();
+        }
+
+        function addProductByIndex(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            const maxId = Math.max(1, ...Object.values(data.catalog).flat().map(p => p.id || 0)) + 1;
+            data.catalog[cat].push({
+                id: maxId,
+                name: 'New Product',
+                price: 0,
+                images: [''],
+                variants: [],
+                variantType: 'Option'
+            });
+            renderProducts();
+        }
+
+        function removeCategoryByIndex(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            if (confirm('Remove this category and all its products?')) {
+                delete data.catalog[cat];
+                renderProducts();
+            }
+        }
+
+        function addCategory() {
+            const name = prompt('Category name (e.g. Hookah, Flavor, Vape):');
+            if (!name) return;
+            if (!data.catalog) data.catalog = {};
+            data.catalog[name.trim()] = [];
+            renderProducts();
+        }
+
+        function renderFooter() {
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateSocial(${i}, 'name', this.value)">
+                    <input type="text" value="${(s.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateSocial(${i}, 'url', this.value)">
+                    <select onchange="updateSocial(${i}, 'icon', this.value)">
+                        ${ICON_OPTIONS.map(ico => `<option value="${ico}" ${(s.icon || '') === ico ? 'selected' : ''}>${ico.replace('fa-brands fa-', '')}</option>`).join('')}
+                    </select>
+                    <button class="btn-icon" onclick="removeSocial(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            const links = data.footer?.links || [];
+            document.getElementById('footer-links-container').innerHTML = links.map((l, i) => `
+                <div class="link-row" style="grid-template-columns: 1fr 2fr 50px;">
+                    <input type="text" value="${(l.text || '').replace(/"/g, '&quot;')}" placeholder="Link text" onchange="updateFooterLink(${i}, 'text', this.value)">
+                    <input type="text" value="${(l.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateFooterLink(${i}, 'url', this.value)">
+                    <button class="btn-icon" onclick="removeFooterLink(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function updateSocial(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+
+        function addSocialLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social.push({ name: 'New', url: '#', icon: 'fa-brands fa-instagram' });
+            renderFooter();
+        }
+
+        function removeSocial(i) {
+            data.footer.social.splice(i, 1);
+            renderFooter();
+        }
+
+        function updateFooterLink(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links[i] = data.footer.links[i] || {};
+            data.footer.links[i][field] = val;
+        }
+
+        function addFooterLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links.push({ text: 'New Link', url: '#' });
+            renderFooter();
+        }
+
+        function removeFooterLink(i) {
+            data.footer.links.splice(i, 1);
+            renderFooter();
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'Clirsmoke';
+            data.site.tagline = document.getElementById('site-tagline').value.trim() || '';
+            data.site.about = document.getElementById('site-about').value.trim();
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim() || '';
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS';
+            data.footer = data.footer || {};
+            data.footer.brand = document.getElementById('footer-brand').value.trim() || 'Clirsmoke';
+            data.footer.copyright = document.getElementById('footer-copyright').value.trim() || '© 2025 Clirsmoke.';
+            data.homepage = data.homepage || {};
+            data.homepage.collectionTitle = document.getElementById('homepage-collection-title').value.trim() || 'Our Collection';
+            data.homepage.promo = document.getElementById('homepage-promo').value.trim() || '';
+        }
+
+        function saveAll() {
+            collectGeneral();
+            saveData();
+            showToast();
+        }
+
+        if (isLoggedIn()) showDashboard();
+        else showLoginOrSetup();
+
+        loadData();
+        renderGeneral();
+        renderHero();
+        renderProducts();
+        renderFooter();
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLIR Cuts GH</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --border: #2a2a2a;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --text-muted: #737373;
+            --accent: #d4af37;
+            --accent-hover: #e5c04a;
+            --accent-muted: rgba(212, 175, 55, 0.15);
+        }
+        html.light-mode {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #f5f5f4;
+            --bg-card: #ffffff;
+            --border: #e7e5e4;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #78716c;
+            --accent: #b45309;
+            --accent-hover: #c2410c;
+            --accent-muted: rgba(180, 83, 9, 0.12);
+        }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background 0.3s, color 0.3s; }
+        .brand-font, h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass { background: rgba(20, 20, 20, 0.92); backdrop-filter: blur(12px); }
+        html.light-mode .glass { background: rgba(255, 255, 255, 0.92); }
+        .gold-text { color: var(--accent); }
+        .gold-border { border-color: var(--accent); }
+        .gold-bg { background-color: var(--accent); }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .product-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .product-card:active { transform: scale(0.98); }
+        .thumb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.2s; }
+        .thumb-dot.active { background: var(--accent); transform: scale(1.2); }
+        .variant-pill { padding: 6px 12px; border-radius: 9999px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .variant-pill.selected, .variant-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-muted); }
+    </style>
+</head>
+<body class="pb-32">
+
+    <!-- HERO -->
+    <div class="relative min-h-[85vh] w-full overflow-hidden">
+        <img id="hero-img" src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=1000" class="absolute inset-0 w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/50 to-transparent"></div>
+
+        <nav class="absolute top-0 w-full p-4 md:p-6 flex justify-between items-center z-10">
+            <div class="text-xl md:text-2xl font-bold gold-text tracking-[0.2em] brand-font uppercase" id="site-brand">CLIRCUTS</div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="theme-toggle" class="p-2 rounded-full border border-[var(--border)] hover:bg-[var(--bg-card)] transition" aria-label="Toggle theme">
+                    <i data-lucide="sun" class="w-5 h-5 theme-icon-dark hidden"></i>
+                    <i data-lucide="moon" class="w-5 h-5 theme-icon-light"></i>
+                </button>
+                <a id="contact-wa" href="https://wa.me/233538865290" class="text-xs font-semibold bg-white/10 backdrop-blur border border-white/20 text-white px-4 py-2 rounded-full hover:bg-white hover:text-black transition flex items-center gap-1">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i> Contact
+                </a>
+            </div>
+        </nav>
+
+        <div class="absolute bottom-0 p-6 md:p-10 z-10 w-full max-w-xl">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="px-2 py-1 gold-bg text-black text-[10px] font-bold uppercase tracking-widest rounded-sm" id="hero-badge">Premium Grooming</span>
+                <span class="text-[var(--text-muted)] text-xs font-semibold tracking-widest uppercase" id="hero-meta">Est. 2018 • Accra</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-[1.1] brand-font">
+                <span id="hero-title-1">Level Up</span> <br><span class="gold-text" id="hero-title-2">Your Image.</span>
+            </h1>
+            <p class="text-white/90 text-sm md:text-base mb-8 leading-relaxed max-w-sm" id="hero-desc">Not just a haircut. An experience. We provide the sharpest looks for the modern gentleman in East Legon.</p>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="scrollToSection('services')" class="gold-bg text-black font-semibold uppercase px-6 py-3 tracking-wider hover:opacity-90 transition rounded-sm">Book Now</button>
+                <button onclick="scrollToSection('video-section')" class="border border-white/40 text-white px-5 py-3 font-semibold uppercase tracking-wider hover:bg-white/10 transition rounded-sm flex items-center gap-2">
+                    <i data-lucide="play-circle" class="w-4 h-4"></i> Watch
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEET THE BARBER -->
+    <section class="p-8 bg-[var(--bg-secondary)] border-y border-[var(--border)]">
+        <div class="flex flex-col md:flex-row items-center gap-6 max-w-4xl mx-auto">
+            <div class="relative w-28 h-28 shrink-0">
+                <img id="barber-img" src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover rounded-full border-2 gold-border p-0.5">
+                <div class="absolute bottom-0 right-0 bg-blue-500 text-white p-1.5 rounded-full border-2 border-[var(--bg-secondary)]"><i data-lucide="check" class="w-3 h-3"></i></div>
+            </div>
+            <div class="text-center md:text-left">
+                <h3 class="text-2xl font-bold brand-font gold-text mb-2" id="barber-name">Kwame 'The Blade'</h3>
+                <p class="text-[var(--text-secondary)] text-sm leading-relaxed mb-3" id="barber-bio">"Your hair is your crown. With 10 years of experience styling CEOs and celebrities, I ensure you leave my chair ready to conquer the world."</p>
+                <div class="flex justify-center md:justify-start gap-0.5">
+                    <i data-lucide="star" class="w-4 h-4 gold-text fill-[var(--accent)]"></i>
+                    <i data-lucide="star" class="w-4 h-4 gold-text fill-[var(--accent)]"></i>
+                    <i data-lucide="star" class="w-4 h-4 gold-text fill-[var(--accent)]"></i>
+                    <i data-lucide="star" class="w-4 h-4 gold-text fill-[var(--accent)]"></i>
+                    <i data-lucide="star" class="w-4 h-4 gold-text fill-[var(--accent)]"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIDEO -->
+    <section id="video-section" class="py-12">
+        <div class="px-6 mb-6">
+            <h2 class="text-3xl font-bold brand-font mb-1" id="video-heading">Master in Action</h2>
+            <p class="text-[var(--text-muted)] text-xs uppercase tracking-widest" id="video-sub">Precision. Artistry. Focus.</p>
+        </div>
+        <div class="relative w-full h-64 md:h-96 bg-[var(--bg-card)] group cursor-pointer overflow-hidden mx-auto max-w-5xl">
+            <img id="video-poster" src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition duration-500">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center pl-1 group-hover:scale-110 transition duration-300 bg-white/10 backdrop-blur">
+                    <i data-lucide="play" class="w-8 h-8 text-white fill-white"></i>
+                </div>
+            </div>
+            <div class="absolute bottom-4 left-4">
+                <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase animate-pulse">Live</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="py-12 bg-[var(--bg-secondary)]">
+        <div class="px-6 mb-6 flex justify-between items-end">
+            <h2 class="text-2xl font-bold brand-font" id="reviews-heading">Client Talk</h2>
+            <div class="flex gap-2">
+                <button type="button" onclick="scrollReviews(-1)" class="p-2 rounded-full border border-[var(--border)] hover:bg-[var(--bg-card)]"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                <button type="button" onclick="scrollReviews(1)" class="p-2 rounded-full border border-[var(--border)] hover:bg-[var(--bg-card)]"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+        <div id="reviews-track" class="flex overflow-x-auto gap-4 px-6 hide-scroll snap-x snap-mandatory">
+            <!-- Injected by JS -->
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="px-4 md:px-6 py-12">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold brand-font mb-2" id="services-heading">Select Service</h2>
+            <p class="text-[var(--text-muted)] text-sm" id="services-sub">Choose your preference</p>
+        </div>
+
+        <div class="bg-[var(--bg-card)] p-1 rounded-xl flex mb-8 max-w-sm mx-auto border border-[var(--border)]">
+            <button type="button" onclick="setMode('shop')" id="btn-shop" class="flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all gold-bg text-black">In Shop</button>
+            <button type="button" onclick="setMode('home')" id="btn-home" class="flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]">Home Service</button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4 max-w-2xl md:max-w-lg mx-auto" id="service-list">
+            <!-- Injected by JS -->
+        </div>
+    </section>
+
+    <!-- LOCATION -->
+    <section class="py-12 bg-[var(--bg-secondary)] border-t border-[var(--border)] text-center">
+        <div class="mb-6 flex justify-center">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center gold-text border-2 gold-border">
+                <i data-lucide="map-pin" class="w-6 h-6"></i>
+            </div>
+        </div>
+        <h3 class="text-xl font-bold brand-font mb-2" id="location-heading">Visit The Studio</h3>
+        <p class="text-[var(--text-secondary)] text-sm mb-6" id="location-address">American House, East Legon<br>Opposite Fuel Station</p>
+        <a id="location-link" href="#" class="gold-text text-xs font-bold uppercase tracking-widest border-b gold-border pb-1">Get Directions</a>
+    </section>
+
+    <!-- STICKY BOOKING BAR -->
+    <div id="booking-bar" class="fixed bottom-0 w-full glass border-t border-[var(--border)] p-4 transform translate-y-full transition-transform duration-300 z-50">
+        <div class="max-w-lg mx-auto">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <span class="text-xs text-[var(--text-muted)] uppercase font-semibold tracking-widest block mb-1">Total Estimate</span>
+                    <span class="text-2xl font-bold gold-text brand-font" id="total-price">GHS 0</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-[var(--text-secondary)] block"><span id="selected-count">0</span> Services</span>
+                    <span class="text-[10px] bg-[var(--bg-card)] px-2 py-1 rounded text-[var(--text-secondary)] uppercase border border-[var(--border)]" id="mode-badge">Shop</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="client-name" placeholder="Your Name" class="flex-1 bg-[var(--bg-card)] text-[var(--text-primary)] px-4 py-3 rounded-lg text-sm outline-none border border-[var(--border)] focus:border-[var(--accent)] transition placeholder-[var(--text-muted)]">
+                <button type="button" onclick="bookNow()" class="gold-bg text-black font-bold uppercase px-6 py-3 rounded-lg tracking-wider text-sm hover:opacity-90 shadow-lg">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'barber_store_settings';
+
+        const DEFAULT_CONFIG = {
+            site: { name: 'CLIRCUTS', whatsapp: '233538865290', currency: 'GHS' },
+            hero: {
+                badge: 'Premium Grooming',
+                meta: 'Est. 2018 • Accra',
+                title1: 'Level Up',
+                title2: 'Your Image.',
+                description: "Not just a haircut. An experience. We provide the sharpest looks for the modern gentleman in East Legon.",
+                image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=1000'
+            },
+            barber: {
+                name: "Kwame 'The Blade'",
+                bio: '"Your hair is your crown. With 10 years of experience styling CEOs and celebrities, I ensure you leave my chair ready to conquer the world."',
+                image: 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=400'
+            },
+            video: { heading: 'Master in Action', sub: 'Precision. Artistry. Focus.', poster: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1000' },
+            reviewsHeading: 'Client Talk',
+            reviews: [
+                { stars: 5, text: '"I was recommended by my brother and i loved that i tried him out, i can\'t count how many stares i got after my haircut section with kwame"', author: 'Omar Shaker', initials: 'OS' },
+                { stars: 5, text: '"Barber wey know cut wey go fit you de3 you no go get o, Kwame is my Jack Blade when it comes to haircut."', author: 'Jesali B.', initials: 'JB' },
+                { stars: 5, text: '"If you\'ve got the money go for home service. Blade arrived on time and set up a full station in my living room. Best cut in Accra."', author: 'Opana Frimps.', initials: 'OF' },
+                { stars: 5, text: '"The home service is a game changer. Kwame arrived on time and set up a full station in my living room. Best cut in Accra."', author: 'Michael K.', initials: 'MK' },
+                { stars: 5, text: '"Professional atmosphere. No loud music, just clean cuts and good conversation. Highly recommended."', author: 'James Appiah', initials: 'JA' }
+            ],
+            location: { heading: 'Visit The Studio', address: 'American House, East Legon\nOpposite Fuel Station', link: '#' },
+            services: [
+                { id: 1, name: 'Executive Haircut', priceShop: 60, priceHome: 150, time: '45min', img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 2, name: 'Beard Sculpting', priceShop: 40, priceHome: 80, time: '30min', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 3, name: 'Black Dye (Enhancement)', priceShop: 50, priceHome: 100, time: '30min', img: 'https://images.unsplash.com/photo-1512864084360-7c0c4d0a0845?auto=format&fit=crop&q=80&w=200', images: [], variants: [{ name: 'Shade', options: ['Black', 'Dark Brown'] }] },
+                { id: 4, name: 'Hot Towel Shave', priceShop: 70, priceHome: 120, time: '40min', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 5, name: 'Kids Cut', priceShop: 40, priceHome: 100, time: '30min', img: 'https://images.unsplash.com/photo-1703792685152-d13e206924d8?q=80&w=200&auto=format&fit=crop', images: [], variants: [] },
+                { id: 6, name: 'Locks Retwist', priceShop: 150, priceHome: 250, time: '3hrs', img: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 7, name: 'Locks Dye', priceShop: 150, priceHome: 200, time: '30min', img: 'https://images.unsplash.com/photo-1620331317312-74b88bf40907?auto=format&fit=crop&q=80&w=200', images: [], variants: [{ name: 'Color', options: ['Black', 'Brown', 'Burgundy'] }] },
+                { id: 8, name: "Sportin' Waves", priceShop: 50, priceHome: 100, time: '30min', img: 'https://plus.unsplash.com/premium_photo-1721715373525-6391a4080956?q=80&w=200&auto=format&fit=crop', images: [], variants: [] }
+            ]
+        };
+
+        function getConfig() {
+            try {
+                const s = localStorage.getItem(STORAGE_KEY);
+                if (s) {
+                    const parsed = JSON.parse(s);
+                    return deepMerge(DEFAULT_CONFIG, parsed);
+                }
+            } catch (e) {}
+            return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        }
+
+        function deepMerge(target, source) {
+            const out = { ...target };
+            for (const key of Object.keys(source)) {
+                if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]) && source[key] !== null) {
+                    out[key] = deepMerge(out[key] || {}, source[key]);
+                } else if (Array.isArray(source[key])) {
+                    out[key] = source[key];
+                } else if (source[key] !== undefined && source[key] !== '') {
+                    out[key] = source[key];
+                }
+            }
+            return out;
+        }
+
+        const CONFIG = getConfig();
+        let selected = [];
+        let currentMode = 'shop';
+        let selectedVariants = {}; // serviceId -> { variantName: option }
+
+        // Theme
+        function initTheme() {
+            const theme = localStorage.getItem('barber_theme') || 'dark';
+            document.documentElement.classList.toggle('light-mode', theme === 'light');
+            document.querySelector('.theme-icon-dark').classList.toggle('hidden', theme !== 'dark');
+            document.querySelector('.theme-icon-light').classList.toggle('hidden', theme !== 'light');
+        }
+
+        document.getElementById('theme-toggle').onclick = function() {
+            const isLight = document.documentElement.classList.toggle('light-mode');
+            localStorage.setItem('barber_theme', isLight ? 'light' : 'dark');
+            document.querySelector('.theme-icon-dark').classList.toggle('hidden', !isLight);
+            document.querySelector('.theme-icon-light').classList.toggle('hidden', isLight);
+        };
+
+        initTheme();
+
+        // Apply config to DOM
+        function applyConfig() {
+            const s = CONFIG.site || {};
+            document.getElementById('site-brand').textContent = s.name || 'CLIRCUTS';
+            const wa = (s.whatsapp || '').replace(/\D/g, '');
+            document.getElementById('contact-wa').href = wa ? `https://wa.me/${wa}` : '#';
+
+            const h = CONFIG.hero || {};
+            document.getElementById('hero-badge').textContent = h.badge || 'Premium Grooming';
+            document.getElementById('hero-meta').textContent = h.meta || 'Est. 2018 • Accra';
+            document.getElementById('hero-title-1').textContent = h.title1 || 'Level Up';
+            document.getElementById('hero-title-2').textContent = h.title2 || 'Your Image.';
+            document.getElementById('hero-desc').textContent = h.description || '';
+            const heroImg = document.getElementById('hero-img');
+            if (h.image) heroImg.src = h.image;
+
+            const b = CONFIG.barber || {};
+            document.getElementById('barber-name').textContent = b.name || '';
+            document.getElementById('barber-bio').textContent = b.bio || '';
+            const barberImg = document.getElementById('barber-img');
+            if (b.image) barberImg.src = b.image;
+
+            const v = CONFIG.video || {};
+            document.getElementById('video-heading').textContent = v.heading || 'Master in Action';
+            document.getElementById('video-sub').textContent = v.sub || '';
+            const poster = document.getElementById('video-poster');
+            if (v.poster) poster.src = v.poster;
+
+            document.getElementById('reviews-heading').textContent = CONFIG.reviewsHeading || 'Client Talk';
+            const track = document.getElementById('reviews-track');
+            const reviews = CONFIG.reviews || [];
+            track.innerHTML = reviews.map(r => `
+                <div class="snap-center shrink-0 w-72 bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border)]">
+                    <div class="flex gap-1 mb-4">
+                        ${Array(r.stars || 5).fill(0).map(() => '<i data-lucide="star" class="w-3 h-3 gold-text fill-[var(--accent)]"></i>').join('')}
+                    </div>
+                    <p class="text-[var(--text-secondary)] text-sm italic mb-4">${escapeHtml(r.text)}</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-[var(--border)] flex items-center justify-center font-bold text-xs">${escapeHtml(r.initials || '')}</div>
+                        <span class="text-xs font-semibold">${escapeHtml(r.author || '')}</span>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+
+            document.getElementById('services-heading').textContent = CONFIG.servicesHeading || 'Select Service';
+            document.getElementById('services-sub').textContent = CONFIG.servicesSub || 'Choose your preference';
+
+            const loc = CONFIG.location || {};
+            document.getElementById('location-heading').textContent = loc.heading || 'Visit The Studio';
+            document.getElementById('location-address').innerHTML = (loc.address || '').replace(/\n/g, '<br>');
+            const locLink = document.getElementById('location-link');
+            locLink.href = loc.link || '#';
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderServices() {
+            const SERVICES = CONFIG.services || [];
+            const list = document.getElementById('service-list');
+            list.classList.remove('fade-in');
+            void list.offsetWidth;
+            list.classList.add('fade-in');
+
+            list.innerHTML = SERVICES.map(s => {
+                const isSelected = selected.includes(s.id);
+                const price = currentMode === 'shop' ? s.priceShop : s.priceHome;
+                const imgs = [s.img, ...(Array.isArray(s.images) ? s.images : [])].filter(Boolean);
+                const hasGallery = imgs.length > 1;
+                const variants = Array.isArray(s.variants) ? s.variants : [];
+                const selV = selectedVariants[s.id] || {};
+
+                return `
+                <div onclick="toggleService(${s.id})" id="service-${s.id}" class="product-card flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-[var(--bg-card)] border ${isSelected ? 'gold-border border-2' : 'border-[var(--border)]'} cursor-pointer hover:border-[var(--text-muted)] transition-all group">
+                    <div class="relative w-full md:w-24 h-28 md:h-24 rounded-lg bg-[var(--bg-secondary)] overflow-hidden shrink-0 flex-shrink-0">
+                        <img src="${escapeHtml(imgs[0])}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 product-main-img-${s.id}" alt="">
+                        ${hasGallery ? `
+                        <div class="absolute bottom-1 left-1 right-1 flex gap-1 justify-center">
+                            ${imgs.slice(0, 4).map((url, i) => `<span class="thumb-dot ${i === 0 ? 'active' : ''}" data-service="${s.id}" data-idx="${i}" onclick="event.stopPropagation(); setProductImage(${s.id}, ${i})"></span>`).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="flex-1 flex flex-col justify-center min-w-0">
+                        <div class="flex justify-between items-start gap-2 mb-1">
+                            <h4 class="font-semibold text-sm md:text-lg leading-tight">${escapeHtml(s.name)}</h4>
+                            ${isSelected ? '<div class="gold-bg text-black p-1 rounded-full shrink-0"><i data-lucide="check" class="w-3 h-3"></i></div>' : ''}
+                        </div>
+                        ${variants.length ? `<div class="flex flex-wrap gap-1 mb-2" onclick="event.stopPropagation()">${variants.map(v => `
+                            <span class="text-[10px] text-[var(--text-muted)] w-full">${escapeHtml(v.name)}:</span>
+                            ${(v.options || []).map((opt, oi) => `<button type="button" class="variant-pill ${(selV[v.name] || v.options[0]) === opt ? 'selected' : ''}" onclick="setVariant(${s.id}, '${escapeHtml(v.name)}', '${escapeHtml(opt)}')">${escapeHtml(opt)}</button>`).join('')}
+                        `).join('')}</div>` : ''}
+                        <div class="flex justify-between items-center mt-auto">
+                            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${escapeHtml(s.time)}</span>
+                            <span class="font-bold gold-text text-base md:text-lg">${escapeHtml(CONFIG.site?.currency || 'GHS')} ${price}</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+
+            lucide.createIcons();
+            // Preload other images for gallery
+            SERVICES.forEach(s => {
+                const imgs = Array.isArray(s.images) && s.images.length ? s.images : [s.img];
+                imgs.forEach((url, i) => {
+                    const el = document.querySelector(`.product-main-img-${s.id}`);
+                    if (el && i === 0) return;
+                    if (el && imgs[i]) { const img = new Image(); img.src = imgs[i]; }
+                });
+            });
+        }
+
+        function setProductImage(serviceId, idx) {
+            const s = (CONFIG.services || []).find(x => x.id === serviceId);
+            if (!s) return;
+            const imgs = Array.isArray(s.images) && s.images.length ? s.images : [s.img];
+            const url = imgs[idx];
+            const el = document.querySelector(`.product-main-img-${serviceId}`);
+            if (el && url) {
+                el.src = url;
+                document.querySelectorAll(`.thumb-dot[data-service="${serviceId}"]`).forEach((d, i) => d.classList.toggle('active', i === idx));
+            }
+        }
+
+        function setVariant(serviceId, name, option) {
+            selectedVariants[serviceId] = selectedVariants[serviceId] || {};
+            selectedVariants[serviceId][name] = option;
+            renderServices();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-shop').className = mode === 'shop' ? 'flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all gold-bg text-black' : 'flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]';
+            document.getElementById('btn-home').className = mode === 'home' ? 'flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all gold-bg text-black' : 'flex-1 py-3 rounded-lg text-sm font-semibold uppercase tracking-wider transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]';
+            document.getElementById('mode-badge').textContent = mode === 'shop' ? 'In Shop' : 'Home Service';
+            renderServices();
+            updateBar();
+        }
+
+        function toggleService(id) {
+            if (selected.includes(id)) selected = selected.filter(i => i !== id);
+            else selected.push(id);
+            renderServices();
+            updateBar();
+        }
+
+        function updateBar() {
+            const bar = document.getElementById('booking-bar');
+            bar.classList.toggle('translate-y-full', selected.length === 0);
+
+            const SERVICES = CONFIG.services || [];
+            const total = selected.reduce((sum, id) => {
+                const s = SERVICES.find(x => x.id === id);
+                return sum + (currentMode === 'shop' ? s.priceShop : s.priceHome);
+            }, 0);
+            const currency = CONFIG.site?.currency || 'GHS';
+            document.getElementById('selected-count').textContent = selected.length;
+            document.getElementById('total-price').textContent = `${currency} ${total}`;
+        }
+
+        function bookNow() {
+            const name = document.getElementById('client-name').value.trim();
+            if (!name) return alert('Please enter your name.');
+
+            const SERVICES = CONFIG.services || [];
+            const serviceNames = selected.map(id => {
+                const s = SERVICES.find(x => x.id === id);
+                const v = selectedVariants[s.id];
+                let label = s.name;
+                if (v && Object.keys(v).length) label += ' (' + Object.values(v).join(', ') + ')';
+                return label;
+            }).join(', ');
+            const total = document.getElementById('total-price').textContent;
+            const type = currentMode === 'shop' ? '📍 IN-SHOP' : '🏠 HOME SERVICE';
+            const msg = `💈 *NEW APPOINTMENT*\n👤 Client: ${name}\n📋 Type: ${type}\n✂️ Services: ${serviceNames}\n💰 Total: ${total}\n\nDo you have availability?`;
+            const wa = (CONFIG.site?.whatsapp || '').replace(/\D/g, '');
+            window.open(wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '#', '_blank');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollReviews(dir) {
+            const track = document.getElementById('reviews-track');
+            track.scrollBy({ left: dir * 280, behavior: 'smooth' });
+        }
+
+        applyConfig();
+        renderServices();
+    </script>
+</body>
+</html>

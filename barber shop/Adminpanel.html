@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Dashboard | Barber Store</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #d4af37;
+            --bg: #f5f5f4;
+            --card: #ffffff;
+            --border: #e7e5e4;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; display: flex; overflow-x: hidden; }
+        /* ========== Login / Setup screen ========== */
+        .auth-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            padding: 24px 16px;
+            background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+        }
+        .auth-screen.hidden { display: none; }
+        .hidden { display: none !important; }
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .auth-box h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            color: var(--sidebar-active);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .auth-box .auth-sub { color: #666; font-size: 0.9rem; text-align: center; margin-bottom: 28px; }
+        .auth-box .form-group { margin-bottom: 18px; }
+        .auth-box .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+        .auth-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; }
+        .auth-box input:focus { outline: none; border-color: var(--sidebar-active); box-shadow: 0 0 0 3px rgba(212,175,55,0.2); }
+        .auth-box .auth-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            background: var(--sidebar-active);
+            color: #0f0f0f;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .auth-box .auth-btn:hover { opacity: 0.9; }
+        .auth-box .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; text-align: center; min-height: 20px; }
+        .auth-footer { margin-top: 20px; text-align: center; }
+        .auth-footer button { background: none; border: none; color: #666; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+        .auth-footer button:hover { color: var(--text); }
+        .dashboard-wrap { display: none; flex: 1; flex-direction: column; min-width: 0; }
+        .dashboard-wrap.visible { display: flex; }
+        /* ========== Mobile: hamburger + drawer sidebar ========== */
+        .top-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--sidebar);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            min-height: 52px;
+        }
+        .top-bar .menu-btn {
+            background: none;
+            border: none;
+            color: var(--sidebar-active);
+            padding: 10px;
+            font-size: 1.25rem;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        .top-bar .menu-btn:active { background: rgba(255,255,255,0.1); }
+        .top-bar .top-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--sidebar-active); }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 101;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar-overlay.open { display: block; opacity: 1; }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 102;
+            transition: transform 0.25s ease;
+        }
+        .sidebar .menu-close { display: none; position: absolute; top: 12px; right: 12px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 8px; }
+        .sidebar-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--sidebar-active); padding: 0 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 4px; transition: all 0.2s; min-height: 48px; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(212,175,55,0.15); color: var(--sidebar-active); }
+        .nav-item i { width: 22px; text-align: center; font-size: 1.1rem; }
+        .sidebar-footer { position: absolute; bottom: 24px; left: 24px; right: 24px; }
+        .preview-btn, .logout-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        .preview-btn { background: var(--sidebar-active); color: #0f0f0f; }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .logout-btn { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .logout-btn:hover { background: rgba(239,68,68,0.3); }
+        .change-login-btn { background: transparent; border: 1px solid var(--sidebar-active); color: var(--sidebar-active); margin-bottom: 0; }
+        .change-login-btn:hover { background: rgba(212,175,55,0.15); }
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px 20px 32px;
+            padding-top: 24px;
+        }
+        .page-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-title { font-size: 1.4rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 24px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            font-size: 0.95rem;
+            min-height: 44px;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast { position: fixed; bottom: 24px; left: 16px; right: 16px; max-width: 400px; margin: 0 auto; background: var(--success); color: white; padding: 16px 24px; border-radius: 12px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 9999; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: var(--card); border-radius: 16px; padding: 20px 20px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--border); }
+        .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; min-height: 44px; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #666; margin-top: 6px; display: block; font-size: 0.85rem; }
+        .item-block { background: #f9f9f9; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .item-block h4 { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; font-size: 1rem; }
+        .btn-small { padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; border: none; font-weight: 500; min-height: 40px; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: #0f0f0f; }
+        .btn-add:hover { opacity: 0.9; }
+        .thumb-preview { width: 100%; height: 100px; background-size: cover; background-position: center; border-radius: 8px; margin-top: 10px; }
+        .service-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px 70px 60px 44px;
+            gap: 8px;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .service-row:last-child { border-bottom: none; }
+        .service-row img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; }
+        .service-row input, .service-row textarea { padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; min-height: 40px; }
+        .service-row textarea { min-height: 56px; resize: vertical; }
+        .service-row .btn-icon { background: none; border: none; color: var(--danger); cursor: pointer; padding: 8px; min-width: 44px; min-height: 44px; }
+        .service-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 18px; overflow: hidden; }
+        .service-block-header { background: #f0f0f0; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; min-height: 48px; }
+        .service-block-header:hover { background: #ebebeb; }
+        .service-block-body { padding: 16px; }
+        .images-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .images-list .img-wrap { position: relative; width: 56px; height: 56px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .images-list .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .images-list .img-wrap .del-img { position: absolute; top: 2px; right: 2px; background: var(--danger); color: white; border: none; border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-size: 12px; line-height: 1; padding: 0; }
+        .variant-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+        .variant-row input { flex: 1; min-width: 100px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); }
+        .link-row { display: grid; grid-template-columns: 1fr 1fr 50px; gap: 10px; align-items: center; margin-bottom: 12px; }
+        .link-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); }
+        @media (max-width: 900px) {
+            .top-bar { display: flex; }
+            .sidebar { transform: translateX(-100%); left: 0; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar .menu-close { display: block; }
+            .main { margin-left: 0; padding-top: 72px; padding-left: 16px; padding-right: 16px; }
+            .service-row {
+                grid-template-columns: 56px 1fr;
+                gap: 10px;
+            }
+            .service-row .btn-icon { grid-column: 2; }
+        }
+        @media (max-width: 600px) {
+            .link-row { grid-template-columns: 1fr 50px; }
+            .link-row input:first-of-type { grid-column: 1 / -2; }
+        }
+        /* Modal for change credentials */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-box h3 { margin-bottom: 20px; font-size: 1.2rem; }
+        .modal-box .form-group { margin-bottom: 16px; }
+        .modal-box .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-box .modal-actions button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; }
+        .modal-box .modal-actions .btn-cancel { background: #eee; color: #333; }
+        .modal-box .modal-actions .btn-confirm { background: var(--sidebar-active); color: #0f0f0f; }
+    </style>
+</head>
+<body>
+    <!-- ========== Auth screens (login / setup) ========== -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-box" id="auth-box-login">
+            <h1>Admin Login</h1>
+            <p class="auth-sub">Sign in to manage your store</p>
+            <form id="form-login" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" autocomplete="username" required placeholder="Your username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" autocomplete="current-password" required placeholder="Your password">
+                </div>
+                <p class="auth-error" id="login-error"></p>
+                <button type="submit" class="auth-btn" id="btn-login">Sign in</button>
+            </form>
+            <div class="auth-footer">
+                <button type="button" onclick="showChangeCredentialsModal()">Change login credentials</button>
+            </div>
+        </div>
+        <div class="auth-box hidden" id="auth-box-setup">
+            <h1>Set up admin login</h1>
+            <p class="auth-sub">Create the username and password you'll use to access the admin</p>
+            <form id="form-setup" onsubmit="return handleSetup(event)">
+                <div class="form-group">
+                    <label for="setup-username">Username</label>
+                    <input type="text" id="setup-username" autocomplete="username" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="setup-password">Password</label>
+                    <input type="password" id="setup-password" autocomplete="new-password" required placeholder="Choose a password" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="setup-confirm">Confirm password</label>
+                    <input type="password" id="setup-confirm" autocomplete="new-password" required placeholder="Confirm password">
+                </div>
+                <p class="auth-error" id="setup-error"></p>
+                <button type="submit" class="auth-btn" id="btn-setup">Create login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-wrap" class="dashboard-wrap">
+    <div class="top-bar">
+        <button type="button" class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+        <span class="top-title">Barber Admin</span>
+        <span style="width:44px;"></span>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <button type="button" class="menu-close" onclick="closeSidebar()" aria-label="Close menu"><i class="fa-solid fa-times"></i></button>
+        <div class="sidebar-logo">Barber Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general"><i class="fa-solid fa-store"></i><span>General & WhatsApp</span></div>
+            <div class="nav-item" data-section="hero"><i class="fa-solid fa-image"></i><span>Hero Section</span></div>
+            <div class="nav-item" data-section="barber"><i class="fa-solid fa-user-tie"></i><span>Barber Profile</span></div>
+            <div class="nav-item" data-section="video"><i class="fa-solid fa-video"></i><span>Video Section</span></div>
+            <div class="nav-item" data-section="reviews"><i class="fa-solid fa-star"></i><span>Reviews</span></div>
+            <div class="nav-item" data-section="services"><i class="fa-solid fa-scissors"></i><span>Services / Products</span></div>
+            <div class="nav-item" data-section="location"><i class="fa-solid fa-map-marker-alt"></i><span>Location</span></div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()"><i class="fa-solid fa-external-link-alt"></i> Preview Store</button>
+            <button type="button" class="logout-btn" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Log out</button>
+            <button type="button" class="change-login-btn" onclick="showChangeCredentialsModal()"><i class="fa-solid fa-key"></i> Change login</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General & WhatsApp</h1>
+            <button class="save-btn" onclick="saveAll()"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store / Brand Name</label>
+                    <input type="text" id="site-name" placeholder="CLIRCUTS">
+                </div>
+                <div class="form-group">
+                    <label>Currency (e.g. GHS, GH₵)</label>
+                    <input type="text" id="currency" placeholder="GHS" maxlength="10">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code + number, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233538865290">
+                    <small>Example: 233501234567 for Ghana. Used for "Contact" and automated booking message.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-hero">
+            <div class="card">
+                <h3 class="card-title">Hero Section (Main Page Top)</h3>
+                <div class="form-group">
+                    <label>Badge Text</label>
+                    <input type="text" id="hero-badge" placeholder="Premium Grooming">
+                </div>
+                <div class="form-group">
+                    <label>Meta Line (e.g. Est. 2018 • Accra)</label>
+                    <input type="text" id="hero-meta" placeholder="Est. 2018 • Accra">
+                </div>
+                <div class="form-group">
+                    <label>Headline Line 1</label>
+                    <input type="text" id="hero-title1" placeholder="Level Up">
+                </div>
+                <div class="form-group">
+                    <label>Headline Line 2 (accent)</label>
+                    <input type="text" id="hero-title2" placeholder="Your Image.">
+                </div>
+                <div class="form-group">
+                    <label>Short Description</label>
+                    <textarea id="hero-desc" placeholder="Not just a haircut. An experience..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hero Background Image URL</label>
+                    <input type="text" id="hero-image" placeholder="https://...">
+                    <div class="thumb-preview" id="hero-image-preview"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-barber">
+            <div class="card">
+                <h3 class="card-title">Meet The Barber</h3>
+                <div class="form-group">
+                    <label>Barber Name</label>
+                    <input type="text" id="barber-name" placeholder="Kwame 'The Blade'">
+                </div>
+                <div class="form-group">
+                    <label>Bio / Quote</label>
+                    <textarea id="barber-bio" placeholder="Your hair is your crown..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Profile Image URL</label>
+                    <input type="text" id="barber-image" placeholder="https://...">
+                    <div class="thumb-preview" id="barber-image-preview"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-video">
+            <div class="card">
+                <h3 class="card-title">Video / Showcase Section</h3>
+                <div class="form-group">
+                    <label>Section Heading</label>
+                    <input type="text" id="video-heading" placeholder="Master in Action">
+                </div>
+                <div class="form-group">
+                    <label>Subheading</label>
+                    <input type="text" id="video-sub" placeholder="Precision. Artistry. Focus.">
+                </div>
+                <div class="form-group">
+                    <label>Poster / Thumbnail Image URL</label>
+                    <input type="text" id="video-poster" placeholder="https://...">
+                    <div class="thumb-preview" id="video-poster-preview"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-reviews">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Client Reviews</h3>
+                    <button class="btn-small btn-add" onclick="addReview()"><i class="fa-solid fa-plus"></i> Add Review</button>
+                </div>
+                <div class="form-group">
+                    <label>Section Heading</label>
+                    <input type="text" id="reviews-heading" placeholder="Client Talk">
+                </div>
+                <div id="reviews-container"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-services">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Services / Products</h3>
+                    <button class="btn-small btn-add" onclick="addService()"><i class="fa-solid fa-plus"></i> Add Service</button>
+                </div>
+                <div class="form-group">
+                    <label>Services Section Heading</label>
+                    <input type="text" id="services-heading" placeholder="Select Service">
+                </div>
+                <div class="form-group">
+                    <label>Services Section Subtext</label>
+                    <input type="text" id="services-sub" placeholder="Choose your preference">
+                </div>
+                <div id="services-container"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-location">
+            <div class="card">
+                <h3 class="card-title">Location</h3>
+                <div class="form-group">
+                    <label>Section Heading</label>
+                    <input type="text" id="location-heading" placeholder="Visit The Studio">
+                </div>
+                <div class="form-group">
+                    <label>Address (use new line for line break)</label>
+                    <textarea id="location-address" rows="3" placeholder="American House, East Legon&#10;Opposite Fuel Station"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Directions Link URL (Google Maps etc.)</label>
+                    <input type="text" id="location-link" placeholder="https://maps.google.com/...">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <!-- Modal: Change credentials -->
+    <div class="modal-backdrop" id="modal-change-creds">
+        <div class="modal-box">
+            <h3>Change login credentials</h3>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:16px;">Enter your current password, then set a new username and password.</p>
+            <form id="form-change-creds" onsubmit="return handleChangeCredentials(event)">
+                <div class="form-group">
+                    <label>Current password</label>
+                    <input type="password" id="change-current" required placeholder="Current password">
+                </div>
+                <div class="form-group">
+                    <label>New username</label>
+                    <input type="text" id="change-new-username" required placeholder="New username">
+                </div>
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" id="change-new-password" placeholder="Leave blank to keep current" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Confirm new password</label>
+                    <input type="password" id="change-new-confirm" placeholder="Confirm new password">
+                </div>
+                <p class="auth-error" id="change-error"></p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeChangeCredentialsModal()">Cancel</button>
+                    <button type="submit" class="btn-confirm">Update credentials</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div><!-- end dashboard-wrap -->
+
+    <script>
+        const STORAGE_KEY = 'barber_store_settings';
+        const AUTH_STORAGE_KEY = 'barber_admin_auth';
+        const SESSION_KEY = 'barber_admin_session';
+
+        const DEFAULT_DATA = {
+            site: { name: 'CLIRCUTS', whatsapp: '233538865290', currency: 'GHS' },
+            hero: { badge: 'Premium Grooming', meta: 'Est. 2018 • Accra', title1: 'Level Up', title2: 'Your Image.', description: "Not just a haircut. An experience. We provide the sharpest looks for the modern gentleman in East Legon.", image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=1000' },
+            barber: { name: "Kwame 'The Blade'", bio: '"Your hair is your crown. With 10 years of experience styling CEOs and celebrities, I ensure you leave my chair ready to conquer the world."', image: 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=400' },
+            video: { heading: 'Master in Action', sub: 'Precision. Artistry. Focus.', poster: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1000' },
+            reviewsHeading: 'Client Talk',
+            servicesHeading: 'Select Service',
+            servicesSub: 'Choose your preference',
+            reviews: [
+                { stars: 5, text: '"I was recommended by my brother and i loved that i tried him out, i can\'t count how many stares i got after my haircut section with kwame"', author: 'Omar Shaker', initials: 'OS' },
+                { stars: 5, text: '"Barber wey know cut wey go fit you de3 you no go get o, Kwame is my Jack Blade when it comes to haircut."', author: 'Jesali B.', initials: 'JB' },
+                { stars: 5, text: '"If you\'ve got the money go for home service. Blade arrived on time and set up a full station in my living room. Best cut in Accra."', author: 'Opana Frimps.', initials: 'OF' },
+                { stars: 5, text: '"The home service is a game changer. Kwame arrived on time and set up a full station in my living room. Best cut in Accra."', author: 'Michael K.', initials: 'MK' },
+                { stars: 5, text: '"Professional atmosphere. No loud music, just clean cuts and good conversation. Highly recommended."', author: 'James Appiah', initials: 'JA' }
+            ],
+            location: { heading: 'Visit The Studio', address: 'American House, East Legon\nOpposite Fuel Station', link: '#' },
+            services: [
+                { id: 1, name: 'Executive Haircut', priceShop: 60, priceHome: 150, time: '45min', img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 2, name: 'Beard Sculpting', priceShop: 40, priceHome: 80, time: '30min', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 3, name: 'Black Dye (Enhancement)', priceShop: 50, priceHome: 100, time: '30min', img: 'https://images.unsplash.com/photo-1512864084360-7c0c4d0a0845?auto=format&fit=crop&q=80&w=200', images: [], variants: [{ name: 'Shade', options: ['Black', 'Dark Brown'] }] },
+                { id: 4, name: 'Hot Towel Shave', priceShop: 70, priceHome: 120, time: '40min', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 5, name: 'Kids Cut', priceShop: 40, priceHome: 100, time: '30min', img: 'https://images.unsplash.com/photo-1703792685152-d13e206924d8?q=80&w=200&auto=format&fit=crop', images: [], variants: [] },
+                { id: 6, name: 'Locks Retwist', priceShop: 150, priceHome: 250, time: '3hrs', img: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=200', images: [], variants: [] },
+                { id: 7, name: 'Locks Dye', priceShop: 150, priceHome: 200, time: '30min', img: 'https://images.unsplash.com/photo-1620331317312-74b88bf40907?auto=format&fit=crop&q=80&w=200', images: [], variants: [{ name: 'Color', options: ['Black', 'Brown', 'Burgundy'] }] },
+                { id: 8, name: "Sportin' Waves", priceShop: 50, priceHome: 100, time: '30min', img: 'https://plus.unsplash.com/premium_photo-1721715373525-6391a4080956?q=80&w=200&auto=format&fit=crop', images: [], variants: [] }
+            ]
+        };
+
+        let data = {};
+
+        // ---------- Auth (no config file; credentials stored in localStorage) ----------
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = await crypto.subtle.digest('SHA-256', enc.encode(password));
+            return Array.from(new Uint8Array(data)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getStoredAuth() {
+            try {
+                const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function setStoredAuth(user, passHash) {
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: user.trim(), passHash }));
+        }
+
+        function isSessionValid() {
+            try {
+                const s = sessionStorage.getItem(SESSION_KEY);
+                if (!s) return false;
+                const { user } = JSON.parse(s);
+                const auth = getStoredAuth();
+                return auth && auth.user === user;
+            } catch (e) { return false; }
+        }
+
+        function setSession(user) {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user }));
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem(SESSION_KEY);
+        }
+
+        function showAuthScreen(mode) {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('dashboard-wrap').classList.remove('visible');
+            document.getElementById('auth-box-login').classList.toggle('hidden', mode !== 'login');
+            document.getElementById('auth-box-setup').classList.toggle('hidden', mode !== 'setup');
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('setup-error').textContent = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('dashboard-wrap').classList.add('visible');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            const btn = document.getElementById('btn-login');
+            errEl.textContent = '';
+            btn.disabled = true;
+            const auth = getStoredAuth();
+            if (!auth) {
+                errEl.textContent = 'No login set up. Refresh and set your credentials first.';
+                btn.disabled = false;
+                return false;
+            }
+            if (auth.user !== user) {
+                errEl.textContent = 'Invalid username or password.';
+                btn.disabled = false;
+                return false;
+            }
+            const hash = await hashPassword(pass);
+            if (hash !== auth.passHash) {
+                errEl.textContent = 'Invalid username or password.';
+                btn.disabled = false;
+                return false;
+            }
+            setSession(user);
+            showDashboard();
+            btn.disabled = false;
+            return false;
+        }
+
+        async function handleSetup(e) {
+            e.preventDefault();
+            const user = document.getElementById('setup-username').value.trim();
+            const pass = document.getElementById('setup-password').value;
+            const confirm = document.getElementById('setup-confirm').value;
+            const errEl = document.getElementById('setup-error');
+            const btn = document.getElementById('btn-setup');
+            errEl.textContent = '';
+            if (!user) {
+                errEl.textContent = 'Please enter a username.';
+                return false;
+            }
+            if (pass.length < 6) {
+                errEl.textContent = 'Password must be at least 6 characters.';
+                return false;
+            }
+            if (pass !== confirm) {
+                errEl.textContent = 'Passwords do not match.';
+                return false;
+            }
+            btn.disabled = true;
+            const hash = await hashPassword(pass);
+            setStoredAuth(user, hash);
+            setSession(user);
+            showDashboard();
+            btn.disabled = false;
+            return false;
+        }
+
+        function logout() {
+            clearSession();
+            showAuthScreen('login');
+            document.getElementById('login-password').value = '';
+        }
+
+        function showChangeCredentialsModal() {
+            closeSidebar();
+            document.getElementById('modal-change-creds').classList.add('open');
+            document.getElementById('change-current').value = '';
+            document.getElementById('change-new-username').value = '';
+            document.getElementById('change-new-password').value = '';
+            document.getElementById('change-new-confirm').value = '';
+            document.getElementById('change-error').textContent = '';
+        }
+
+        function closeChangeCredentialsModal() {
+            document.getElementById('modal-change-creds').classList.remove('open');
+        }
+
+        async function handleChangeCredentials(e) {
+            e.preventDefault();
+            const current = document.getElementById('change-current').value;
+            const newUser = document.getElementById('change-new-username').value.trim();
+            const newPass = document.getElementById('change-new-password').value;
+            const newConfirm = document.getElementById('change-new-confirm').value;
+            const errEl = document.getElementById('change-error');
+            const auth = getStoredAuth();
+            if (!auth) {
+                errEl.textContent = 'No credentials stored.';
+                return false;
+            }
+            const currentHash = await hashPassword(current);
+            if (currentHash !== auth.passHash) {
+                errEl.textContent = 'Current password is incorrect.';
+                return false;
+            }
+            if (!newUser) {
+                errEl.textContent = 'Enter a new username.';
+                return false;
+            }
+            if (newPass && newPass !== newConfirm) {
+                errEl.textContent = 'New passwords do not match.';
+                return false;
+            }
+            if (newPass && newPass.length < 6) {
+                errEl.textContent = 'New password must be at least 6 characters.';
+                return false;
+            }
+            const passHash = newPass ? await hashPassword(newPass) : auth.passHash;
+            setStoredAuth(newUser, passHash);
+            setSession(newUser);
+            closeChangeCredentialsModal();
+            showToast();
+            return false;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('open');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('open');
+        }
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed };
+                    if (parsed.services && parsed.services.length) data.services = parsed.services;
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('Clircuts.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General & WhatsApp', hero: 'Hero Section', barber: 'Barber Profile', video: 'Video Section', reviews: 'Reviews', services: 'Services / Products', location: 'Location' };
+                document.getElementById('section-title').textContent = titles[id];
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS';
+        }
+
+        function renderHero() {
+            const h = data.hero || {};
+            document.getElementById('hero-badge').value = h.badge || '';
+            document.getElementById('hero-meta').value = h.meta || '';
+            document.getElementById('hero-title1').value = h.title1 || '';
+            document.getElementById('hero-title2').value = h.title2 || '';
+            document.getElementById('hero-desc').value = h.description || '';
+            const url = h.image || '';
+            document.getElementById('hero-image').value = url;
+            document.getElementById('hero-image-preview').style.backgroundImage = url ? `url('${url}')` : 'none';
+        }
+
+        document.getElementById('hero-image').addEventListener('input', function() {
+            document.getElementById('hero-image-preview').style.backgroundImage = this.value ? `url('${this.value}')` : 'none';
+        });
+
+        function renderBarber() {
+            const b = data.barber || {};
+            document.getElementById('barber-name').value = b.name || '';
+            document.getElementById('barber-bio').value = b.bio || '';
+            const url = b.image || '';
+            document.getElementById('barber-image').value = url;
+            document.getElementById('barber-image-preview').style.backgroundImage = url ? `url('${url}')` : 'none';
+        }
+
+        document.getElementById('barber-image').addEventListener('input', function() {
+            document.getElementById('barber-image-preview').style.backgroundImage = this.value ? `url('${this.value}')` : 'none';
+        });
+
+        function renderVideo() {
+            const v = data.video || {};
+            document.getElementById('video-heading').value = v.heading || '';
+            document.getElementById('video-sub').value = v.sub || '';
+            const url = v.poster || '';
+            document.getElementById('video-poster').value = url;
+            document.getElementById('video-poster-preview').style.backgroundImage = url ? `url('${url}')` : 'none';
+        }
+
+        document.getElementById('video-poster').addEventListener('input', function() {
+            document.getElementById('video-poster-preview').style.backgroundImage = this.value ? `url('${this.value}')` : 'none';
+        });
+
+        function renderReviews() {
+            document.getElementById('reviews-heading').value = data.reviewsHeading || 'Client Talk';
+            const list = data.reviews || [];
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = list.map((r, i) => `
+                <div class="item-block" data-index="${i}">
+                    <h4>Review ${i + 1} <button type="button" class="btn-small btn-danger" onclick="removeReview(${i})">Remove</button></h4>
+                    <div class="form-group">
+                        <label>Stars (1-5)</label>
+                        <input type="number" min="1" max="5" value="${r.stars || 5}" onchange="updateReview(${i}, 'stars', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Quote / Text</label>
+                        <textarea onchange="updateReview(${i}, 'text', this.value)">${(r.text || '').replace(/</g, '&lt;')}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Author Name</label>
+                        <input type="text" value="${(r.author || '').replace(/"/g, '&quot;')}" onchange="updateReview(${i}, 'author', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Initials (e.g. OS)</label>
+                        <input type="text" value="${(r.initials || '').replace(/"/g, '&quot;')}" maxlength="4" onchange="updateReview(${i}, 'initials', this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateReview(i, field, val) {
+            if (!data.reviews) data.reviews = [];
+            data.reviews[i] = data.reviews[i] || {};
+            if (field === 'stars') val = Math.max(1, Math.min(5, parseInt(val, 10) || 5));
+            data.reviews[i][field] = val;
+        }
+
+        function addReview() {
+            if (!data.reviews) data.reviews = [];
+            data.reviews.push({ stars: 5, text: '"Great service!"', author: 'New Customer', initials: 'NC' });
+            renderReviews();
+        }
+
+        function removeReview(i) {
+            data.reviews.splice(i, 1);
+            renderReviews();
+        }
+
+        function renderServices() {
+            document.getElementById('services-heading').value = data.servicesHeading || 'Select Service';
+            document.getElementById('services-sub').value = data.servicesSub || 'Choose your preference';
+            const services = data.services || [];
+            const container = document.getElementById('services-container');
+            container.innerHTML = services.map((s, idx) => {
+                const imgs = Array.isArray(s.images) && s.images.length ? s.images : [];
+                const mainImg = s.img || '';
+                const allImgs = mainImg ? [mainImg, ...imgs] : imgs;
+                const variants = Array.isArray(s.variants) ? s.variants : [];
+                return `
+                <div class="service-block" data-idx="${idx}">
+                    <div class="service-block-header">
+                        <strong>${escapeHtml(s.name)}</strong>
+                        <button type="button" class="btn-small btn-danger" onclick="removeService(${idx})">Remove</button>
+                    </div>
+                    <div class="service-block-body">
+                        <div class="service-row" style="grid-template-columns: 60px 1fr 80px 80px 80px 50px;">
+                            <img src="${mainImg || 'https://via.placeholder.com/50'}" alt="" onerror="this.src='https://via.placeholder.com/50'">
+                            <input type="text" value="${escapeHtml(s.name)}" onchange="updateService(${idx}, 'name', this.value)" placeholder="Name">
+                            <input type="number" value="${s.priceShop}" onchange="updateService(${idx}, 'priceShop', this.value)" placeholder="Shop">
+                            <input type="number" value="${s.priceHome}" onchange="updateService(${idx}, 'priceHome', this.value)" placeholder="Home">
+                            <input type="text" value="${s.time}" onchange="updateService(${idx}, 'time', this.value)" placeholder="Time">
+                            <button type="button" class="btn-icon" onclick="removeService(${idx})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="form-group" style="margin-top:12px;">
+                            <label>Main Image URL</label>
+                            <input type="text" value="${escapeHtml(mainImg)}" onchange="updateService(${idx}, 'img', this.value)" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label>Extra Images (one URL per line — for products with multiple photos)</label>
+                            <textarea placeholder="https://...&#10;https://..." onchange="updateServiceImages(${idx}, this.value)">${(imgs || []).join('\n')}</textarea>
+                            <div class="images-list">${(allImgs || []).filter(Boolean).map((url, i) => `
+                                <div class="img-wrap">
+                                    <img src="${url}" alt="" onerror="this.parentElement.remove()">
+                                    ${i > 0 ? `<button type="button" class="del-img" onclick="removeServiceImage(${idx}, ${i - 1})">&times;</button>` : ''}
+                                </div>
+                            `).join('')}</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Variants (e.g. Color, Size) — one per line: "VariantName: Option1, Option2"</label>
+                            <textarea placeholder="Color: Black, Brown, Burgundy&#10;Size: S, M, L" onchange="updateServiceVariants(${idx}, this.value)">${variants.map(v => `${v.name}: ${(v.options || []).join(', ')}`).join('\n')}</textarea>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function updateService(idx, field, val) {
+            if (!data.services) data.services = [];
+            data.services[idx] = data.services[idx] || {};
+            if (field === 'priceShop' || field === 'priceHome') val = parseFloat(val) || 0;
+            data.services[idx][field] = val;
+        }
+
+        function updateServiceImages(idx, text) {
+            if (!data.services) return;
+            const urls = text.split(/\n/).map(s => s.trim()).filter(Boolean);
+            data.services[idx].images = urls;
+        }
+
+        function removeServiceImage(idx, imgIdx) {
+            if (!data.services || !data.services[idx].images) return;
+            data.services[idx].images.splice(imgIdx, 1);
+            renderServices();
+        }
+
+        function updateServiceVariants(idx, text) {
+            if (!data.services) return;
+            const lines = text.split(/\n/).map(s => s.trim()).filter(Boolean);
+            data.services[idx].variants = lines.map(line => {
+                const [name, rest] = line.split(':').map(s => s.trim());
+                const options = rest ? rest.split(',').map(s => s.trim()).filter(Boolean) : [];
+                return { name: name || 'Option', options };
+            }).filter(v => v.name && v.options.length);
+        }
+
+        function addService() {
+            if (!data.services) data.services = [];
+            const maxId = Math.max(0, ...data.services.map(s => s.id || 0)) + 1;
+            data.services.push({ id: maxId, name: 'New Service', priceShop: 0, priceHome: 0, time: '30min', img: '', images: [], variants: [] });
+            renderServices();
+        }
+
+        function removeService(idx) {
+            if (!confirm('Remove this service?')) return;
+            data.services.splice(idx, 1);
+            renderServices();
+        }
+
+        function renderLocation() {
+            const loc = data.location || {};
+            document.getElementById('location-heading').value = loc.heading || '';
+            document.getElementById('location-address').value = (loc.address || '').replace(/<br\s*\/?>/gi, '\n');
+            document.getElementById('location-link').value = loc.link || '';
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'CLIRCUTS';
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim().replace(/\D/g, '') || '';
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS';
+        }
+
+        function collectHero() {
+            data.hero = data.hero || {};
+            data.hero.badge = document.getElementById('hero-badge').value.trim();
+            data.hero.meta = document.getElementById('hero-meta').value.trim();
+            data.hero.title1 = document.getElementById('hero-title1').value.trim();
+            data.hero.title2 = document.getElementById('hero-title2').value.trim();
+            data.hero.description = document.getElementById('hero-desc').value.trim();
+            data.hero.image = document.getElementById('hero-image').value.trim();
+        }
+
+        function collectBarber() {
+            data.barber = data.barber || {};
+            data.barber.name = document.getElementById('barber-name').value.trim();
+            data.barber.bio = document.getElementById('barber-bio').value.trim();
+            data.barber.image = document.getElementById('barber-image').value.trim();
+        }
+
+        function collectVideo() {
+            data.video = data.video || {};
+            data.video.heading = document.getElementById('video-heading').value.trim();
+            data.video.sub = document.getElementById('video-sub').value.trim();
+            data.video.poster = document.getElementById('video-poster').value.trim();
+        }
+
+        function collectReviews() {
+            data.reviewsHeading = document.getElementById('reviews-heading').value.trim();
+        }
+
+        function collectServices() {
+            data.servicesHeading = document.getElementById('services-heading').value.trim();
+            data.servicesSub = document.getElementById('services-sub').value.trim();
+        }
+
+        function collectLocation() {
+            data.location = data.location || {};
+            data.location.heading = document.getElementById('location-heading').value.trim();
+            data.location.address = document.getElementById('location-address').value.trim().replace(/\n/g, '\n');
+            data.location.link = document.getElementById('location-link').value.trim();
+        }
+
+        function saveAll() {
+            collectGeneral();
+            collectHero();
+            collectBarber();
+            collectVideo();
+            collectReviews();
+            collectServices();
+            collectLocation();
+            saveData();
+            showToast();
+        }
+
+        // ---------- Init: auth first, then dashboard content ----------
+        (function initAuth() {
+            if (isSessionValid()) {
+                showDashboard();
+            } else {
+                const auth = getStoredAuth();
+                if (auth && auth.user && auth.passHash) {
+                    showAuthScreen('login');
+                } else {
+                    showAuthScreen('setup');
+                }
+            }
+        })();
+
+        loadData();
+        renderGeneral();
+        renderHero();
+        renderBarber();
+        renderVideo();
+        renderReviews();
+        renderServices();
+        renderLocation();
+    </script>
+</body>
+</html>

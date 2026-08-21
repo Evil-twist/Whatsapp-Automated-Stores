@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grace City Chapel</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #faf9f7;
+            --bg-card: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #5c5c5c;
+            --accent: #b8860b;
+            --accent-soft: #d4af37;
+            --primary: #1e293b;
+            --primary-soft: #334155;
+            --border: #e8e6e3;
+            --hero-overlay: rgba(30, 41, 59, 0.75);
+        }
+        [data-theme="dark"] {
+            --bg: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --text: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --accent: #d4af37;
+            --accent-soft: #c9a227;
+            --primary: #e2e8f0;
+            --primary-soft: #cbd5e1;
+            --border: #2a2a2a;
+            --hero-overlay: rgba(0, 0, 0, 0.7);
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+        .font-display { font-family: 'Cormorant Garamond', serif; }
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        [data-theme="dark"] .glass { background: rgba(26, 26, 26, 0.9); }
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .gold-line { width: 64px; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        .btn-gold:hover { filter: brightness(1.1); box-shadow: 0 4px 20px rgba(184, 134, 11, 0.35); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        [data-theme="dark"] .card-hover:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.35); }
+        .theme-toggle {
+            width: 44px; height: 24px;
+            background: var(--border);
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            top: 3px; left: 3px;
+            transition: transform 0.3s ease;
+        }
+        [data-theme="dark"] .theme-toggle::after { transform: translateX(20px); }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-up { animation: fadeUp 0.7s ease forwards; }
+        .hero-bg { background: var(--hero-overlay); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-50 transition-all duration-300 glass" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full flex items-center justify-center text-[var(--accent)] border-2 border-[var(--accent)]">
+                    <i data-lucide="church" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="font-display font-bold text-lg text-[var(--text)] leading-none" id="nav-brand">GRACE CITY</div>
+                    <div class="text-[10px] uppercase tracking-[0.25em] text-[var(--text-muted)]" id="nav-tagline">Chapel International</div>
+                </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-2">
+                <a href="#home" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Home</a>
+                <a href="#about" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">About</a>
+                <a href="#services" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Services</a>
+                <a href="#pastor" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Our Pastor</a>
+                <a href="#sermons" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Sermons</a>
+                <a href="#events" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Events</a>
+                <a href="#contact" class="nav-link px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition">Contact</a>
+                <button type="button" class="theme-toggle ml-2" id="theme-toggle" aria-label="Toggle dark mode"></button>
+                <button onclick="toggleGive()" class="btn-gold ml-4 px-6 py-2.5 rounded-full text-sm uppercase tracking-wider shadow-lg">
+                    Give Online
+                </button>
+            </div>
+
+            <div class="flex md:hidden items-center gap-2">
+                <button type="button" class="theme-toggle" id="theme-toggle-mob"></button>
+                <button onclick="toggleGive()" class="btn-gold px-4 py-2 rounded-full text-xs font-semibold">Give</button>
+                <button class="p-2 text-[var(--text)]" id="menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--border)] bg-[var(--bg-card)] px-6 py-4">
+            <a href="#home" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Home</a>
+            <a href="#about" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">About</a>
+            <a href="#services" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Services</a>
+            <a href="#pastor" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Our Pastor</a>
+            <a href="#sermons" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Sermons</a>
+            <a href="#events" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Events</a>
+            <a href="#contact" class="block py-2 text-[var(--text)]" onclick="closeMobileMenu()">Contact</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header id="home" class="relative min-h-[90vh] flex items-center justify-center text-center px-4 overflow-hidden">
+        <img id="hero-image" src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1600" alt="" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 hero-bg"></div>
+        <div class="relative z-10 max-w-4xl text-white pt-24">
+            <div class="inline-block border border-[var(--accent-soft)]/60 text-[var(--accent-soft)] px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-[0.2em] mb-6 animate-fade-up" id="hero-badge">Welcome Home</div>
+            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight animate-fade-up" style="animation-delay: 0.1s">
+                <span id="hero-title">A Place of <br><span class="text-[var(--accent-soft)]">Grace</span> & Truth</span>
+            </h1>
+            <p class="text-white/90 text-lg md:text-xl mb-10 font-light max-w-2xl mx-auto animate-fade-up" style="animation-delay: 0.2s" id="hero-subtitle">
+                Join us for a life-transforming encounter with God. We are a family of believers dedicated to raising leaders.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s">
+                <a href="#services" class="inline-flex items-center justify-center bg-white text-[var(--primary)] px-8 py-3.5 rounded-full font-semibold uppercase text-xs tracking-widest hover:bg-white/95 transition">Plan A Visit</a>
+                <a href="#" id="hero-watch-link" class="inline-flex items-center justify-center gap-2 border-2 border-white text-white px-8 py-3.5 rounded-full font-semibold uppercase text-xs tracking-widest hover:bg-white hover:text-[var(--primary)] transition">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i> Watch Live
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ABOUT / VISION -->
+    <section id="about" class="py-24 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="gold-line mx-auto mb-4"></div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4">Who We Are</h2>
+                <p class="text-[var(--text-muted)] max-w-2xl mx-auto" id="about-intro">A community built on faith, grace, and the pursuit of God's purpose for every life.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 card-hover">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center text-[var(--accent)] mb-6 bg-[var(--accent)]/10">
+                        <i data-lucide="compass" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-3">Our Vision</h3>
+                    <p class="text-[var(--text-muted)] leading-relaxed" id="about-vision">To build a city of God where every member is empowered to dominate in their sphere of influence.</p>
+                </div>
+                <div class="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 card-hover">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center text-[var(--accent)] mb-6 bg-[var(--accent)]/10">
+                        <i data-lucide="heart" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-3">Our Mission</h3>
+                    <p class="text-[var(--text-muted)] leading-relaxed" id="about-mission">To preach the Gospel, disciple nations, and demonstrate God's love through acts of service and excellence.</p>
+                </div>
+                <div class="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 card-hover">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center text-[var(--accent)] mb-6 bg-[var(--accent)]/10">
+                        <i data-lucide="award" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-3">Our Values</h3>
+                    <p class="text-[var(--text-muted)] leading-relaxed" id="about-values">Excellence, Integrity, Love, Faith, and Servant Leadership in everything we do.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICE TIMES -->
+    <section id="services" class="py-24 px-6 bg-[var(--bg-card)] border-y border-[var(--border)]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="gold-line mx-auto mb-4"></div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4">Service Times</h2>
+                <p class="text-[var(--text-muted)] max-w-xl mx-auto">Join us in person or online. We can't wait to worship with you.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="services-container">
+                <div class="border border-[var(--border)] rounded-2xl p-8 text-center card-hover">
+                    <i data-lucide="sun" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2">Sunday Worship</h3>
+                    <p class="text-[var(--accent)] font-semibold mb-1">9:00 AM & 11:00 AM</p>
+                    <p class="text-[var(--text-muted)] text-sm">Main Sanctuary</p>
+                </div>
+                <div class="border border-[var(--border)] rounded-2xl p-8 text-center card-hover">
+                    <i data-lucide="moon" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2">Midweek Service</h3>
+                    <p class="text-[var(--accent)] font-semibold mb-1">Wednesdays • 6:00 PM</p>
+                    <p class="text-[var(--text-muted)] text-sm">Bible Study & Prayer</p>
+                </div>
+                <div class="border border-[var(--border)] rounded-2xl p-8 text-center card-hover sm:col-span-2 lg:col-span-1">
+                    <i data-lucide="wifi" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2">Live Stream</h3>
+                    <p class="text-[var(--accent)] font-semibold mb-1">Every Sunday</p>
+                    <p class="text-[var(--text-muted)] text-sm">Watch online</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PASTOR -->
+    <section id="pastor" class="py-24 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="w-full lg:w-1/2 relative order-2 lg:order-1">
+                    <div class="absolute -inset-4 bg-[var(--accent)]/20 rounded-[2rem] transform translate-x-4 translate-y-4"></div>
+                    <img id="pastor-image" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800" alt="Pastor" class="relative w-full rounded-[1.5rem] shadow-2xl object-cover aspect-[4/5] grayscale hover:grayscale-0 transition duration-700">
+                </div>
+                <div class="w-full lg:w-1/2 order-1 lg:order-2">
+                    <div class="text-[var(--accent)] font-semibold uppercase tracking-[0.2em] text-sm mb-3">Meet the Shepherd</div>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4" id="pastor-name">Rev. Dr. Jesali White Clirpa</h2>
+                    <p class="text-[var(--text-muted)] leading-relaxed mb-6 text-lg" id="pastor-bio">
+                        With over 20 years of ministry, Rev. Jesali carries a mandate to liberate God's people through the teaching of the unadulterated Word. His ministry is characterized by tangible miracles and a deep fatherly love for the congregation.
+                    </p>
+                    <blockquote class="pl-6 border-l-4 border-[var(--accent)] py-2 text-[var(--text-muted)] italic text-lg" id="pastor-quote">
+                        "Our vision is to build a city of God where every member is empowered to dominate in their sphere of influence."
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERMONS -->
+    <section id="sermons" class="py-24 px-6 bg-[var(--bg-card)] border-y border-[var(--border)]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="gold-line mx-auto mb-4"></div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4">Latest Messages</h2>
+                <p class="text-[var(--text-muted)] max-w-xl mx-auto">Be encouraged by the Word. Watch or listen anytime.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="sermons-container">
+                <div class="group cursor-pointer card-hover rounded-2xl overflow-hidden bg-[var(--bg)]">
+                    <div class="relative overflow-hidden aspect-video">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="play" class="w-14 h-14 text-white fill-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-2">Faith Series • Part 1</div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)]">Walking on Water</h3>
+                    </div>
+                </div>
+                <div class="group cursor-pointer card-hover rounded-2xl overflow-hidden bg-[var(--bg)]">
+                    <div class="relative overflow-hidden aspect-video">
+                        <img src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="play" class="w-14 h-14 text-white fill-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-2">Financial Dominion</div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)]">The Power of the Seed</h3>
+                    </div>
+                </div>
+                <div class="group cursor-pointer card-hover rounded-2xl overflow-hidden bg-[var(--bg)]">
+                    <div class="relative overflow-hidden aspect-video">
+                        <img src="https://images.unsplash.com/photo-1511649475669-e288648b2339?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="play" class="w-14 h-14 text-white fill-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-2">Family Life</div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)]">Building a Godly Home</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events" class="py-24 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="gold-line mx-auto mb-4"></div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4">Upcoming Events</h2>
+                <p class="text-[var(--text-muted)] max-w-xl mx-auto">Gather with us for conferences, retreats, and special services.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8" id="events-container">
+                <div class="flex gap-6 p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] card-hover">
+                    <div class="flex-shrink-0 w-24 h-24 rounded-xl bg-[var(--accent)]/15 flex flex-col items-center justify-center text-[var(--accent)]">
+                        <span class="text-2xl font-bold leading-none" id="event1-day">15</span>
+                        <span class="text-xs uppercase" id="event1-month">MAR</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2" id="event1-title">Easter Celebration</h3>
+                        <p class="text-[var(--text-muted)] text-sm mb-2" id="event1-desc">Join us for a powerful Easter service and family brunch.</p>
+                        <p class="text-[var(--accent)] font-medium text-sm">9:00 AM • Main Sanctuary</p>
+                    </div>
+                </div>
+                <div class="flex gap-6 p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] card-hover">
+                    <div class="flex-shrink-0 w-24 h-24 rounded-xl bg-[var(--accent)]/15 flex flex-col items-center justify-center text-[var(--accent)]">
+                        <span class="text-2xl font-bold leading-none" id="event2-day">22</span>
+                        <span class="text-xs uppercase" id="event2-month">MAR</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2" id="event2-title">Leadership Summit</h3>
+                        <p class="text-[var(--text-muted)] text-sm mb-2" id="event2-desc">A day of equipping for ministry and marketplace leaders.</p>
+                        <p class="text-[var(--accent)] font-medium text-sm">10:00 AM • Conference Hall</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="py-24 px-6 bg-[var(--bg-card)] border-y border-[var(--border)]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="gold-line mx-auto mb-4"></div>
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-[var(--text)] mb-4">Get in Touch</h2>
+                <p class="text-[var(--text-muted)] max-w-xl mx-auto">We'd love to hear from you. Visit us or send a message.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-8 rounded-2xl border border-[var(--border)] card-hover">
+                    <i data-lucide="map-pin" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-lg font-bold text-[var(--text)] mb-2">Address</h3>
+                    <p class="text-[var(--text-muted)]" id="footer-address">East Legon Hills, Near the British International School, Accra.</p>
+                </div>
+                <div class="text-center p-8 rounded-2xl border border-[var(--border)] card-hover">
+                    <i data-lucide="phone" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-lg font-bold text-[var(--text)] mb-2">Phone</h3>
+                    <p class="text-[var(--text-muted)]" id="footer-phone">+233 XX XXX XXXX</p>
+                </div>
+                <div class="text-center p-8 rounded-2xl border border-[var(--border)] card-hover">
+                    <i data-lucide="mail" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-lg font-bold text-[var(--text)] mb-2">Email</h3>
+                    <p class="text-[var(--text-muted)]" id="footer-email">info@gracecitychapel.org</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 px-6 border-t border-[var(--border)]">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="font-display text-3xl font-bold text-[var(--text)] mb-2" id="footer-brand">GRACE CITY</div>
+            <p class="text-[var(--text-muted)] text-sm mb-8 max-w-md mx-auto" id="footer-about">A place of grace and truth. Building leaders, transforming lives.</p>
+            <div class="flex justify-center gap-8 mb-8" id="footer-socials">
+                <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition" aria-label="Facebook"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition" aria-label="YouTube"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition" aria-label="Instagram"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+            </div>
+            <p class="text-xs text-[var(--text-muted)]" id="footer-copyright">&copy; 2025 Grace City Chapel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- GIVE MODAL -->
+    <div id="give-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="toggleGive()"></div>
+        <div class="relative bg-[var(--bg-card)] w-full max-w-md rounded-2xl p-8 shadow-2xl border border-[var(--border)]">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-[var(--accent)]/15 text-[var(--accent)]">
+                    <i data-lucide="heart" class="w-8 h-8 fill-current"></i>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-[var(--text)]">Online Giving</h3>
+                <p class="text-[var(--text-muted)] text-sm mt-2">"God loves a cheerful giver." — 2 Cor 9:7</p>
+            </div>
+            <div class="p-5 rounded-xl border border-[var(--border)] mb-6 text-center bg-[var(--bg)]">
+                <div class="text-xs font-semibold text-[var(--accent)] uppercase tracking-widest mb-2">MoMo Number</div>
+                <div class="text-2xl font-mono font-bold text-[var(--text)] tracking-wider" id="give-momo-number">053 886 5290</div>
+                <div class="text-xs text-[var(--text-muted)] mt-1" id="give-momo-name">Grace City Finance</div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-6">
+                <button type="button" class="give-option py-3 border border-[var(--border)] rounded-xl text-sm font-semibold text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition">Tithe</button>
+                <button type="button" class="give-option py-3 border border-[var(--border)] rounded-xl text-sm font-semibold text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition">Offering</button>
+                <button type="button" class="give-option py-3 border border-[var(--border)] rounded-xl text-sm font-semibold text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition">Pledge</button>
+            </div>
+            <a id="give-whatsapp-btn" href="#" target="_blank" rel="noopener" class="block w-full py-3.5 btn-gold text-center rounded-xl font-semibold">I Have Sent It</a>
+            <button type="button" onclick="toggleGive()" class="w-full mt-3 py-2.5 text-[var(--text-muted)] hover:text-[var(--text)]">Close</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'church_site_settings';
+
+        function getSettings() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function applySettings() {
+            const s = getSettings();
+            if (!s) return;
+
+            if (s.site) {
+                if (s.site.brand) {
+                    document.getElementById('nav-brand').textContent = s.site.brand;
+                    document.getElementById('footer-brand').textContent = s.site.brand;
+                }
+                if (s.site.tagline) document.getElementById('nav-tagline').textContent = s.site.tagline;
+                if (s.site.about) document.getElementById('footer-about').textContent = s.site.about;
+                if (s.site.copyright) document.getElementById('footer-copyright').textContent = s.site.copyright;
+            }
+            if (s.hero) {
+                if (s.hero.badge) document.getElementById('hero-badge').textContent = s.hero.badge;
+                if (s.hero.title) document.getElementById('hero-title').innerHTML = s.hero.title;
+                if (s.hero.subtitle) document.getElementById('hero-subtitle').textContent = s.hero.subtitle;
+                if (s.hero.image) document.getElementById('hero-image').src = s.hero.image;
+                if (s.hero.watchUrl) document.getElementById('hero-watch-link').href = s.hero.watchUrl;
+            }
+            if (s.about) {
+                if (s.about.intro) document.getElementById('about-intro').textContent = s.about.intro;
+                if (s.about.vision) document.getElementById('about-vision').textContent = s.about.vision;
+                if (s.about.mission) document.getElementById('about-mission').textContent = s.about.mission;
+                if (s.about.values) document.getElementById('about-values').textContent = s.about.values;
+            }
+            if (s.pastor) {
+                if (s.pastor.name) document.getElementById('pastor-name').textContent = s.pastor.name;
+                if (s.pastor.bio) document.getElementById('pastor-bio').textContent = s.pastor.bio;
+                if (s.pastor.quote) document.getElementById('pastor-quote').textContent = '"' + s.pastor.quote + '"';
+                if (s.pastor.image) document.getElementById('pastor-image').src = s.pastor.image;
+            }
+            if (s.give) {
+                if (s.give.momoNumber) document.getElementById('give-momo-number').textContent = s.give.momoNumber;
+                if (s.give.momoName) document.getElementById('give-momo-name').textContent = s.give.momoName;
+                const whatsapp = (s.give.whatsappNumber || '').replace(/\D/g, '');
+                const msg = encodeURIComponent(s.give.whatsappMessage || 'I have sent my offering/tithe.');
+                document.getElementById('give-whatsapp-btn').href = whatsapp ? `https://wa.me/${whatsapp}?text=${msg}` : '#';
+            }
+            if (s.footer) {
+                if (s.footer.address) document.getElementById('footer-address').textContent = s.footer.address;
+                if (s.footer.phone) document.getElementById('footer-phone').textContent = s.footer.phone;
+                if (s.footer.email) document.getElementById('footer-email').textContent = s.footer.email;
+            }
+            if (s.sermons && s.sermons.length) renderSermons(s.sermons);
+            if (s.events && s.events.length) renderEvents(s.events);
+            if (s.services && s.services.length) renderServices(s.services);
+            if (s.footer && s.footer.social && s.footer.social.length) renderSocials(s.footer.social);
+        }
+
+        function renderSermons(list) {
+            const container = document.getElementById('sermons-container');
+            if (!container) return;
+            container.innerHTML = list.slice(0, 6).map(s => `
+                <div class="group cursor-pointer card-hover rounded-2xl overflow-hidden bg-[var(--bg)]">
+                    <div class="relative overflow-hidden aspect-video">
+                        <img src="${(s.image || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="play" class="w-14 h-14 text-white fill-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-2">${(s.series || '').replace(/</g, '&lt;')}</div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)]">${(s.title || '').replace(/</g, '&lt;')}</h3>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderEvents(list) {
+            const container = document.getElementById('events-container');
+            if (!container) return;
+            const months = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split(' ');
+            container.innerHTML = list.slice(0, 4).map((e, i) => {
+                const d = e.date ? new Date(e.date) : new Date();
+                const day = d.getDate();
+                const month = months[d.getMonth()] || 'TBD';
+                return `
+                <div class="flex gap-6 p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] card-hover">
+                    <div class="flex-shrink-0 w-24 h-24 rounded-xl bg-[var(--accent)]/15 flex flex-col items-center justify-center text-[var(--accent)]">
+                        <span class="text-2xl font-bold leading-none">${day}</span>
+                        <span class="text-xs uppercase">${month}</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2">${(e.title || 'Event').replace(/</g, '&lt;')}</h3>
+                        <p class="text-[var(--text-muted)] text-sm mb-2">${(e.description || '').replace(/</g, '&lt;')}</p>
+                        <p class="text-[var(--accent)] font-medium text-sm">${(e.time || '').replace(/</g, '&lt;')} ${e.venue ? '• ' + e.venue : ''}</p>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderServices(list) {
+            const container = document.getElementById('services-container');
+            if (!container) return;
+            const icons = { sunday: 'sun', midweek: 'moon', live: 'wifi' };
+            container.innerHTML = list.map(s => `
+                <div class="border border-[var(--border)] rounded-2xl p-8 text-center card-hover">
+                    <i data-lucide="${icons[s.icon] || 'calendar'}" class="w-10 h-10 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h3 class="font-display text-xl font-bold text-[var(--text)] mb-2">${(s.title || '').replace(/</g, '&lt;')}</h3>
+                    <p class="text-[var(--accent)] font-semibold mb-1">${(s.time || '').replace(/</g, '&lt;')}</p>
+                    <p class="text-[var(--text-muted)] text-sm">${(s.subtitle || '').replace(/</g, '&lt;')}</p>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderSocials(list) {
+            const container = document.getElementById('footer-socials');
+            if (!container) return;
+            const iconMap = { facebook: 'facebook', youtube: 'youtube', instagram: 'instagram', twitter: 'twitter' };
+            container.innerHTML = list.map(s => {
+                const icon = (iconMap[s.icon] || s.icon || 'link').toLowerCase();
+                return `<a href="${(s.url || '#').replace(/"/g, '&quot;')}" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition" aria-label="${(s.name || icon).replace(/"/g, '&quot;')}" target="_blank" rel="noopener"><i data-lucide="${icon}" class="w-5 h-5"></i></a>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        applySettings();
+
+        function toggleGive() {
+            document.getElementById('give-modal').classList.toggle('hidden');
+        }
+
+        document.querySelectorAll('.give-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.give-option').forEach(b => b.classList.remove('border-[var(--accent)]', 'text-[var(--accent)]'));
+                this.classList.add('border-[var(--accent)]', 'text-[var(--accent)]');
+            });
+        });
+
+        function initTheme() {
+            const theme = localStorage.getItem('church_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('church_theme', next);
+        }
+        document.getElementById('theme-toggle').onclick = toggleTheme;
+        document.getElementById('theme-toggle-mob').onclick = toggleTheme;
+        initTheme();
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+        function closeMobileMenu() {
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) nav.classList.add('shadow-sm');
+            else nav.classList.remove('shadow-sm');
+        });
+    </script>
+</body>
+</html>

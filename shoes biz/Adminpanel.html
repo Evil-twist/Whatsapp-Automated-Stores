@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CLIRSHOE Store</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0d0d0d;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #b8860b;
+            --bg: #f5f5f4;
+            --card: #ffffff;
+            --border: #e5e5e5;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        /* Auth screens */
+        .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-box { width: 100%; max-width: 400px; background: var(--card); border-radius: 20px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+        .auth-box h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; color: var(--sidebar-active); margin-bottom: 8px; }
+        .auth-box p { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
+        .auth-box .form-group { margin-bottom: 18px; }
+        .auth-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; }
+        .auth-box .btn-login { width: 100%; padding: 14px; background: var(--sidebar-active); color: #0d0d0d; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 8px; }
+        .auth-box .btn-login:hover { opacity: 0.95; }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+        .auth-error.show { display: block; }
+        /* Dashboard layout */
+        .dashboard-wrap { display: none; min-height: 100vh; }
+        .dashboard-wrap.logged-in { display: flex; flex-direction: column; }
+        .main-wrap { display: flex; flex: 1; }
+        .sidebar { width: 260px; background: var(--sidebar); color: var(--sidebar-text); padding: 24px 0; position: fixed; height: 100vh; z-index: 100; transition: transform 0.3s ease; }
+        .sidebar-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--sidebar-active); padding: 0 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 4px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(184,134,11,0.2); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; flex-shrink: 0; }
+        .sidebar-footer { position: absolute; bottom: 24px; left: 24px; right: 24px; }
+        .preview-btn { width: 100%; padding: 14px; background: var(--sidebar-active); color: #0d0d0d; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 0.95rem; }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .main { flex: 1; margin-left: 260px; padding: 20px 16px 24px; min-width: 0; }
+        .page-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .page-title { font-size: 1.4rem; font-weight: 700; }
+        .save-btn { padding: 12px 20px; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 0.95rem; }
+        .save-btn:hover { opacity: 0.9; }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 100px); background: var(--success); color: white; padding: 14px 24px; border-radius: 10px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 9999; max-width: 90%; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--border); }
+        .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; -webkit-appearance: none; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .btn-small { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; border: none; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: #0d0d0d; }
+        .btn-add:hover { opacity: 0.9; }
+        .category-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .category-header { background: #f0f0f0; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .category-header:hover { background: #ebebeb; }
+        .category-body { padding: 16px; }
+        .product-block { background: #fafafa; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+        .product-block h4 { font-size: 0.9rem; margin-bottom: 10px; color: #555; }
+        .product-row { display: grid; gap: 10px; align-items: start; margin-bottom: 12px; grid-template-columns: 1fr; }
+        .product-row img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+        .product-row input { padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); min-width: 0; }
+        .product-row .btn-icon { background: none; border: none; color: var(--danger); cursor: pointer; padding: 10px; flex-shrink: 0; }
+        .variants-list { margin-top: 8px; }
+        .variant-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+        .variant-item input[type="text"] { flex: 1; min-width: 100px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .link-row { display: grid; gap: 10px; align-items: center; margin-bottom: 12px; grid-template-columns: 1fr; }
+        .link-row input, .link-row select { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); min-width: 0; }
+        .sizes-input { display: flex; flex-wrap: wrap; gap: 6px; }
+        .sizes-input input { width: 52px; padding: 10px; text-align: center; border-radius: 6px; border: 1px solid var(--border); }
+        @media (min-width: 640px) {
+            .product-row { grid-template-columns: 80px 1fr 120px 80px; }
+            .link-row { grid-template-columns: 1fr 2fr 180px 50px; }
+            .link-row-3 { grid-template-columns: 1fr 2fr 50px; }
+        }
+        /* Mobile: sidebar drawer */
+        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 101; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; opacity: 0; transition: opacity 0.3s; }
+        .sidebar-overlay.show { display: block; opacity: 1; }
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding-top: 72px; }
+        }
+        .logout-btn { width: 100%; padding: 10px; margin-top: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--sidebar-text); border-radius: 10px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logout-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    </style>
+</head>
+<body>
+    <!-- Login screen (shown when credentials exist but not logged in) -->
+    <div id="auth-login" class="auth-wrap" style="display: none;">
+        <div class="auth-box">
+            <h1>Admin Login</h1>
+            <p>Enter your credentials to manage your store.</p>
+            <form onsubmit="return doLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" placeholder="Your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Your password" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="auth-error"></p>
+                <button type="submit" class="btn-login">Log in</button>
+            </form>
+        </div>
+    </div>
+    <!-- Setup screen (first time: set username & password) -->
+    <div id="auth-setup" class="auth-wrap" style="display: none;">
+        <div class="auth-box">
+            <h1>Set up admin access</h1>
+            <p>Create a username and password to protect your admin panel. You’ll use these to sign in from now on.</p>
+            <form onsubmit="return doSetup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="setup-username" placeholder="Choose a username" required minlength="2" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="setup-password" placeholder="Choose a password" required minlength="4" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm password</label>
+                    <input type="password" id="setup-confirm" placeholder="Confirm password" required autocomplete="new-password">
+                </div>
+                <p id="setup-error" class="auth-error"></p>
+                <button type="submit" class="btn-login">Create login</button>
+            </form>
+        </div>
+    </div>
+    <!-- Dashboard (shown when logged in) -->
+    <div id="admin-dashboard" class="dashboard-wrap">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">CLIRSHOE Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general"><i class="fa-solid fa-gear"></i><span>General Settings</span></div>
+            <div class="nav-item" data-section="mainpage"><i class="fa-solid fa-pager"></i><span>Main Page Content</span></div>
+            <div class="nav-item" data-section="products"><i class="fa-solid fa-box"></i><span>Products & Categories</span></div>
+            <div class="nav-item" data-section="footer"><i class="fa-solid fa-window-maximize"></i><span>Footer & Social</span></div>
+            <div class="nav-item" data-section="security"><i class="fa-solid fa-lock"></i><span>Login & Security</span></div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()"><i class="fa-solid fa-external-link-alt"></i> Preview Store</button>
+            <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store Name</label>
+                    <input type="text" id="site-name" placeholder="CLIRSHOE">
+                </div>
+                <div class="form-group">
+                    <label>Tagline</label>
+                    <input type="text" id="site-tagline" placeholder="Fresh drops in Accra.">
+                </div>
+                <div class="form-group">
+                    <label>About / Description (Footer)</label>
+                    <textarea id="site-about" placeholder="Premium kicks. Authentic. Delivered."></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233538865290">
+                    <small style="color:#666; margin-top:6px; display:block;">e.g. 233501234567 for Ghana</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <input type="text" id="currency" placeholder="GHS" maxlength="10">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Default Sizes (EU)</h3>
+                <div class="form-group">
+                    <label>Comma-separated sizes (e.g. 36, 37, 38, 39, 40, 41, 42)</label>
+                    <input type="text" id="default-sizes" placeholder="36, 37, 38, 39, 40, 41, 42">
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-mainpage">
+            <div class="card">
+                <h3 class="card-title">Hero Banner (Main Page Top)</h3>
+                <p class="text-sm text-gray-600 mb-4">Optional banner at the top of the store. Leave blank to hide.</p>
+                <div class="form-group">
+                    <label>Headline</label>
+                    <input type="text" id="hero-title" placeholder="New Arrivals">
+                </div>
+                <div class="form-group">
+                    <label>Subtitle</label>
+                    <input type="text" id="hero-subtitle" placeholder="Limited drops this week.">
+                </div>
+                <div class="form-group">
+                    <label>Background Image URL</label>
+                    <input type="text" id="hero-image" placeholder="https://...">
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Categories & Products</h3>
+                    <button class="btn-small btn-add" onclick="addCategory()"><i class="fa-solid fa-plus"></i> Add Category</button>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Add multiple images per product and options like Color or Material. First image = main image.</p>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Footer Content</h3>
+                <div class="form-group">
+                    <label>Footer Brand Name</label>
+                    <input type="text" id="footer-brand" placeholder="CLIRSHOE">
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2025 CLIRSHOE. All Rights Reserved.">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> Add Social</button>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Footer Quick Links</h3>
+                <div id="footer-links-container"></div>
+                <button class="btn-small btn-add" onclick="addFooterLink()" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> Add Link</button>
+            </div>
+        </section>
+
+        <section class="section" id="section-security">
+            <div class="card">
+                <h3 class="card-title">Change admin login</h3>
+                <p class="text-sm text-gray-600 mb-4">Update the username and password you use to access this admin panel. You will need to log in again after changing.</p>
+                <form onsubmit="return changeCredentials(event)">
+                    <div class="form-group">
+                        <label>Current password</label>
+                        <input type="password" id="curr-password" placeholder="Enter current password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New username</label>
+                        <input type="text" id="new-username" placeholder="New username" minlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label>New password</label>
+                        <input type="password" id="new-password" placeholder="Leave blank to keep current">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm new password</label>
+                        <input type="password" id="new-password-confirm" placeholder="Confirm new password">
+                    </div>
+                    <p id="security-error" class="auth-error"></p>
+                    <button type="submit" class="save-btn"><i class="fa-solid fa-key"></i> Update login</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <script>
+        const STORAGE_KEY = 'clirshoes_settings';
+        const AUTH_USER_KEY = 'clirshoes_admin_user';
+        const AUTH_PASS_KEY = 'clirshoes_admin_pass';
+        const AUTH_READY_KEY = 'clirshoes_admin_ready';
+        const SESSION_KEY = 'clirshoes_admin_session';
+
+        async function hashPassword(pw) {
+            const enc = new TextEncoder();
+            const buf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function isLoggedIn() { return sessionStorage.getItem(SESSION_KEY) === '1'; }
+        function setLoggedIn() { sessionStorage.setItem(SESSION_KEY, '1'); }
+        function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+
+        function checkAuth() {
+            const ready = localStorage.getItem(AUTH_READY_KEY) === '1';
+            if (isLoggedIn()) {
+                showDashboard();
+                return;
+            }
+            if (ready) showLogin();
+            else showSetup();
+        }
+
+        function showLogin() {
+            document.getElementById('auth-setup').style.display = 'none';
+            document.getElementById('admin-dashboard').classList.remove('logged-in');
+            document.getElementById('auth-login').style.display = 'flex';
+            document.getElementById('login-error').classList.remove('show');
+            document.getElementById('login-error').textContent = '';
+        }
+
+        function showSetup() {
+            document.getElementById('auth-login').style.display = 'none';
+            document.getElementById('admin-dashboard').classList.remove('logged-in');
+            document.getElementById('auth-setup').style.display = 'flex';
+            document.getElementById('setup-error').classList.remove('show');
+            document.getElementById('setup-error').textContent = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-login').style.display = 'none';
+            document.getElementById('auth-setup').style.display = 'none';
+            document.getElementById('admin-dashboard').classList.add('logged-in');
+        }
+
+        async function doSetup(ev) {
+            ev.preventDefault();
+            const username = document.getElementById('setup-username').value.trim();
+            const password = document.getElementById('setup-password').value;
+            const confirm = document.getElementById('setup-confirm').value;
+            const errEl = document.getElementById('setup-error');
+            if (password !== confirm) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (password.length < 4) {
+                errEl.textContent = 'Password must be at least 4 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const hashed = await hashPassword(password);
+            localStorage.setItem(AUTH_USER_KEY, username);
+            localStorage.setItem(AUTH_PASS_KEY, hashed);
+            localStorage.setItem(AUTH_READY_KEY, '1');
+            setLoggedIn();
+            showDashboard();
+            return false;
+        }
+
+        async function doLogin(ev) {
+            ev.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            const storedUser = localStorage.getItem(AUTH_USER_KEY);
+            const storedHash = localStorage.getItem(AUTH_PASS_KEY);
+            if (!storedUser || !storedHash) {
+                errEl.textContent = 'No login set up. Refresh the page to set up.';
+                errEl.classList.add('show');
+                return false;
+            }
+            const hashed = await hashPassword(password);
+            if (username !== storedUser || hashed !== storedHash) {
+                errEl.textContent = 'Invalid username or password.';
+                errEl.classList.add('show');
+                return false;
+            }
+            setLoggedIn();
+            showDashboard();
+            return false;
+        }
+
+        function logout() {
+            clearSession();
+            checkAuth();
+        }
+
+        async function changeCredentials(ev) {
+            ev.preventDefault();
+            const curr = document.getElementById('curr-password').value;
+            const newUser = document.getElementById('new-username').value.trim();
+            const newPass = document.getElementById('new-password').value;
+            const newPassConfirm = document.getElementById('new-password-confirm').value;
+            const errEl = document.getElementById('security-error');
+            errEl.classList.remove('show');
+            errEl.textContent = '';
+            const storedUser = localStorage.getItem(AUTH_USER_KEY);
+            const storedHash = localStorage.getItem(AUTH_PASS_KEY);
+            const currHash = await hashPassword(curr);
+            if (currHash !== storedHash) {
+                errEl.textContent = 'Current password is incorrect.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (newPass && newPass !== newPassConfirm) {
+                errEl.textContent = 'New passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (newPass && newPass.length < 4) {
+                errEl.textContent = 'New password must be at least 4 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (newUser.length >= 2) localStorage.setItem(AUTH_USER_KEY, newUser);
+            if (newPass) localStorage.setItem(AUTH_PASS_KEY, await hashPassword(newPass));
+            localStorage.setItem(AUTH_READY_KEY, '1');
+            document.getElementById('curr-password').value = '';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('new-password-confirm').value = '';
+            errEl.textContent = '';
+            showToast('Login updated. Use your new credentials next time.');
+            return false;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('show');
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('show');
+        }
+
+        const DEFAULT_DATA = {
+            site: { name: 'CLIRSHOE', tagline: 'Fresh drops in Accra.', about: 'Premium kicks. Authentic. Delivered.', whatsapp: '233538865290', currency: 'GHS' },
+            sizes: [36, 37, 38, 39, 40, 41, 42],
+            hero: { title: '', subtitle: '', image: '' },
+            footer: {
+                brand: 'CLIRSHOE',
+                copyright: '© 2025 CLIRSHOE. All Rights Reserved.',
+                social: [
+                    { name: 'Instagram', url: '#', icon: 'fa-brands fa-instagram' },
+                    { name: 'TikTok', url: '#', icon: 'fa-brands fa-tiktok' }
+                ],
+                links: [
+                    { text: 'Contact', url: '#' },
+                    { text: 'Shipping', url: '#' }
+                ]
+            },
+            catalog: {
+                'Sneakers': [
+                    { id: 1, name: "Air Jordan 1 High OG 'Chicago'", price: 1150, img: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=800", images: [], variants: [{ name: 'Color', options: ['Red/White', 'Black'] }] },
+                    { id: 2, name: "Nike Dunk Low 'Panda'", price: 550, img: "https://images.unsplash.com/photo-1623684225794-a8f1f5037f5c?q=80&w=800", images: [], variants: [] }
+                ],
+                'Classics': [
+                    { id: 3, name: "Nike Air Force 1 'Triple White'", price: 450, img: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800", images: [], variants: [] }
+                ]
+            }
+        };
+
+        const ICON_OPTIONS = ['fa-brands fa-instagram', 'fa-brands fa-tiktok', 'fa-brands fa-facebook-f', 'fa-brands fa-twitter', 'fa-brands fa-snapchat', 'fa-brands fa-youtube', 'fa-brands fa-pinterest', 'fa-brands fa-linkedin-in'];
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed };
+                    if (!data.catalog || !Object.keys(data.catalog).length) data.catalog = DEFAULT_DATA.catalog;
+                } else data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            } catch (e) { data = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+        }
+
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg || 'Settings saved successfully!'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+        function previewSite() { window.open('clirshoes.html', '_blank'); }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General Settings', mainpage: 'Main Page Content', products: 'Products & Categories', footer: 'Footer & Social', security: 'Login & Security' };
+                document.getElementById('section-title').textContent = titles[id] || id;
+                closeSidebar();
+            };
+        });
+
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('site-about').value = data.site?.about || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS';
+            document.getElementById('footer-brand').value = data.footer?.brand || '';
+            document.getElementById('footer-copyright').value = data.footer?.copyright || '';
+            document.getElementById('default-sizes').value = (data.sizes || []).join(', ');
+            document.getElementById('hero-title').value = data.hero?.title || '';
+            document.getElementById('hero-subtitle').value = data.hero?.subtitle || '';
+            document.getElementById('hero-image').value = data.hero?.image || '';
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            const catalog = data.catalog || {};
+            const catNames = Object.keys(catalog);
+            container.innerHTML = catNames.map((catName, catIdx) => {
+                const products = catalog[catName] || [];
+                const productsHtml = products.map((p, pi) => {
+                    const imgs = Array.isArray(p.images) && p.images.length ? p.images : (p.img ? [p.img] : []);
+                    const mainImg = imgs[0] || p.img || 'https://via.placeholder.com/70';
+                    const variants = p.variants || [];
+                    return `
+                    <div class="product-block" data-cat="${catIdx}" data-prod="${pi}">
+                        <h4>Product ${pi + 1}</h4>
+                        <div class="product-row">
+                            <img src="${mainImg.replace(/"/g, '&quot;')}" alt="" onerror="this.src='https://via.placeholder.com/70'">
+                            <div>
+                                <input type="text" value="${(p.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateProd(${catIdx},${pi},'name',this.value)" style="margin-bottom:6px; width:100%;">
+                                <input type="number" value="${p.price}" placeholder="Price" onchange="updateProd(${catIdx},${pi},'price',this.value)" style="width:100px;">
+                            </div>
+                            <input type="text" value="${(p.img || '').replace(/"/g, '&quot;')}" placeholder="Main image URL" onchange="updateProd(${catIdx},${pi},'img',this.value)">
+                            <button class="btn-icon" onclick="removeProd(${catIdx},${pi})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label style="font-size:0.85rem;">Extra images (one URL per line)</label>
+                            <textarea rows="2" placeholder="https://...&#10;https://..." onchange="updateProdImages(${catIdx},${pi},this.value)" style="min-height:50px; font-size:0.85rem;">${(imgs.slice(1).join('\n') || '').replace(/</g, '&lt;')}</textarea>
+                            <small style="color:#666;">First image above = main. Add more URLs for product gallery.</small>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:0.85rem;">Variants (e.g. Color: Black, White)</label>
+                            <div class="variants-list" id="variants-${catIdx}-${pi}">${variants.map((v, vi) => `
+                                <div class="variant-item">
+                                    <input type="text" value="${(v.name || '').replace(/"/g, '&quot;')}" placeholder="Variant name" onchange="updateVariant(${catIdx},${pi},${vi},'name',this.value)">
+                                    <input type="text" value="${(v.options || []).join(', ').replace(/"/g, '&quot;')}" placeholder="Options (comma)" onchange="updateVariant(${catIdx},${pi},${vi},'options',this.value)">
+                                    <button class="btn-small btn-danger" onclick="removeVariant(${catIdx},${pi},${vi})">Remove</button>
+                                </div>
+                            `).join('')}</div>
+                            <button class="btn-small btn-add" style="margin-top:8px;" onclick="addVariant(${catIdx},${pi})"><i class="fa-solid fa-plus"></i> Add variant</button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                return `
+                    <div class="category-block" data-cat-idx="${catIdx}">
+                        <div class="category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${(catName || '').replace(/</g, '&lt;')}</strong>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="category-body">
+                            ${productsHtml}
+                            <button class="btn-small btn-add" onclick="addProduct(${catIdx})"><i class="fa-solid fa-plus"></i> Add Product</button>
+                            <button class="btn-small btn-danger" style="margin-left:8px;" onclick="removeCategory(${catIdx})">Remove Category</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCatName(idx) { return Object.keys(data.catalog || {})[idx]; }
+
+        function updateProd(catIdx, pi, field, val) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat][pi] = data.catalog[cat][pi] || {};
+            if (field === 'price') val = parseFloat(val) || 0;
+            data.catalog[cat][pi][field] = val;
+            if (field === 'img') {
+                const arr = data.catalog[cat][pi].images || [];
+                if (arr.length) data.catalog[cat][pi].images = [val, ...arr.slice(1)];
+                else data.catalog[cat][pi].images = val ? [val] : [];
+            }
+        }
+
+        function updateProdImages(catIdx, pi, text) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat][pi] = data.catalog[cat][pi] || {};
+            const urls = text.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+            const main = data.catalog[cat][pi].img || data.catalog[cat][pi].images?.[0];
+            data.catalog[cat][pi].images = main ? [main, ...urls.filter(u => u !== main)] : urls;
+        }
+
+        function updateVariant(catIdx, pi, vi, field, val) {
+            const cat = getCatName(catIdx);
+            if (!cat || !data.catalog[cat][pi]) return;
+            if (!data.catalog[cat][pi].variants) data.catalog[cat][pi].variants = [];
+            data.catalog[cat][pi].variants[vi] = data.catalog[cat][pi].variants[vi] || {};
+            if (field === 'options') val = val.split(',').map(s => s.trim()).filter(Boolean);
+            data.catalog[cat][pi].variants[vi][field] = val;
+        }
+
+        function addVariant(catIdx, pi) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat][pi] = data.catalog[cat][pi] || {};
+            data.catalog[cat][pi].variants = data.catalog[cat][pi].variants || [];
+            data.catalog[cat][pi].variants.push({ name: 'Color', options: ['Black', 'White'] });
+            renderProducts();
+        }
+
+        function removeVariant(catIdx, pi, vi) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat][pi].variants.splice(vi, 1);
+            renderProducts();
+        }
+
+        function addProduct(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            const maxId = Math.max(0, ...Object.values(data.catalog).flat().map(p => p.id || 0)) + 1;
+            data.catalog[cat].push({ id: maxId, name: 'New Product', price: 0, img: '', images: [], variants: [] });
+            renderProducts();
+        }
+
+        function removeProd(catIdx, pi) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            data.catalog[cat].splice(pi, 1);
+            if (data.catalog[cat].length === 0) delete data.catalog[cat];
+            renderProducts();
+        }
+
+        function addCategory() {
+            const name = prompt('Category name:');
+            if (!name) return;
+            data.catalog[name] = [];
+            renderProducts();
+        }
+
+        function removeCategory(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat || !confirm('Remove this category and all products?')) return;
+            delete data.catalog[cat];
+            renderProducts();
+        }
+
+        function renderFooter() {
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateSocial(${i},'name',this.value)">
+                    <input type="text" value="${(s.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateSocial(${i},'url',this.value)">
+                    <select onchange="updateSocial(${i},'icon',this.value)">${ICON_OPTIONS.map(ico => `<option value="${ico}" ${(s.icon || '') === ico ? 'selected' : ''}>${ico.replace('fa-brands fa-','')}</option>`).join('')}</select>
+                    <button class="btn-icon" onclick="removeSocial(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+            const links = data.footer?.links || [];
+            document.getElementById('footer-links-container').innerHTML = links.map((l, i) => `
+                <div class="link-row link-row-3">
+                    <input type="text" value="${(l.text || '').replace(/"/g, '&quot;')}" placeholder="Text" onchange="updateFooterLink(${i},'text',this.value)">
+                    <input type="text" value="${(l.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateFooterLink(${i},'url',this.value)">
+                    <button class="btn-icon" onclick="removeFooterLink(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function updateSocial(i, field, val) {
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+        function addSocialLink() { data.footer.social = data.footer.social || []; data.footer.social.push({ name: 'New', url: '#', icon: 'fa-brands fa-instagram' }); renderFooter(); }
+        function removeSocial(i) { data.footer.social.splice(i, 1); renderFooter(); }
+        function updateFooterLink(i, field, val) { data.footer.links[i] = data.footer.links[i] || {}; data.footer.links[i][field] = val; }
+        function addFooterLink() { data.footer.links = data.footer.links || []; data.footer.links.push({ text: 'New Link', url: '#' }); renderFooter(); }
+        function removeFooterLink(i) { data.footer.links.splice(i, 1); renderFooter(); }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'CLIRSHOE';
+            data.site.tagline = document.getElementById('site-tagline').value.trim() || 'Fresh drops in Accra.';
+            data.site.about = document.getElementById('site-about').value.trim();
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim().replace(/\D/g, '') || '233538865290';
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS';
+            data.sizes = document.getElementById('default-sizes').value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+            if (!data.sizes.length) data.sizes = [36, 37, 38, 39, 40, 41, 42];
+            data.hero = {
+                title: document.getElementById('hero-title').value.trim(),
+                subtitle: document.getElementById('hero-subtitle').value.trim(),
+                image: document.getElementById('hero-image').value.trim()
+            };
+            data.footer = data.footer || {};
+            data.footer.brand = document.getElementById('footer-brand').value.trim() || 'CLIRSHOE';
+            data.footer.copyright = document.getElementById('footer-copyright').value.trim() || '© 2025 CLIRSHOE.';
+        }
+
+        function saveAll() {
+            collectGeneral();
+            // Normalize product images: ensure images array includes img
+            Object.keys(data.catalog || {}).forEach(cat => {
+                (data.catalog[cat] || []).forEach(p => {
+                    if (p.img && (!p.images || !p.images.length)) p.images = [p.img];
+                    if (p.images && p.images.length && !p.img) p.img = p.images[0];
+                });
+            });
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        renderGeneral();
+        renderProducts();
+        renderFooter();
+        checkAuth();
+    </script>
+</body>
+</html>

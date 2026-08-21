@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Elite Mother Care</title>
+	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #c9a227;
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --border: #e5e5e5;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(201,162,39,0.15); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: var(--sidebar);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+
+        /* Hero slides */
+        .slide-item {
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .slide-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .slide-preview {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: var(--sidebar); }
+        .btn-add:hover { opacity: 0.9; }
+
+        /* Products */
+        .category-block {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #f0f0f0;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .category-header:hover { background: #ebebeb; }
+        .category-body { padding: 20px; }
+        .product-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 120px 50px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-row:last-child { border-bottom: none; }
+        .product-row img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-row input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .product-row .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+        }
+        .add-product-row {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
+        }
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 180px 50px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .link-row input, .link-row select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+
+        /* Login / Setup screen */
+        .auth-screen {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .auth-screen.active { display: flex; }
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .auth-box h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--sidebar-active);
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .auth-box .auth-subtitle {
+            color: var(--sidebar-text);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .auth-box .form-group { margin-bottom: 18px; }
+        .auth-box .form-group label { color: var(--text); }
+        .auth-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        .auth-box input:focus {
+            outline: none;
+            border-color: var(--sidebar-active);
+            box-shadow: 0 0 0 3px rgba(201,162,39,0.2);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--sidebar-active);
+            color: var(--sidebar);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
+        .auth-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .auth-error {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .auth-error.show { display: block; }
+        .admin-panel-wrap { display: none; min-height: 100vh; }
+        .admin-panel-wrap.logged-in { display: flex; }
+
+        /* Mobile: sidebar as overlay */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 280px;
+                left: -280px;
+                transition: left 0.3s ease;
+                z-index: 1001;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            }
+            .sidebar.open { left: 0; }
+            .main { margin-left: 0; padding: 20px 16px; }
+            .page-header {
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .page-title { font-size: 1.35rem; }
+            .save-btn { padding: 12px 20px; font-size: 0.9rem; }
+            .card { padding: 20px; }
+            .product-row {
+                grid-template-columns: 50px 1fr;
+                grid-template-rows: auto auto auto auto;
+                gap: 8px;
+            }
+            .product-row img { width: 44px; height: 44px; }
+            .product-row input:nth-of-type(1) { grid-column: 2; }
+            .product-row input:nth-of-type(2) { grid-column: 2; }
+            .product-row input:nth-of-type(3) { grid-column: 1 / -1; }
+            .product-row .btn-icon { grid-column: 2; justify-self: start; }
+            .link-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .link-row select { width: 100%; }
+            .slide-item { padding: 16px; }
+            .category-header { padding: 14px 16px; }
+        }
+        @media (max-width: 600px) {
+            .auth-box { padding: 28px 20px; }
+            .auth-box h1 { font-size: 1.4rem; }
+        }
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1002;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--sidebar);
+            color: var(--sidebar-active);
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 900px) {
+            .menu-toggle { display: flex; }
+            .main .page-header { padding-left: 56px; }
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+        }
+        .sidebar-overlay.open { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Login or Setup screen -->
+    <div class="auth-screen" id="auth-screen">
+        <div class="auth-box">
+            <h1 id="auth-title">Admin Login</h1>
+            <p class="auth-subtitle" id="auth-subtitle">Sign in to manage your store</p>
+            <div class="auth-error" id="auth-error"></div>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-username">Username</label>
+                    <input type="text" id="auth-username" autocomplete="username" required placeholder="Enter username">
+                </div>
+                <div class="form-group" id="auth-password-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" autocomplete="current-password" required placeholder="Enter password">
+                </div>
+                <div class="form-group" id="auth-confirm-group" style="display:none;">
+                    <label for="auth-confirm">Confirm password</label>
+                    <input type="password" id="auth-confirm" autocomplete="new-password" placeholder="Confirm password">
+                </div>
+                <button type="submit" class="auth-btn" id="auth-submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-panel-wrap" id="admin-panel-wrap">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">Admin Panel</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General Settings</span>
+            </div>
+            <div class="nav-item" data-section="hero">
+                <i class="fa-solid fa-images"></i>
+                <span>Hero Carousel</span>
+            </div>
+            <div class="nav-item" data-section="products">
+                <i class="fa-solid fa-box"></i>
+                <span>Products & Categories</span>
+            </div>
+            <div class="nav-item" data-section="footer">
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Footer & Social</span>
+            </div>
+            <div class="nav-item" data-section="account">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Admin Account</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Preview Store
+            </button>
+            <button class="preview-btn" onclick="logout()" style="margin-top:10px; background:#333; color:#fff;">
+                <i class="fa-solid fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+
+        <!-- General Settings -->
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store Name (e.g., ELITE MOM or ELITE &lt;span&gt;MOM&lt;/span&gt; for gold accent)</label>
+                    <input type="text" id="site-name" placeholder="ELITE MOM">
+                </div>
+                <div class="form-group">
+                    <label>Tagline</label>
+                    <input type="text" id="site-tagline" placeholder="Luxury Baby Store">
+                </div>
+                <div class="form-group">
+                    <label>About / Description (Footer)</label>
+                    <textarea id="site-about" placeholder="Nurturing your little ones with elegance..."></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (with country code, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233XXXXXXXXX">
+                    <small style="color:#666; margin-top:6px; display:block;">Example: 233501234567 for Ghana</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <input type="text" id="currency" placeholder="GH₵" maxlength="5">
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero Carousel -->
+        <section class="section" id="section-hero">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Hero Slides</h3>
+                    <button class="btn-small btn-add" onclick="addSlide()">
+                        <i class="fa-solid fa-plus"></i> Add Slide
+                    </button>
+                </div>
+                <div id="hero-slides-container"></div>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Categories & Products</h3>
+                    <button class="btn-small btn-add" onclick="addCategory()">
+                        <i class="fa-solid fa-plus"></i> Add Category
+                    </button>
+                </div>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Footer Content</h3>
+                <div class="form-group">
+                    <label>Footer Brand Name</label>
+                    <input type="text" id="footer-brand" placeholder="Elite Mother Care">
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2025 Elite Mother Care. All Rights Reserved.">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Social
+                </button>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Footer Quick Links</h3>
+                <div id="footer-links-container"></div>
+                <button class="btn-small btn-add" onclick="addFooterLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Link
+                </button>
+            </div>
+        </section>
+
+        <!-- Admin Account: change username & password -->
+        <section class="section" id="section-account">
+            <div class="card">
+                <h3 class="card-title">Change Admin Login</h3>
+                <p style="color:var(--sidebar-text); margin-bottom:20px; font-size:0.9rem;">Update your username and password. You will need to log in again after changing.</p>
+                <div class="form-group">
+                    <label>Current password</label>
+                    <input type="password" id="account-current-password" placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label>New username</label>
+                    <input type="text" id="account-new-username" placeholder="New username">
+                </div>
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" id="account-new-password" placeholder="New password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm new password</label>
+                    <input type="password" id="account-confirm-password" placeholder="Confirm new password">
+                </div>
+                <button type="button" class="save-btn" onclick="updateAdminCredentials()">
+                    <i class="fa-solid fa-key"></i>
+                    Update Login
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+    </div><!-- end admin-panel-wrap -->
+
+    <script>
+        const STORAGE_KEY = 'mothercare_settings';
+        const ADMIN_CREDENTIALS_KEY = 'mothercare_admin';
+        const ADMIN_SESSION_KEY = 'mothercare_admin_session';
+
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = enc.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getStoredCredentials() {
+            try {
+                const raw = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+        }
+
+        function showAuthScreen(mode) {
+            document.getElementById('auth-screen').classList.add('active');
+            document.getElementById('admin-panel-wrap').classList.remove('logged-in');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const confirmGroup = document.getElementById('auth-confirm-group');
+            const confirmInput = document.getElementById('auth-confirm');
+            const submitBtn = document.getElementById('auth-submit');
+            document.getElementById('auth-error').classList.remove('show');
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-confirm').value = '';
+            if (mode === 'setup') {
+                title.textContent = 'Set up Admin Login';
+                subtitle.textContent = 'Create the username and password you will use to access the admin panel.';
+                confirmGroup.style.display = 'block';
+                confirmInput.required = true;
+                submitBtn.textContent = 'Create & Log in';
+            } else {
+                title.textContent = 'Admin Login';
+                subtitle.textContent = 'Sign in to manage your store';
+                confirmGroup.style.display = 'none';
+                confirmInput.required = false;
+                submitBtn.textContent = 'Login';
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('admin-panel-wrap').classList.add('logged-in');
+            sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+        }
+
+        function logout() {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            showAuthScreen('login');
+            closeMobileMenu();
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const confirm = document.getElementById('auth-confirm').value;
+            const errEl = document.getElementById('auth-error');
+            const submitBtn = document.getElementById('auth-submit');
+            const stored = getStoredCredentials();
+            errEl.classList.remove('show');
+            if (!stored) {
+                if (password.length < 6) {
+                    errEl.textContent = 'Password must be at least 6 characters.';
+                    errEl.classList.add('show');
+                    return;
+                }
+                if (password !== confirm) {
+                    errEl.textContent = 'Passwords do not match.';
+                    errEl.classList.add('show');
+                    return;
+                }
+                if (!username) {
+                    errEl.textContent = 'Please enter a username.';
+                    errEl.classList.add('show');
+                    return;
+                }
+                submitBtn.disabled = true;
+                const passHash = await hashPassword(password);
+                localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify({ username, passHash }));
+                submitBtn.disabled = false;
+                showAdminPanel();
+                return;
+            }
+            const passHash = await hashPassword(password);
+            if (stored.username !== username || stored.passHash !== passHash) {
+                errEl.textContent = 'Invalid username or password.';
+                errEl.classList.add('show');
+                return;
+            }
+            showAdminPanel();
+        });
+
+        function initAuth() {
+            const stored = getStoredCredentials();
+            if (!stored) {
+                showAuthScreen('setup');
+                return;
+            }
+            if (!isLoggedIn()) {
+                showAuthScreen('login');
+                return;
+            }
+            showAdminPanel();
+        }
+
+        function updateAdminCredentials() {
+            const current = document.getElementById('account-current-password').value;
+            const newUser = document.getElementById('account-new-username').value.trim();
+            const newPass = document.getElementById('account-new-password').value;
+            const confirm = document.getElementById('account-confirm-password').value;
+            const stored = getStoredCredentials();
+            if (!stored) return;
+            hashPassword(current).then(function(currentHash) {
+                if (currentHash !== stored.passHash) {
+                    showToastMsg('Current password is incorrect.', true);
+                    return;
+                }
+                const updates = {};
+                if (newUser) updates.username = newUser;
+                if (newPass) {
+                    if (newPass.length < 6) {
+                        showToastMsg('New password must be at least 6 characters.', true);
+                        return;
+                    }
+                    if (newPass !== confirm) {
+                        showToastMsg('New passwords do not match.', true);
+                        return;
+                    }
+                }
+                if (!updates.username && !newPass) {
+                    showToastMsg('Enter a new username and/or new password.', true);
+                    return;
+                }
+                const promise = newPass ? hashPassword(newPass).then(h => ({ ...updates, passHash: h })) : Promise.resolve(updates);
+                promise.then(function(up) {
+                    const next = { ...stored, ...up };
+                    if (!next.passHash) next.passHash = stored.passHash;
+                    localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify(next));
+                    document.getElementById('account-current-password').value = '';
+                    document.getElementById('account-new-username').value = '';
+                    document.getElementById('account-new-password').value = '';
+                    document.getElementById('account-confirm-password').value = '';
+                    showToastMsg('Login updated. You can keep working or log out and sign in again.');
+                });
+            });
+        }
+
+        function showToastMsg(msg, isError) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('open');
+        }
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('open');
+        });
+        document.getElementById('sidebar-overlay').addEventListener('click', closeMobileMenu);
+
+        const DEFAULT_DATA = {
+            site: { name: 'ELITE MOM', tagline: 'Luxury Baby Store', about: 'Nurturing your little ones with elegance. We provide premium essentials for the modern mother.', whatsapp: '', currency: 'GH₵' },
+            hero: [
+                { title: 'New Mum Essentials', image: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df4?auto=format&fit=crop&w=1200&q=80' },
+                { title: 'Luxury Nursery Gear', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1200&q=80' },
+                { title: 'Premium Feeding Sets', image: 'https://images.unsplash.com/photo-1596464716127-f9a0859b0437?auto=format&fit=crop&w=1200&q=80' }
+            ],
+            footer: {
+                brand: 'Elite Mother Care',
+                copyright: '© 2025 Elite Mother Care. All Rights Reserved.',
+                social: [
+                    { name: 'TikTok', url: '#', icon: 'fa-brands fa-tiktok' },
+                    { name: 'Instagram', url: '#', icon: 'fa-brands fa-instagram' },
+                    { name: 'Facebook', url: '#', icon: 'fa-brands fa-facebook-f' },
+                    { name: 'Snapchat', url: '#', icon: 'fa-brands fa-snapchat' }
+                ],
+                links: [
+                    { text: 'Order Tracking', url: '#' },
+                    { text: 'Shipping Policy', url: '#' },
+                    { text: 'Returns & Exchanges', url: '#' },
+                    { text: 'Contact Support', url: '#' }
+                ]
+            },
+            catalog: {
+                "Baby Chairs & Seats": [
+                    { id: 101, name: "Royal High Chair", price: 450, img: "https://images.unsplash.com/photo-1587616211892-f743f64f1a1f?auto=format&fit=crop&w=400&q=80" },
+                    { id: 102, name: "Comfort Floor Seat", price: 200, img: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=400&q=80" },
+                    { id: 103, name: "Booster Seat", price: 150, img: "https://images.unsplash.com/photo-1544776193-352f25a2fe1b?auto=format&fit=crop&w=400&q=80" },
+                    { id: 104, name: "Luxury Swing", price: 600, img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=400&q=80" },
+                    { id: 105, name: "Rocker Chair", price: 300, img: "https://images.unsplash.com/photo-1566316395282-63164d2ad148?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Walkers": [
+                    { id: 201, name: "Speedy Walker Pro", price: 350, img: "https://images.unsplash.com/photo-1587614382346-4ec70e388c28?auto=format&fit=crop&w=400&q=80" },
+                    { id: 202, name: "Musical Activity Walker", price: 420, img: "https://images.unsplash.com/photo-1598524374895-7e698e8a5e0b?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Baby Cots": [
+                    { id: 301, name: "Luxury Wood Cot", price: 1200, img: "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=400&q=80" },
+                    { id: 302, name: "Travel Foldable Cot", price: 800, img: "https://images.unsplash.com/photo-1566316395282-63164d2ad148?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Car Seats": [
+                    { id: 401, name: "SafeTravel Car Seat", price: 900, img: "https://images.unsplash.com/photo-1583195764036-6dc248ac934d?auto=format&fit=crop&w=400&q=80" },
+                    { id: 402, name: "Infant Carrier", price: 600, img: "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Feeding & Nursing": [
+                    { id: 501, name: "Silicone Bib Set", price: 80, img: "https://images.unsplash.com/photo-1596464716127-f9a0859b0437?auto=format&fit=crop&w=400&q=80" },
+                    { id: 502, name: "Electric Breast Pump", price: 550, img: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Diaper Bags": [
+                    { id: 601, name: "Designer Mom Bag", price: 250, img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=80" },
+                    { id: 602, name: "Backpack Diaper Bag", price: 180, img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Toys": [
+                    { id: 701, name: "Soft Plush Teddy", price: 90, img: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=400&q=80" },
+                    { id: 702, name: "Learning Tablet", price: 150, img: "https://images.unsplash.com/photo-1578779902968-31ac64e73192?auto=format&fit=crop&w=400&q=80" }
+                ],
+                "Bundles": [
+                    { id: 1101, name: "Ultimate Nursery Bundle", price: 2500, img: "https://images.unsplash.com/photo-1555252333-9f8e92e65df4?auto=format&fit=crop&w=400&q=80" },
+                    { id: 1102, name: "Newborn Starter Pack", price: 1000, img: "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&w=400&q=80" }
+                ]
+            }
+        };
+
+        const ICON_OPTIONS = [
+            'fa-brands fa-tiktok', 'fa-brands fa-instagram', 'fa-brands fa-facebook-f',
+            'fa-brands fa-snapchat', 'fa-brands fa-twitter', 'fa-brands fa-youtube',
+            'fa-brands fa-pinterest', 'fa-brands fa-linkedin-in'
+        ];
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = { ...DEFAULT_DATA, ...parsed };
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('mothercare.html', '_blank');
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General Settings', hero: 'Hero Carousel', products: 'Products & Categories', footer: 'Footer & Social', account: 'Admin Account' };
+                document.getElementById('section-title').textContent = titles[id] || id;
+                closeMobileMenu();
+            };
+        });
+
+        // General - populate
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('site-about').value = data.site?.about || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GH₵';
+            document.getElementById('footer-brand').value = data.footer?.brand || '';
+            document.getElementById('footer-copyright').value = data.footer?.copyright || '';
+        }
+
+        // Hero slides
+        function renderHero() {
+            const container = document.getElementById('hero-slides-container');
+            const slides = data.hero || [];
+            container.innerHTML = slides.map((s, i) => `
+                <div class="slide-item" data-index="${i}">
+                    <div class="slide-item-header">
+                        <strong>Slide ${i + 1}</strong>
+                        <button class="btn-small btn-danger" onclick="removeSlide(${i})">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" value="${s.title}" onchange="updateSlide(${i}, 'title', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" value="${s.image}" onchange="updateSlide(${i}, 'image', this.value)">
+                    </div>
+                    <div class="slide-preview" style="background-image:url('${s.image}')"></div>
+                </div>
+            `).join('');
+        }
+
+        function updateSlide(i, field, val) {
+            if (!data.hero) data.hero = [];
+            data.hero[i] = data.hero[i] || {};
+            data.hero[i][field] = val;
+        }
+
+        function addSlide() {
+            if (!data.hero) data.hero = [];
+            data.hero.push({ title: 'New Slide', image: 'https://via.placeholder.com/1200x600?text=Slide' });
+            renderHero();
+        }
+
+        function removeSlide(i) {
+            data.hero.splice(i, 1);
+            renderHero();
+        }
+
+        // Products
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            const catalog = data.catalog || {};
+            const catNames = Object.keys(catalog);
+            container.innerHTML = catNames.map((catName, catIdx) => {
+                const products = catalog[catName] || [];
+                const productsHtml = products.map((p, pi) => {
+                    const imgSrc = typeof p.img === 'string' && p.img.startsWith('http') ? p.img.replace(/"/g, '&quot;') : 'https://via.placeholder.com/50';
+                    const safeName = String(p.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                    return `
+                    <div class="product-row">
+                        <img src="${imgSrc}" alt="">
+                        <input type="text" value="${safeName}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'name', this.value)" placeholder="Product name">
+                        <input type="number" value="${p.price}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'price', this.value)" placeholder="Price">
+                        <input type="text" value="${(p.img || '').replace(/"/g, '&quot;')}" onchange="updateProductByIndex(${catIdx}, ${pi}, 'img', this.value)" placeholder="Image URL">
+                        <button class="btn-icon" onclick="removeProductByIndex(${catIdx}, ${pi})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `}).join('');
+                return `
+                    <div class="category-block" data-cat-idx="${catIdx}">
+                        <div class="category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${catName.replace(/</g, '&lt;')}</strong>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="category-body">
+                            ${productsHtml}
+                            <div class="add-product-row">
+                                <button class="btn-small btn-add" onclick="addProductByIndex(${catIdx})">
+                                    <i class="fa-solid fa-plus"></i> Add Product
+                                </button>
+                            </div>
+                            <button class="btn-small btn-danger" style="margin-top:12px;" onclick="removeCategoryByIndex(${catIdx})">Remove Category</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCatName(idx) { return Object.keys(data.catalog || {})[idx]; }
+        function updateProductByIndex(catIdx, prodIdx, field, val) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            updateProduct(cat, prodIdx, field, val);
+        }
+        function removeProductByIndex(catIdx, prodIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            removeProduct(cat, prodIdx);
+        }
+        function addProductByIndex(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            addProduct(cat);
+        }
+        function removeCategoryByIndex(catIdx) {
+            const cat = getCatName(catIdx);
+            if (!cat) return;
+            removeCategory(cat);
+        }
+
+        function updateProduct(cat, idx, field, val) {
+            if (!data.catalog) data.catalog = {};
+            if (!data.catalog[cat]) data.catalog[cat] = [];
+            data.catalog[cat][idx] = data.catalog[cat][idx] || {};
+            if (field === 'price') val = parseFloat(val) || 0;
+            data.catalog[cat][idx][field] = val;
+        }
+
+        function addProduct(cat) {
+            if (!data.catalog) data.catalog = {};
+            if (!data.catalog[cat]) data.catalog[cat] = [];
+            const maxId = Math.max(100, ...Object.values(data.catalog).flat().map(p => p.id || 0)) + 1;
+            data.catalog[cat].push({ id: maxId, name: 'New Product', price: 0, img: '' });
+            renderProducts();
+        }
+
+        function removeProduct(cat, idx) {
+            data.catalog[cat].splice(idx, 1);
+            if (data.catalog[cat].length === 0) delete data.catalog[cat];
+            renderProducts();
+        }
+
+        function addCategory() {
+            const name = prompt('Category name:');
+            if (!name) return;
+            if (!data.catalog) data.catalog = {};
+            data.catalog[name] = [];
+            renderProducts();
+        }
+
+        function removeCategory(cat) {
+            if (confirm('Remove this category and all its products?')) {
+                delete data.catalog[cat];
+                renderProducts();
+            }
+        }
+
+        // Footer
+        function renderFooter() {
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${(s.name || '').replace(/"/g, '&quot;')}" placeholder="Name" onchange="updateSocial(${i}, 'name', this.value)">
+                    <input type="text" value="${(s.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateSocial(${i}, 'url', this.value)">
+                    <select onchange="updateSocial(${i}, 'icon', this.value)">
+                        ${ICON_OPTIONS.map(ico => `<option value="${ico}" ${(s.icon || '') === ico ? 'selected' : ''}>${ico.replace('fa-brands fa-', '')}</option>`).join('')}
+                    </select>
+                    <button class="btn-icon" onclick="removeSocial(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            const links = data.footer?.links || [];
+            document.getElementById('footer-links-container').innerHTML = links.map((l, i) => `
+                <div class="link-row" style="grid-template-columns: 1fr 2fr 50px;">
+                    <input type="text" value="${(l.text || '').replace(/"/g, '&quot;')}" placeholder="Link text" onchange="updateFooterLink(${i}, 'text', this.value)">
+                    <input type="text" value="${(l.url || '').replace(/"/g, '&quot;')}" placeholder="URL" onchange="updateFooterLink(${i}, 'url', this.value)">
+                    <button class="btn-icon" onclick="removeFooterLink(${i})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function updateSocial(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+
+        function addSocialLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social.push({ name: 'New', url: '#', icon: 'fa-brands fa-instagram' });
+            renderFooter();
+        }
+
+        function removeSocial(i) {
+            data.footer.social.splice(i, 1);
+            renderFooter();
+        }
+
+        function updateFooterLink(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links[i] = data.footer.links[i] || {};
+            data.footer.links[i][field] = val;
+        }
+
+        function addFooterLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links.push({ text: 'New Link', url: '#' });
+            renderFooter();
+        }
+
+        function removeFooterLink(i) {
+            data.footer.links.splice(i, 1);
+            renderFooter();
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'ELITE MOM';
+            data.site.tagline = document.getElementById('site-tagline').value.trim() || 'Luxury Baby Store';
+            data.site.about = document.getElementById('site-about').value.trim();
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim();
+            data.site.currency = document.getElementById('currency').value.trim() || 'GH₵';
+            data.footer = data.footer || {};
+            data.footer.brand = document.getElementById('footer-brand').value.trim() || 'Elite Mother Care';
+            data.footer.copyright = document.getElementById('footer-copyright').value.trim() || '© 2025 Elite Mother Care.';
+        }
+
+        function saveAll() {
+            collectGeneral();
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        initAuth();
+        renderGeneral();
+        renderHero();
+        renderProducts();
+        renderFooter();
+    </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clirfood</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Playfair Display', 'Georgia', 'serif'],
+                        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        gold: { DEFAULT: '#c9a227', light: '#e5c76b', dark: '#9a7b1a' },
+                        cream: { light: '#faf8f5', dark: '#1a1916' },
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', system-ui, sans-serif; background-color: #faf8f5; color: #1f2937; }
+        .font-display { font-family: 'Playfair Display', Georgia, serif; }
+        /* Smooth theme transition */
+        html { scroll-behavior: smooth; }
+        .theme-transition, .theme-transition * { transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease; }
+        /* Product grid: 2 cols on mobile, more on larger */
+        @media (min-width: 640px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .menu-grid { grid-template-columns: repeat(3, 1fr); } }
+        /* Modal overlay */
+        .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .product-modal-content { max-height: 90vh; overflow-y: auto; }
+        /* Gallery dots */
+        .gallery-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .gallery-dot.active { transform: scale(1.25); }
+    </style>
+</head>
+<body class="theme-transition bg-cream-light text-gray-800 dark:bg-cream-dark dark:text-gray-100 min-h-screen pb-28">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 border-b border-amber-200/50 dark:border-amber-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-gray-900/80">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="font-display text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
+                <span id="site-name">Clirfood</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <button type="button" id="theme-toggle" class="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors" aria-label="Toggle theme">
+                    <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+                    <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                </button>
+                <div class="relative">
+                    <button type="button" onclick="document.getElementById('checkout-bar').classList.toggle('translate-y-full'); document.getElementById('checkout-bar').classList.toggle('translate-y-0');" class="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </button>
+                    <span id="badge" class="absolute -top-0.5 -right-0.5 bg-gold text-white min-w-[18px] h-[18px] text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO: default image in HTML so something shows even if JS fails -->
+    <section class="relative h-56 sm:h-72 overflow-hidden">
+        <div id="hero-slider" class="absolute inset-0" style="background-image:url('https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&q=80&w=800'); background-size:cover; background-position:center;">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent flex items-end justify-center pb-8">
+            <div class="text-center px-4">
+                <h1 class="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-white drop-shadow-lg" id="hero-title">Taste of Home.</h1>
+                <p class="text-amber-100 text-sm sm:text-base mt-1" id="hero-tagline">Fresh. Delicious. Delivered.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORY TABS -->
+    <div class="sticky top-[57px] z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-amber-100 dark:border-amber-900/50">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex overflow-x-auto gap-2 pb-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+                <button type="button" data-cat="All" class="tab-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">All</button>
+                <!-- Category tabs injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU GRID (2 per row on mobile). Content filled by JS; fallback so layout is visible -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <div id="menu" class="menu-grid grid grid-cols-2 gap-3 sm:gap-4">
+            <p class="col-span-2 text-center text-gray-500 py-8" id="menu-loading">Loading menu…</p>
+        </div>
+    </main>
+
+    <!-- PRODUCT MODAL (multi-image + features) -->
+    <div id="product-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="modal-backdrop absolute inset-0" onclick="closeProductModal()"></div>
+        <div class="absolute inset-4 sm:inset-8 md:inset-12 flex items-center justify-center pointer-events-none">
+            <div class="product-modal-content pointer-events-auto w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-amber-200/50 dark:border-amber-800/50 overflow-hidden">
+                <div class="relative">
+                    <div id="modal-gallery" class="aspect-square bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                        <img id="modal-main-img" src="" alt="" class="w-full h-full object-cover">
+                        <div id="modal-gallery-dots" class="absolute bottom-3 left-0 right-0 flex justify-center gap-2"></div>
+                    </div>
+                    <button type="button" onclick="closeProductModal()" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60">×</button>
+                </div>
+                <div class="p-5">
+                    <h3 id="modal-product-name" class="font-display text-xl font-semibold text-gray-900 dark:text-white"></h3>
+                    <p id="modal-product-price" class="text-amber-600 dark:text-amber-400 font-bold text-lg mt-1"></p>
+                    <div id="modal-features" class="mt-4 space-y-3"></div>
+                    <div class="mt-6 flex items-center gap-3">
+                        <div id="modal-qty-control" class="flex items-center rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
+                            <button type="button" id="modal-minus" class="px-4 py-2 text-amber-700 dark:text-amber-300 font-bold">−</button>
+                            <span id="modal-qty" class="px-3 font-semibold min-w-[2rem] text-center">1</span>
+                            <button type="button" id="modal-plus" class="px-4 py-2 text-amber-700 dark:text-amber-300 font-bold">+</button>
+                        </div>
+                        <button type="button" id="modal-add-btn" class="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white font-semibold transition-colors">Add to order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING CHECKOUT BAR -->
+    <div id="checkout-bar" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-amber-200 dark:border-amber-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] transform translate-y-full transition-transform duration-300 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center mb-3">
+                <span class="font-semibold text-gray-700 dark:text-gray-200">Total</span>
+                <span id="total-price" class="text-amber-600 dark:text-amber-400 text-xl font-bold">GHS 0</span>
+            </div>
+            <div class="flex gap-2">
+                <input id="location" type="text" placeholder="Delivery address or location" class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500 dark:text-gray-100 placeholder-gray-500">
+                <button type="button" onclick="order()" class="bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-colors">Order via WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-100 dark:bg-gray-800/50 border-t border-amber-100 dark:border-amber-900/50 mt-12">
+        <div class="max-w-6xl mx-auto px-4 py-8">
+            <p id="footer-about" class="text-gray-600 dark:text-gray-400 text-sm max-w-xl mb-4"></p>
+            <p id="footer-copyright" class="text-gray-500 dark:text-gray-500 text-xs"></p>
+        </div>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = 'clirfood_settings';
+        const THEME_KEY = 'clirfood_theme';
+
+        const DEFAULT_MENU = [
+            { id: 1, name: "Classic Cheeseburger", price: 85, cat: "Main", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=600" },
+            { id: 2, name: "Pepperoni Pizza (Large)", price: 120, cat: "Main", img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&q=80&w=600" },
+            { id: 3, name: "Chicken Alfredo Pasta", price: 95, cat: "Main", img: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&q=80&w=600" },
+            { id: 4, name: "Sushi Platter", price: 150, cat: "Main", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=600" },
+            { id: 5, name: "Grilled Salmon & Veggies", price: 140, cat: "Main", img: "https://images.unsplash.com/photo-1647482770207-06bfdc9458a9?auto=format&fit=crop&q=80&w=600" },
+            { id: 6, name: "Caesar Salad", price: 65, cat: "Sides", img: "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&q=80&w=600" },
+            { id: 7, name: "Spicy Beef Tacos", price: 75, cat: "Main", img: "https://images.unsplash.com/photo-1613514785940-daed07799d9b?auto=format&fit=crop&q=80&w=600" },
+            { id: 8, name: "Ribeye Steak & Fries", price: 180, cat: "Main", img: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&q=80&w=600" },
+            { id: 9, name: "Crispy French Fries", price: 35, cat: "Sides", img: "https://images.unsplash.com/photo-1762303441992-ab59156602a4?auto=format&fit=crop&q=80&w=600" },
+            { id: 10, name: "Chicken Ramen Bowl", price: 90, cat: "Main", img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&q=80&w=600" },
+            { id: 11, name: "Club Sandwich", price: 55, cat: "Main", img: "https://images.unsplash.com/photo-1567234669003-dce7a7a88821?auto=format&fit=crop&q=80&w=600" },
+            { id: 12, name: "Buffalo Chicken Wings", price: 60, cat: "Sides", img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=600" },
+            { id: 13, name: "Iced Caramel Macchiato", price: 45, cat: "Drinks", img: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=600" },
+            { id: 14, name: "Mojito (Virgin)", price: 40, cat: "Drinks", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=600" },
+            { id: 15, name: "Chocolate Lava Cake", price: 50, cat: "Dessert", img: "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&q=80&w=600" },
+            { id: 16, name: "Fluffy Pancakes", price: 55, cat: "Breakfast", img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=600" }
+        ];
+
+        let cart = {};
+        let activeCat = 'All';
+        let MENU = [];
+        let settings = {};
+        let currentModalProduct = null;
+        let modalQty = 1;
+        let modalGalleryIndex = 0;
+
+        function loadSettings() {
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    settings = JSON.parse(raw);
+                    return true;
+                }
+            } catch (e) {}
+            settings = {};
+            return false;
+        }
+
+        function getMenuFromSettings() {
+            const catalog = settings.catalog;
+            if (!catalog || typeof catalog !== 'object') return DEFAULT_MENU;
+            const list = [];
+            let id = 1;
+            // Catalog can be { "Main": [...], "Sides": [...] } (object) or legacy array of items
+            if (Array.isArray(catalog)) {
+                for (const p of catalog) {
+                    if (p && typeof p === 'object') {
+                        list.push({
+                            id: p.id || id++,
+                            name: p.name || 'Item',
+                            price: Number(p.price) || 0,
+                            cat: p.cat || 'Main',
+                            img: p.img || '',
+                            images: Array.isArray(p.images) ? p.images : [],
+                            features: Array.isArray(p.features) ? p.features : []
+                        });
+                    }
+                }
+            } else {
+                for (const [catName, products] of Object.entries(catalog)) {
+                    if (!Array.isArray(products)) continue;
+                    for (const p of products) {
+                        if (p && typeof p === 'object') {
+                            list.push({
+                                id: p.id || id++,
+                                name: p.name || 'Item',
+                                price: Number(p.price) || 0,
+                                cat: catName,
+                                img: p.img || '',
+                                images: Array.isArray(p.images) ? p.images : [],
+                                features: Array.isArray(p.features) ? p.features : []
+                            });
+                        }
+                    }
+                }
+            }
+            return list.length > 0 ? list : DEFAULT_MENU;
+        }
+
+        function getCurrency() {
+            try {
+                return (settings && settings.site && settings.site.currency) ? settings.site.currency : 'GHS ';
+            } catch (e) { return 'GHS '; }
+        }
+
+        function getWhatsApp() {
+            const num = settings.site && settings.site.whatsapp ? String(settings.site.whatsapp).replace(/\D/g, '') : '233538865290';
+            return num.startsWith('0') ? '233' + num.slice(1) : num;
+        }
+
+        function applyTheme(dark) {
+            if (dark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function initTheme() {
+            try {
+                const saved = localStorage.getItem(THEME_KEY);
+                const dark = saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                applyTheme(dark);
+            } catch (e) {}
+            var themeBtn = document.getElementById('theme-toggle');
+            if (themeBtn) themeBtn.onclick = function () {
+                var isDark = document.documentElement.classList.toggle('dark');
+                try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+            };
+        }
+
+        function renderHero() {
+            var container = document.getElementById('hero-slider');
+            if (!container) return;
+            var defaultBg = 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&q=80&w=800';
+            try {
+                var hero = settings.hero;
+                if (Array.isArray(hero) && hero.length > 0) {
+                    container.innerHTML = hero.map(function(s, i) {
+                        var url = (s && s.image) ? s.image.replace(/'/g, "%27") : defaultBg;
+                        return '<div class="absolute inset-0 hero-slide ' + (i === 0 ? 'opacity-100' : 'opacity-0') + '" style="background-image:url(\'' + url + '\'); background-size:cover; background-position:center;"></div>';
+                    }).join('');
+                    var idx = 0;
+                    setInterval(function() {
+                        var slides = container.querySelectorAll('.hero-slide');
+                        for (var i = 0; i < slides.length; i++) {
+                            slides[i].classList.toggle('opacity-0', i !== idx);
+                            slides[i].classList.toggle('opacity-100', i === idx);
+                        }
+                        idx = (idx + 1) % (hero.length || 1);
+                    }, 5000);
+                } else {
+                    container.style.backgroundImage = "url('" + defaultBg + "')";
+                    container.style.backgroundSize = 'cover';
+                    container.style.backgroundPosition = 'center';
+                }
+                var t = document.getElementById('hero-title');
+                var g = document.getElementById('hero-tagline');
+                if (t) t.textContent = (settings.site && settings.site.heroTitle) ? settings.site.heroTitle : 'Taste of Home.';
+                if (g) g.textContent = (settings.site && settings.site.tagline) ? settings.site.tagline : 'Fresh. Delicious. Delivered.';
+            } catch (e) {
+                container.style.backgroundImage = "url('" + defaultBg + "')";
+                container.style.backgroundSize = 'cover';
+                container.style.backgroundPosition = 'center';
+            }
+        }
+
+        function renderSiteText() {
+            var name = (settings.site && settings.site.name) ? settings.site.name : 'Clirfood';
+            var about = (settings.site && settings.site.about) ? settings.site.about : '';
+            var copy = (settings.footer && settings.footer.copyright) ? settings.footer.copyright : ('© ' + new Date().getFullYear() + ' ' + name + '.');
+            var sn = document.getElementById('site-name');
+            var fa = document.getElementById('footer-about');
+            var fc = document.getElementById('footer-copyright');
+            if (sn) sn.textContent = name;
+            if (fa) fa.textContent = about;
+            if (fc) fc.textContent = copy;
+        }
+
+        function getCategories() {
+            const cats = new Set(MENU.map(m => m.cat));
+            return ['All', ...Array.from(cats).filter(c => c && c !== 'All').sort()];
+        }
+
+        function renderTabs() {
+            const cats = getCategories();
+            const container = document.querySelector('.flex.overflow-x-auto.gap-2');
+            const activeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200';
+            const inactiveClass = 'bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800 text-gray-600 dark:text-gray-400 hover:border-amber-400 dark:hover:border-amber-600';
+            container.innerHTML = cats.map(cat =>
+                `<button type="button" data-cat="${cat}" class="tab-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${cat === activeCat ? activeClass : inactiveClass}">${cat}</button>`
+            ).join('');
+            container.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.onclick = () => filter(btn.dataset.cat);
+            });
+        }
+
+        function filter(cat) {
+            activeCat = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const isActive = btn.dataset.cat === cat;
+                btn.className = 'tab-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ' +
+                    (isActive ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200' : 'bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800 text-gray-600 dark:text-gray-400 hover:border-amber-400 dark:hover:border-amber-600');
+            });
+            render();
+        }
+
+        function allImages(item) {
+            const main = item.img ? [item.img] : [];
+            const extra = item.images || [];
+            return [...main, ...extra].filter(Boolean);
+        }
+
+        function hasGalleryOrFeatures(item) {
+            return (item.images && item.images.length > 0) || (item.features && item.features.length > 0);
+        }
+
+        function openProductModalById(id) {
+            const item = MENU.find(m => m.id == id);
+            if (!item) return;
+            openProductModal(item);
+        }
+
+        function openProductModal(item) {
+            currentModalProduct = item;
+            modalQty = 1;
+            modalGalleryIndex = 0;
+            const imgs = allImages(item);
+            const currency = getCurrency();
+
+            document.getElementById('modal-product-name').textContent = item.name;
+            document.getElementById('modal-product-price').textContent = currency + item.price;
+            document.getElementById('modal-main-img').src = imgs[0] || '';
+            document.getElementById('modal-main-img').alt = item.name;
+
+            const dotsEl = document.getElementById('modal-gallery-dots');
+            if (imgs.length > 1) {
+                dotsEl.innerHTML = imgs.map((_, i) =>
+                    `<button type="button" class="gallery-dot ${i === 0 ? 'active bg-amber-500' : 'bg-white/60'}" data-index="${i}" aria-label="Image ${i + 1}"></button>`
+                ).join('');
+                dotsEl.querySelectorAll('button').forEach((dot, i) => {
+                    dot.onclick = () => setModalGalleryIndex(i);
+                });
+            } else {
+                dotsEl.innerHTML = '';
+            }
+
+            const featEl = document.getElementById('modal-features');
+            if (item.features && item.features.length > 0) {
+                featEl.innerHTML = item.features.map(f => {
+                    const opts = (f.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+                    return `<div><label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">${f.name || 'Option'}</label><select class="w-full rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2">${opts}</select></div>`;
+                }).join('');
+                featEl.classList.remove('hidden');
+            } else {
+                featEl.innerHTML = '';
+                featEl.classList.add('hidden');
+            }
+
+            document.getElementById('modal-qty').textContent = modalQty;
+            document.getElementById('modal-minus').onclick = () => { if (modalQty > 1) { modalQty--; document.getElementById('modal-qty').textContent = modalQty; } };
+            document.getElementById('modal-plus').onclick = () => { modalQty++; document.getElementById('modal-qty').textContent = modalQty; };
+            document.getElementById('modal-add-btn').onclick = () => {
+                update(currentModalProduct.id, modalQty);
+                closeProductModal();
+            };
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function setModalGalleryIndex(i) {
+            modalGalleryIndex = i;
+            const item = currentModalProduct;
+            const imgs = allImages(item);
+            if (imgs[i]) {
+                document.getElementById('modal-main-img').src = imgs[i];
+                document.getElementById('modal-gallery-dots').querySelectorAll('.gallery-dot').forEach((dot, j) => {
+                    dot.classList.toggle('active', j === i);
+                    dot.classList.toggle('bg-amber-500', j === i);
+                    dot.classList.toggle('bg-white/60', j !== i);
+                });
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            currentModalProduct = null;
+        }
+
+        function render() {
+            var menuEl = document.getElementById('menu');
+            if (!menuEl) return;
+            var list = [];
+            try {
+                var menuList = Array.isArray(MENU) ? MENU : DEFAULT_MENU.slice();
+                list = activeCat === 'All' ? menuList : menuList.filter(function(m) { return m && m.cat === activeCat; });
+            } catch (e) {
+                list = DEFAULT_MENU.slice();
+            }
+            if (list.length === 0) list = DEFAULT_MENU.slice();
+            var currency = getCurrency();
+            var html = '';
+            try {
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    if (!item || !item.name) continue;
+                    var qty = cart[item.id] || 0;
+                    var imgs = allImages(item);
+                    var showDetail = hasGalleryOrFeatures(item);
+                    var mainImg = (imgs[0] || item.img || 'https://via.placeholder.com/300?text=Food').replace(/"/g, '&quot;');
+                    var nameSafe = (item.name || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+                    var addBtn = showDetail
+                        ? '<button type="button" onclick="openProductModalById(' + item.id + ')" class="w-full py-2 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-xs font-semibold">View &amp; add</button>'
+                        : '<button type="button" onclick="update(' + item.id + ', 1)" class="w-full py-2 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-xs font-semibold">Add</button>';
+                    var qtyHtml = qty === 0 ? addBtn : '<div class="flex items-center justify-between gap-1 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 px-2 py-1"><button type="button" onclick="update(' + item.id + ', -1)" class="text-amber-600 dark:text-amber-400 font-bold text-lg leading-none">−</button><span class="text-sm font-bold">' + qty + '</span><button type="button" onclick="update(' + item.id + ', 1)" class="text-amber-600 dark:text-amber-400 font-bold text-lg leading-none">+</button></div>';
+                    var viewBtn = showDetail ? '<button type="button" onclick="openProductModalById(' + item.id + ')" class="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors"><span class="opacity-0 hover:opacity-100 text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">View details</span></button>' : '';
+                    html += '<div class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-amber-100/50 dark:border-amber-900/50 overflow-hidden flex flex-col">';
+                    html += '<div class="relative aspect-[4/3] bg-gray-100 dark:bg-gray-700 overflow-hidden"><img src="' + mainImg + '" alt="' + nameSafe + '" class="w-full h-full object-cover">' + viewBtn + '</div>';
+                    html += '<div class="p-3 flex flex-col flex-1"><h3 class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2">' + nameSafe + '</h3>';
+                    html += '<div class="text-amber-600 dark:text-amber-400 font-bold mt-1">' + currency + item.price + '</div><div class="mt-auto pt-2">' + qtyHtml + '</div></div></div>';
+                }
+            } catch (e) {
+                html = '<p class="col-span-2 text-center text-amber-600 py-8">Menu could not load. Please refresh.</p>';
+            }
+            menuEl.innerHTML = html || '<p class="col-span-2 text-center text-amber-600 py-8">No items in this category.</p>';
+        }
+
+        function update(id, delta) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id] += delta;
+            if (cart[id] <= 0) delete cart[id];
+            render();
+            updateBar();
+        }
+
+        function updateBar() {
+            const count = Object.values(cart).reduce((a, b) => a + b, 0);
+            const badge = document.getElementById('badge');
+            badge.textContent = count;
+            badge.classList.toggle('hidden', count === 0);
+
+            const bar = document.getElementById('checkout-bar');
+            if (count > 0) bar.classList.remove('translate-y-full');
+            else bar.classList.add('translate-y-full');
+
+            let total = 0;
+            Object.entries(cart).forEach(([id, qty]) => {
+                const m = MENU.find(x => x.id == id);
+                if (m) total += m.price * qty;
+            });
+            document.getElementById('total-price').textContent = getCurrency() + total;
+        }
+
+        function order() {
+            const loc = document.getElementById('location').value.trim();
+            if (!loc) { alert('Please enter your delivery address or location.'); return; }
+            const currency = getCurrency();
+            let msg = '🍽️ *FOOD ORDER*\n📍 Delivery: ' + loc + '\n\n';
+            let total = 0;
+            Object.entries(cart).forEach(([id, qty]) => {
+                const m = MENU.find(x => x.id == id);
+                if (m) {
+                    msg += qty + '× ' + m.name + ' — ' + currency + (m.price * qty) + '\n';
+                    total += m.price * qty;
+                }
+            });
+            msg += '\n*Total: ' + currency + total + '*';
+            const wa = getWhatsApp();
+            window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+
+        function init() {
+            settings = settings || {};
+            try { loadSettings(); } catch (e) { settings = {}; }
+            MENU = DEFAULT_MENU.slice();
+            try {
+                var fromSettings = getMenuFromSettings();
+                if (Array.isArray(fromSettings) && fromSettings.length > 0) MENU = fromSettings;
+            } catch (e) {}
+            if (!Array.isArray(MENU) || MENU.length === 0) MENU = DEFAULT_MENU.slice();
+            try { initTheme(); } catch (e) {}
+            try { renderHero(); } catch (e) {}
+            try { renderSiteText(); } catch (e) {}
+            try {
+                var tabContainer = document.querySelector('.flex.overflow-x-auto.gap-2');
+                if (tabContainer) {
+                    if (tabContainer.querySelectorAll('.tab-btn').length <= 1) renderTabs();
+                    else tabContainer.querySelectorAll('.tab-btn').forEach(function(btn) { btn.onclick = function() { filter(btn.dataset.cat); }; });
+                }
+            } catch (e) {}
+            render();
+            try { updateBar(); } catch (e) {}
+        }
+
+        function runInit() {
+            try { init(); } catch (e) {
+                var menuEl = document.getElementById('menu');
+                if (menuEl) menuEl.innerHTML = '<p class="col-span-2 text-center text-amber-600 py-8">Menu could not load. Please refresh the page.</p>';
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+            runInit();
+        }
+    </script>
+</body>
+</html>

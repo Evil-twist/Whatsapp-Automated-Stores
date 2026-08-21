@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ClirNova Store</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar: #0f0f0f;
+            --sidebar-text: #a0a0a0;
+            --sidebar-active: #c9a227;
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --border: #e5e5e5;
+            --text: #1a1a1a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: var(--sidebar-text);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+        }
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--sidebar-active);
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav { padding: 0 12px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: rgba(201,162,39,0.15); color: var(--sidebar-active); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+        .preview-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--sidebar-active);
+            color: var(--sidebar);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .preview-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 1.75rem; font-weight: 700; }
+        .save-btn {
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #666; margin-top: 6px; display: block; }
+        .slide-item {
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .slide-preview {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: var(--sidebar-active); color: var(--sidebar); }
+        .btn-add:hover { opacity: 0.9; }
+        .category-block {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #f0f0f0;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .category-header:hover { background: #ebebeb; }
+        .category-body { padding: 20px; }
+        .product-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 80px;
+            gap: 12px;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-row:last-child { border-bottom: none; }
+        .product-row .thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-row .product-details { font-size: 0.9rem; }
+        .product-row .product-details textarea, .product-row .product-details input { margin-top: 4px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; width: 100%; }
+        .product-row .product-details textarea { min-height: 50px; resize: vertical; }
+        .product-row .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+        }
+        .product-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            margin: 10px 0;
+            align-items: center;
+        }
+        .product-toggles label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .product-toggles input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .add-product-row { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 180px 50px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .link-row input, .link-row select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+        .dept-select { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; margin-left: 8px; }
+
+        /* Auth screens */
+        .auth-screen {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-screen.active { display: flex; }
+        .auth-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .auth-card h1 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--sidebar-active);
+            margin-bottom: 8px;
+            font-size: 1.75rem;
+        }
+        .auth-card p { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
+        .auth-card .form-group { margin-bottom: 18px; }
+        .auth-card input { padding: 14px 16px; font-size: 1rem; }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--sidebar-active);
+            color: var(--sidebar);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .auth-btn:hover { opacity: 0.95; }
+        .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+        .auth-error.show { display: block; }
+        @media (max-width: 400px) {
+            .auth-card { padding: 24px 20px; }
+        }
+
+        /* Dashboard visibility */
+        #admin-dashboard { display: none; }
+        #admin-dashboard.logged-in { display: flex; flex-wrap: wrap; min-height: 100vh; }
+
+        /* Mobile: sidebar as drawer */
+        @media (max-width: 768px) {
+            body { display: block; }
+            .sidebar {
+                width: 280px;
+                left: -280px;
+                transition: left 0.3s ease;
+                z-index: 1000;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            }
+            .sidebar.open { left: 0; }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .sidebar-overlay.open { display: block; }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .page-header { flex-direction: column; gap: 16px; align-items: stretch; }
+            .save-btn { width: 100%; justify-content: center; }
+            .product-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .product-row .thumb { justify-self: start; }
+            .product-row .btn-icon { justify-self: start; }
+            .link-row { grid-template-columns: 1fr; }
+            .category-header { flex-wrap: wrap; gap: 8px; }
+            .dept-select { margin-left: 0; width: 100%; }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle { display: none; }
+        }
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--sidebar);
+            color: var(--sidebar-active);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login screen -->
+    <div id="auth-login" class="auth-screen">
+        <div class="auth-card">
+            <h1>ClirNova Admin</h1>
+            <p>Sign in to manage your store</p>
+            <form id="login-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" placeholder="Your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Your password" required autocomplete="current-password">
+                </div>
+                <div class="auth-error" id="login-error">Invalid username or password.</div>
+                <button type="submit" class="auth-btn" id="login-btn">Sign in</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Setup screen (first time: create login) -->
+    <div id="auth-setup" class="auth-screen">
+        <div class="auth-card">
+            <h1>Create admin login</h1>
+            <p>Set the username and password you will use to access the admin page. You’ll need these to sign in next time.</p>
+            <form id="setup-form" onsubmit="return handleSetup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="setup-username" placeholder="Choose a username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="setup-password" placeholder="Choose a password" required minlength="4" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm password</label>
+                    <input type="password" id="setup-confirm" placeholder="Confirm password" required autocomplete="new-password">
+                </div>
+                <div class="auth-error" id="setup-error">Passwords do not match.</div>
+                <button type="submit" class="auth-btn" id="setup-btn">Create login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-dashboard">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">ClirNova Admin</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-section="general">
+                <i class="fa-solid fa-gear"></i>
+                <span>General Settings</span>
+            </div>
+            <div class="nav-item" data-section="mainpage">
+                <i class="fa-solid fa-home"></i>
+                <span>Main Page Content</span>
+            </div>
+            <div class="nav-item" data-section="hero">
+                <i class="fa-solid fa-images"></i>
+                <span>Hero & Carousel</span>
+            </div>
+            <div class="nav-item" data-section="products">
+                <i class="fa-solid fa-box"></i>
+                <span>Products & Categories</span>
+            </div>
+            <div class="nav-item" data-section="footer">
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Footer & Social</span>
+            </div>
+            <div class="nav-item" data-section="account">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Account / Login</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="preview-btn" onclick="previewSite()">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Preview Store
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title" id="section-title">General Settings</h1>
+            <button class="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+
+        <section class="section active" id="section-general">
+            <div class="card">
+                <h3 class="card-title">Store Information</h3>
+                <div class="form-group">
+                    <label>Store Name (e.g. CLIRNOVA or ELITE MOM)</label>
+                    <input type="text" id="site-name" placeholder="CLIRNOVA">
+                </div>
+                <div class="form-group">
+                    <label>Tagline</label>
+                    <input type="text" id="site-tagline" placeholder="Luxury Fashion Store">
+                </div>
+                <div class="form-group">
+                    <label>About / Description (for footer)</label>
+                    <textarea id="site-about" placeholder="Curated fashion for the modern lifestyle..."></textarea>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">WhatsApp Order Automation</h3>
+                <div class="form-group">
+                    <label>WhatsApp Number (country code + number, no + or spaces)</label>
+                    <input type="text" id="whatsapp-number" placeholder="233501234567">
+                    <small>Example: 233501234567 for Ghana. Orders will be sent to this number via WhatsApp.</small>
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <input type="text" id="currency" placeholder="GHS" maxlength="10">
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-mainpage">
+            <div class="card">
+                <h3 class="card-title">Main Page Hero Text</h3>
+                <p class="text-sm text-gray-600 mb-4">Default title and subtitle shown on the hero. Use <code>{dept}</code> in the title to show the current department (e.g. "Women's Collection" → use "{dept}'s Collection").</p>
+                <div class="form-group">
+                    <label>Default Hero Title</label>
+                    <input type="text" id="main-hero-title" placeholder="{dept}'s Collection">
+                </div>
+                <div class="form-group">
+                    <label>Default Hero Subtitle</label>
+                    <input type="text" id="main-hero-subtitle" placeholder="New Arrivals">
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="section-hero">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Global Hero Slides</h3>
+                    <button class="btn-small btn-add" onclick="addSlide()">
+                        <i class="fa-solid fa-plus"></i> Add Slide
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">First slide is used as default hero. Optionally set per-department hero below.</p>
+                <div id="hero-slides-container"></div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Hero Per Department (optional)</h3>
+                <p class="text-sm text-gray-600 mb-4">Override hero image and text for Women, Men, or Kids when that tab is selected.</p>
+                <div id="hero-by-dept-container"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-products">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 class="card-title" style="margin:0;">Categories & Products</h3>
+                    <button class="btn-small btn-add" onclick="addCategory()">
+                        <i class="fa-solid fa-plus"></i> Add Category
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Assign each category to a department (Women/Men/Kids). Use the checkboxes per product to <strong>show or hide</strong> multiple pictures, size options, and color options on the main store. Add extra image URLs (one per line), sizes (comma-separated), and colors (comma-separated) as needed.</p>
+                <div id="products-container"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-footer">
+            <div class="card">
+                <h3 class="card-title">Footer Content</h3>
+                <div class="form-group">
+                    <label>Footer Brand Name</label>
+                    <input type="text" id="footer-brand" placeholder="ClirNova">
+                </div>
+                <div class="form-group">
+                    <label>Copyright Text</label>
+                    <input type="text" id="footer-copyright" placeholder="© 2025 ClirNova. All Rights Reserved.">
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Social Links</h3>
+                <div id="social-links-container"></div>
+                <button class="btn-small btn-add" onclick="addSocialLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Social
+                </button>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Footer Quick Links</h3>
+                <div id="footer-links-container"></div>
+                <button class="btn-small btn-add" onclick="addFooterLink()" style="margin-top:12px;">
+                    <i class="fa-solid fa-plus"></i> Add Link
+                </button>
+            </div>
+        </section>
+
+        <section class="section" id="section-account">
+            <div class="card">
+                <h3 class="card-title">Change login credentials</h3>
+                <p class="text-sm text-gray-600 mb-4">Update your username and/or password. You must enter your current password to save changes.</p>
+                <div class="form-group">
+                    <label>Current password</label>
+                    <input type="password" id="account-current-pw" placeholder="Current password">
+                </div>
+                <div class="form-group">
+                    <label>New username (leave blank to keep current)</label>
+                    <input type="text" id="account-new-username" placeholder="New username">
+                </div>
+                <div class="form-group">
+                    <label>New password (leave blank to keep current)</label>
+                    <input type="password" id="account-new-pw" placeholder="New password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm new password</label>
+                    <input type="password" id="account-confirm-pw" placeholder="Confirm new password">
+                </div>
+                <div class="auth-error" id="account-error"></div>
+                <button type="button" class="btn-small btn-add" onclick="handleUpdateCredentials()" style="margin-right:8px;">
+                    <i class="fa-solid fa-save"></i> Update credentials
+                </button>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Sign out</h3>
+                <p class="text-sm text-gray-600 mb-4">Sign out of the admin panel. You will need to sign in again to access it.</p>
+                <button type="button" class="btn-small btn-danger" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign out
+                </button>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <div class="toast" id="toast">Settings saved successfully!</div>
+
+    <script>
+        const STORAGE_KEY = 'clirnova_store_settings';
+        const ADMIN_USER_KEY = 'clirnova_admin_user';
+        const ADMIN_HASH_KEY = 'clirnova_admin_hash';
+        const SESSION_KEY = 'clirnova_admin_session';
+        const DEPARTMENTS = ['Women', 'Men', 'Kids'];
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function hasStoredCredentials() {
+            return !!(localStorage.getItem(ADMIN_USER_KEY) && localStorage.getItem(ADMIN_HASH_KEY));
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem(SESSION_KEY) === '1';
+        }
+
+        function showAuthScreen(id) {
+            document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active');
+            document.getElementById('admin-dashboard').classList.remove('logged-in');
+        }
+
+        function showDashboard() {
+            document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('admin-dashboard').classList.add('logged-in');
+        }
+
+        async function handleSetup(e) {
+            e.preventDefault();
+            const username = (document.getElementById('setup-username').value || '').trim();
+            const password = document.getElementById('setup-password').value || '';
+            const confirmVal = document.getElementById('setup-confirm').value || '';
+            const errEl = document.getElementById('setup-error');
+            const btn = document.getElementById('setup-btn');
+            errEl.classList.remove('show');
+            if (password !== confirmVal) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.classList.add('show');
+                return false;
+            }
+            if (password.length < 4) {
+                errEl.textContent = 'Password must be at least 4 characters.';
+                errEl.classList.add('show');
+                return false;
+            }
+            btn.disabled = true;
+            try {
+                const hash = await hashPassword(password);
+                localStorage.setItem(ADMIN_USER_KEY, username);
+                localStorage.setItem(ADMIN_HASH_KEY, hash);
+                sessionStorage.setItem(SESSION_KEY, '1');
+                showDashboard();
+            } finally {
+                btn.disabled = false;
+            }
+            return false;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = (document.getElementById('login-username').value || '').trim();
+            const password = document.getElementById('login-password').value || '';
+            const errEl = document.getElementById('login-error');
+            const btn = document.getElementById('login-btn');
+            errEl.classList.remove('show');
+            btn.disabled = true;
+            try {
+                const storedUser = localStorage.getItem(ADMIN_USER_KEY);
+                const storedHash = localStorage.getItem(ADMIN_HASH_KEY);
+                if (!storedUser || !storedHash) {
+                    errEl.textContent = 'No admin account set up.';
+                    errEl.classList.add('show');
+                    return false;
+                }
+                if (username !== storedUser) {
+                    errEl.textContent = 'Invalid username or password.';
+                    errEl.classList.add('show');
+                    return false;
+                }
+                const hash = await hashPassword(password);
+                if (hash !== storedHash) {
+                    errEl.textContent = 'Invalid username or password.';
+                    errEl.classList.add('show');
+                    return false;
+                }
+                sessionStorage.setItem(SESSION_KEY, '1');
+                showDashboard();
+            } finally {
+                btn.disabled = false;
+            }
+            return false;
+        }
+
+        async function handleUpdateCredentials() {
+            const current = document.getElementById('account-current-pw').value || '';
+            const newUser = (document.getElementById('account-new-username').value || '').trim();
+            const newPw = document.getElementById('account-new-pw').value || '';
+            const confirmPw = document.getElementById('account-confirm-pw').value || '';
+            const errEl = document.getElementById('account-error');
+            errEl.classList.remove('show');
+            errEl.textContent = '';
+            const storedHash = localStorage.getItem(ADMIN_HASH_KEY);
+            if (!storedHash) return;
+            const currentHash = await hashPassword(current);
+            if (currentHash !== storedHash) {
+                errEl.textContent = 'Current password is incorrect.';
+                errEl.classList.add('show');
+                return;
+            }
+            if (newPw || newUser) {
+                if (newPw && newPw !== confirmPw) {
+                    errEl.textContent = 'New passwords do not match.';
+                    errEl.classList.add('show');
+                    return;
+                }
+                if (newPw && newPw.length < 4) {
+                    errEl.textContent = 'New password must be at least 4 characters.';
+                    errEl.classList.add('show');
+                    return;
+                }
+                if (newUser) localStorage.setItem(ADMIN_USER_KEY, newUser);
+                if (newPw) {
+                    const hash = await hashPassword(newPw);
+                    localStorage.setItem(ADMIN_HASH_KEY, hash);
+                }
+                document.getElementById('account-current-pw').value = '';
+                document.getElementById('account-new-username').value = '';
+                document.getElementById('account-new-pw').value = '';
+                document.getElementById('account-confirm-pw').value = '';
+                errEl.textContent = 'Credentials updated.';
+                errEl.style.color = 'var(--success)';
+                errEl.classList.add('show');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            showAuthScreen('auth-login');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-error').classList.remove('show');
+        }
+
+        (function initAuth() {
+            if (hasStoredCredentials()) {
+                if (isLoggedIn()) {
+                    showDashboard();
+                } else {
+                    showAuthScreen('auth-login');
+                }
+            } else {
+                showAuthScreen('auth-setup');
+            }
+        })();
+        const DEFAULT_DATA = {
+            site: { name: 'CLIRNOVA', tagline: 'Luxury Fashion Store', about: 'Curated fashion for the modern lifestyle.', whatsapp: '', currency: 'GHS' },
+            mainPage: { heroTitle: "{dept}'s Collection", heroSubtitle: 'New Arrivals' },
+            hero: [
+                { title: "Women's Collection", subtitle: 'New Arrivals', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80' },
+                { title: "Men's Collection", subtitle: 'Latest Styles', image: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=1200&q=80' },
+                { title: "Kids' Collection", subtitle: 'Comfort First', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=1200&q=80' }
+            ],
+            heroByDept: {
+                Women: { title: "Women's Collection", subtitle: 'New Arrivals', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80' },
+                Men: { title: "Men's Collection", subtitle: 'Latest Styles', image: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=1200&q=80' },
+                Kids: { title: "Kids' Collection", subtitle: 'Comfort First', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=1200&q=80' }
+            },
+            footer: {
+                brand: 'ClirNova',
+                copyright: '© 2025 ClirNova. All Rights Reserved.',
+                social: [
+                    { name: 'Instagram', url: '#', icon: 'fa-brands fa-instagram' },
+                    { name: 'Facebook', url: '#', icon: 'fa-brands fa-facebook-f' },
+                    { name: 'TikTok', url: '#', icon: 'fa-brands fa-tiktok' }
+                ],
+                links: [
+                    { text: 'Shipping', url: '#' },
+                    { text: 'Returns', url: '#' },
+                    { text: 'Contact', url: '#' }
+                ]
+            },
+            catalog: {
+                "Women's Dresses": {
+                    department: 'Women',
+                    products: [
+                        { id: 101, name: 'Floral Summer Dress', price: 160, img: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=400', images: [], colors: ['Navy', 'Coral', 'White'], sizes: ['S', 'M', 'L', 'XL'], features: ['Lightweight fabric', 'Machine washable'], showMultipleImages: true, showSizes: true, showColors: true },
+                        { id: 102, name: 'Elegant Jumpsuit', price: 280, img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=400', images: [], colors: ['Black', 'Olive'], sizes: ['S', 'M', 'L'], features: [], showMultipleImages: false, showSizes: true, showColors: true }
+                    ]
+                },
+                "Men's Tops": {
+                    department: 'Men',
+                    products: [
+                        { id: 201, name: 'Classic Oxford Shirt', price: 180, img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=400', images: [], colors: ['White', 'Light Blue'], sizes: ['S', 'M', 'L', 'XL'], features: ['100% Cotton'], showMultipleImages: true, showSizes: true, showColors: true },
+                        { id: 202, name: 'Streetwear Hoodie', price: 200, img: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80&w=400', images: [], colors: ['Black', 'Grey'], sizes: ['M', 'L', 'XL'], features: [], showMultipleImages: false, showSizes: true, showColors: true }
+                    ]
+                },
+                "Kids": {
+                    department: 'Kids',
+                    products: [
+                        { id: 301, name: 'Denim Overalls', price: 110, img: 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&q=80&w=400', images: [], colors: [], sizes: ['2Y', '3Y', '4Y'], features: [], showMultipleImages: false, showSizes: true, showColors: false }
+                    ]
+                }
+            }
+        };
+
+        const ICON_OPTIONS = [
+            'fa-brands fa-tiktok', 'fa-brands fa-instagram', 'fa-brands fa-facebook-f',
+            'fa-brands fa-snapchat', 'fa-brands fa-twitter', 'fa-brands fa-youtube',
+            'fa-brands fa-pinterest', 'fa-brands fa-linkedin-in'
+        ];
+
+        let data = {};
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), parsed);
+                } else {
+                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } catch (e) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        }
+
+        function deepMerge(target, src) {
+            if (!src || typeof src !== 'object') return target;
+            for (const k of Object.keys(src)) {
+                if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && src[k] !== null && target[k] && typeof target[k] === 'object') {
+                    deepMerge(target[k], src[k]);
+                } else {
+                    target[k] = src[k];
+                }
+            }
+            return target;
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function previewSite() {
+            window.open('clirnova.html', '_blank');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                el.classList.add('active');
+                const id = el.dataset.section;
+                document.getElementById('section-' + id).classList.add('active');
+                const titles = { general: 'General Settings', mainpage: 'Main Page Content', hero: 'Hero & Carousel', products: 'Products & Categories', footer: 'Footer & Social', account: 'Account / Login' };
+                document.getElementById('section-title').textContent = titles[id] || id;
+                if (window.innerWidth <= 768) toggleSidebar();
+            };
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('open');
+            }
+        }
+
+        function renderGeneral() {
+            document.getElementById('site-name').value = data.site?.name || '';
+            document.getElementById('site-tagline').value = data.site?.tagline || '';
+            document.getElementById('site-about').value = data.site?.about || '';
+            document.getElementById('whatsapp-number').value = data.site?.whatsapp || '';
+            document.getElementById('currency').value = data.site?.currency || 'GHS';
+            document.getElementById('footer-brand').value = data.footer?.brand || '';
+            document.getElementById('footer-copyright').value = data.footer?.copyright || '';
+        }
+
+        function renderMainPage() {
+            document.getElementById('main-hero-title').value = data.mainPage?.heroTitle || "{dept}'s Collection";
+            document.getElementById('main-hero-subtitle').value = data.mainPage?.heroSubtitle || 'New Arrivals';
+        }
+
+        function collectMainPage() {
+            data.mainPage = data.mainPage || {};
+            data.mainPage.heroTitle = document.getElementById('main-hero-title').value.trim() || "{dept}'s Collection";
+            data.mainPage.heroSubtitle = document.getElementById('main-hero-subtitle').value.trim() || 'New Arrivals';
+        }
+
+        function renderHero() {
+            const container = document.getElementById('hero-slides-container');
+            const slides = data.hero || [];
+            container.innerHTML = slides.map((s, i) => `
+                <div class="slide-item" data-index="${i}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <strong>Slide ${i + 1}</strong>
+                        <button class="btn-small btn-danger" onclick="removeSlide(${i})">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" value="${escapeAttr(s.title)}" onchange="updateSlide(${i}, 'title', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle</label>
+                        <input type="text" value="${escapeAttr(s.subtitle)}" onchange="updateSlide(${i}, 'subtitle', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" value="${escapeAttr(s.image)}" onchange="updateSlide(${i}, 'image', this.value)">
+                    </div>
+                    <div class="slide-preview" style="background-image:url('${escapeAttr(s.image)}')"></div>
+                </div>
+            `).join('');
+
+            const deptContainer = document.getElementById('hero-by-dept-container');
+            if (!data.heroByDept) data.heroByDept = {};
+            deptContainer.innerHTML = DEPARTMENTS.map(dept => {
+                const h = data.heroByDept[dept] || {};
+                return `
+                <div class="slide-item" style="margin-bottom:16px;">
+                    <strong>${dept}</strong>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" value="${escapeAttr(h.image)}" onchange="updateHeroDept('${dept}', 'image', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" value="${escapeAttr(h.title)}" onchange="updateHeroDept('${dept}', 'title', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle</label>
+                        <input type="text" value="${escapeAttr(h.subtitle)}" onchange="updateHeroDept('${dept}', 'subtitle', this.value)">
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function escapeAttr(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function updateSlide(i, field, val) {
+            if (!data.hero) data.hero = [];
+            data.hero[i] = data.hero[i] || {};
+            data.hero[i][field] = val;
+        }
+
+        function updateHeroDept(dept, field, val) {
+            if (!data.heroByDept) data.heroByDept = {};
+            if (!data.heroByDept[dept]) data.heroByDept[dept] = {};
+            data.heroByDept[dept][field] = val;
+        }
+
+        function addSlide() {
+            if (!data.hero) data.hero = [];
+            data.hero.push({ title: 'New Slide', subtitle: '', image: 'https://via.placeholder.com/1200x600?text=Slide' });
+            renderHero();
+        }
+
+        function removeSlide(i) {
+            data.hero.splice(i, 1);
+            renderHero();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            const catalog = data.catalog || {};
+            const catEntries = Object.entries(catalog);
+            container.innerHTML = catEntries.map(([catName, raw], catIdx) => {
+                const isObj = raw && typeof raw === 'object' && !Array.isArray(raw);
+                const department = (isObj && raw.department) ? raw.department : 'Women';
+                const products = (isObj && raw.products) ? raw.products : (Array.isArray(raw) ? raw : []);
+                const productsHtml = products.map((p, pi) => {
+                    const mainImg = p.img || (p.images && p.images[0]) || '';
+                    const imagesText = (p.images && p.images.length) ? p.images.join('\n') : '';
+                    const colorsText = (p.colors && p.colors.length) ? p.colors.join(', ') : '';
+                    const sizesText = (p.sizes && p.sizes.length) ? p.sizes.join(', ') : '';
+                    const featuresText = (p.features && p.features.length) ? p.features.join('\n') : '';
+                    const showMulti = p.showMultipleImages !== false;
+                    const showSizes = p.showSizes !== false;
+                    const showColors = p.showColors !== false;
+                    return `
+                    <div class="product-row">
+                        <img src="${mainImg || 'https://via.placeholder.com/50'}" alt="" class="thumb">
+                        <div class="product-details">
+                            <input type="text" value="${escapeAttr(p.name)}" placeholder="Product name" onchange="updateProductField(${catIdx}, ${pi}, 'name', this.value)">
+                            <label class="text-xs mt-2">Main image URL</label>
+                            <input type="text" value="${escapeAttr(p.img)}" placeholder="Image URL" onchange="updateProductField(${catIdx}, ${pi}, 'img', this.value)">
+                            <label class="text-xs mt-2">Extra images (one URL per line)</label>
+                            <textarea placeholder="https://..." onchange="updateProductField(${catIdx}, ${pi}, 'images', this.value.split(/\\n/).filter(Boolean))">${escapeAttr(imagesText)}</textarea>
+                            <div class="product-toggles">
+                                <label><input type="checkbox" ${showMulti ? 'checked' : ''} onchange="updateProductField(${catIdx}, ${pi}, 'showMultipleImages', this.checked)"> Show multiple pictures on store</label>
+                                <label><input type="checkbox" ${showSizes ? 'checked' : ''} onchange="updateProductField(${catIdx}, ${pi}, 'showSizes', this.checked)"> Show size options</label>
+                                <label><input type="checkbox" ${showColors ? 'checked' : ''} onchange="updateProductField(${catIdx}, ${pi}, 'showColors', this.checked)"> Show color options</label>
+                            </div>
+                            <label class="text-xs mt-2">Sizes (comma-separated, e.g. S, M, L, XL)</label>
+                            <input type="text" value="${escapeAttr(sizesText)}" placeholder="S, M, L, XL" onchange="updateProductField(${catIdx}, ${pi}, 'sizes', this.value.split(',').map(s=>s.trim()).filter(Boolean))">
+                            <label class="text-xs mt-2">Colors (comma-separated)</label>
+                            <input type="text" value="${escapeAttr(colorsText)}" placeholder="Red, Blue, Black" onchange="updateProductField(${catIdx}, ${pi}, 'colors', this.value.split(',').map(s=>s.trim()).filter(Boolean))">
+                            <label class="text-xs mt-2">Features (one per line)</label>
+                            <textarea placeholder="Feature 1" onchange="updateProductField(${catIdx}, ${pi}, 'features', this.value.split(/\\n/).map(s=>s.trim()).filter(Boolean))">${escapeAttr(featuresText)}</textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs">Price</label>
+                            <input type="number" value="${p.price}" style="width:100%; padding:8px;" onchange="updateProductField(${catIdx}, ${pi}, 'price', parseFloat(this.value)||0)">
+                        </div>
+                        <button class="btn-icon" onclick="removeProductByIndex(${catIdx}, ${pi})" type="button"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                }).join('');
+                return `
+                    <div class="category-block" data-cat-idx="${catIdx}">
+                        <div class="category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                            <strong>${escapeAttr(catName)}</strong>
+                            <select class="dept-select" onchange="updateCategoryDept(${catIdx}, this.value)" onclick="event.stopPropagation()">
+                                ${DEPARTMENTS.map(d => `<option value="${d}" ${d === department ? 'selected' : ''}>${d}</option>`).join('')}
+                            </select>
+                            <span><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                        <div class="category-body">
+                            ${productsHtml}
+                            <div class="add-product-row">
+                                <button class="btn-small btn-add" onclick="addProductByIndex(${catIdx})"><i class="fa-solid fa-plus"></i> Add Product</button>
+                            </div>
+                            <button class="btn-small btn-danger" style="margin-top:12px;" onclick="removeCategoryByIndex(${catIdx})">Remove Category</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCatName(idx) {
+            return Object.keys(data.catalog || {})[idx];
+        }
+
+        function getCatRaw(idx) {
+            const name = getCatName(idx);
+            return name ? data.catalog[name] : null;
+        }
+
+        function ensureCategoryObject(catIdx) {
+            const name = getCatName(catIdx);
+            if (!name) return;
+            const raw = data.catalog[name];
+            if (Array.isArray(raw)) {
+                data.catalog[name] = { department: 'Women', products: raw };
+            } else if (!raw || typeof raw !== 'object' || !raw.products) {
+                data.catalog[name] = { department: raw?.department || 'Women', products: raw?.products || [] };
+            }
+        }
+
+        function updateProductField(catIdx, prodIdx, field, val) {
+            ensureCategoryObject(catIdx);
+            const name = getCatName(catIdx);
+            if (!name || !data.catalog[name].products[prodIdx]) return;
+            data.catalog[name].products[prodIdx][field] = val;
+        }
+
+        function updateCategoryDept(catIdx, dept) {
+            ensureCategoryObject(catIdx);
+            const name = getCatName(catIdx);
+            if (name) data.catalog[name].department = dept;
+        }
+
+        function addProductByIndex(catIdx) {
+            ensureCategoryObject(catIdx);
+            const name = getCatName(catIdx);
+            if (!name) return;
+            const products = data.catalog[name].products;
+            const maxId = Math.max(100, ...(products.map(p => p.id) || [0])) + 1;
+            products.push({ id: maxId, name: 'New Product', price: 0, img: '', images: [], colors: [], sizes: [], features: [], showMultipleImages: true, showSizes: true, showColors: true });
+            renderProducts();
+        }
+
+        function removeProductByIndex(catIdx, prodIdx) {
+            const name = getCatName(catIdx);
+            if (!name) return;
+            ensureCategoryObject(catIdx);
+            data.catalog[name].products.splice(prodIdx, 1);
+            renderProducts();
+        }
+
+        function addCategory() {
+            const name = prompt('Category name (e.g. Women\'s Dresses):');
+            if (!name) return;
+            if (!data.catalog) data.catalog = {};
+            data.catalog[name] = { department: 'Women', products: [] };
+            renderProducts();
+        }
+
+        function removeCategoryByIndex(catIdx) {
+            const name = getCatName(catIdx);
+            if (!name || !confirm('Remove this category and all its products?')) return;
+            delete data.catalog[name];
+            renderProducts();
+        }
+
+        function removeCategory(cat) {
+            if (confirm('Remove this category and all its products?')) {
+                delete data.catalog[cat];
+                renderProducts();
+            }
+        }
+
+        function renderFooter() {
+            const social = data.footer?.social || [];
+            document.getElementById('social-links-container').innerHTML = social.map((s, i) => `
+                <div class="link-row">
+                    <input type="text" value="${escapeAttr(s.name)}" placeholder="Name" onchange="updateSocial(${i}, 'name', this.value)">
+                    <input type="text" value="${escapeAttr(s.url)}" placeholder="URL" onchange="updateSocial(${i}, 'url', this.value)">
+                    <select onchange="updateSocial(${i}, 'icon', this.value)">
+                        ${ICON_OPTIONS.map(ico => `<option value="${ico}" ${(s.icon || '') === ico ? 'selected' : ''}>${ico.replace('fa-brands fa-', '')}</option>`).join('')}
+                    </select>
+                    <button class="btn-icon" onclick="removeSocial(${i})" type="button"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            const links = data.footer?.links || [];
+            document.getElementById('footer-links-container').innerHTML = links.map((l, i) => `
+                <div class="link-row" style="grid-template-columns: 1fr 2fr 50px;">
+                    <input type="text" value="${escapeAttr(l.text)}" placeholder="Link text" onchange="updateFooterLink(${i}, 'text', this.value)">
+                    <input type="text" value="${escapeAttr(l.url)}" placeholder="URL" onchange="updateFooterLink(${i}, 'url', this.value)">
+                    <button class="btn-icon" onclick="removeFooterLink(${i})" type="button"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function updateSocial(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social[i] = data.footer.social[i] || {};
+            data.footer.social[i][field] = val;
+        }
+
+        function addSocialLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.social) data.footer.social = [];
+            data.footer.social.push({ name: 'New', url: '#', icon: 'fa-brands fa-instagram' });
+            renderFooter();
+        }
+
+        function removeSocial(i) {
+            data.footer.social.splice(i, 1);
+            renderFooter();
+        }
+
+        function updateFooterLink(i, field, val) {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links[i] = data.footer.links[i] || {};
+            data.footer.links[i][field] = val;
+        }
+
+        function addFooterLink() {
+            if (!data.footer) data.footer = {};
+            if (!data.footer.links) data.footer.links = [];
+            data.footer.links.push({ text: 'New Link', url: '#' });
+            renderFooter();
+        }
+
+        function removeFooterLink(i) {
+            data.footer.links.splice(i, 1);
+            renderFooter();
+        }
+
+        function collectGeneral() {
+            data.site = data.site || {};
+            data.site.name = document.getElementById('site-name').value.trim() || 'CLIRNOVA';
+            data.site.tagline = document.getElementById('site-tagline').value.trim() || 'Luxury Fashion Store';
+            data.site.about = document.getElementById('site-about').value.trim();
+            data.site.whatsapp = document.getElementById('whatsapp-number').value.trim();
+            data.site.currency = document.getElementById('currency').value.trim() || 'GHS';
+            data.footer = data.footer || {};
+            data.footer.brand = document.getElementById('footer-brand').value.trim() || 'ClirNova';
+            data.footer.copyright = document.getElementById('footer-copyright').value.trim() || '© 2025 ClirNova.';
+        }
+
+        function saveAll() {
+            collectGeneral();
+            collectMainPage();
+            saveData();
+            showToast();
+        }
+
+        loadData();
+        renderGeneral();
+        renderMainPage();
+        renderHero();
+        renderProducts();
+        renderFooter();
+    </script>
+</body>
+</html>

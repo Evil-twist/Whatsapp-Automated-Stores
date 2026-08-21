@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clirjewelry Gold & Gems</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --text-muted: #737373;
+            --accent: #c9a227;
+            --accent-light: #e5c04a;
+            --accent-dark: #a6851e;
+            --border: rgba(255,255,255,0.08);
+            --glass: rgba(20,20,20,0.85);
+            --shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        [data-theme="light"] {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #f5f5f4;
+            --bg-card: #ffffff;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #78716c;
+            --accent: #a6851e;
+            --accent-light: #c9a227;
+            --accent-dark: #787016;
+            --border: rgba(0,0,0,0.08);
+            --glass: rgba(255,255,255,0.9);
+            --shadow: 0 25px 50px -12px rgba(0,0,0,0.12);
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.4s ease, color 0.3s ease;
+        }
+        h1, h2, h3, .royal-font { font-family: 'Cinzel', serif; }
+        .elegant-font { font-family: 'Cormorant Garamond', serif; }
+        .gold-text { color: var(--accent); }
+        .gold-border { border-color: var(--accent); }
+        .gold-bg { background-color: var(--accent); }
+        .gold-gradient { background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .fade-up { animation: fadeUp 0.8s ease-out forwards; opacity: 0; transform: translateY(24px); }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: animateIn 0.35s ease-out; }
+        @keyframes animateIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-in-from-right { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        /* Product grid: 2 cols on mobile */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .product-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        }
+        @media (min-width: 1024px) {
+            .product-grid { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        }
+        /* Thumbnail strip in modal */
+        .thumb-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+        .thumb-strip img {
+            width: 56px; height: 56px; object-fit: cover; border-radius: 6px;
+            cursor: pointer; border: 2px solid transparent; opacity: 0.85;
+        }
+        .thumb-strip img:hover, .thumb-strip img.active { border-color: var(--accent); opacity: 1; }
+        /* Theme toggle */
+        .theme-toggle {
+            width: 44px; height: 24px; border-radius: 12px;
+            background: var(--border); position: relative; cursor: pointer;
+            transition: background 0.3s;
+        }
+        .theme-toggle::after {
+            content: ''; position: absolute; width: 18px; height: 18px;
+            border-radius: 50%; top: 3px; left: 3px;
+            background: var(--accent); transition: transform 0.3s ease;
+        }
+        [data-theme="light"] .theme-toggle::after { transform: translateX(20px); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-50 glass transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="gem" class="w-6 h-6 gold-text"></i>
+                <div class="royal-font text-lg sm:text-xl tracking-[0.2em] font-bold text-[var(--text-primary)]" id="nav-brand">CLIR<span class="gold-text">JEWELRY</span></div>
+            </div>
+            <div class="flex gap-4 sm:gap-6 items-center">
+                <button aria-label="Toggle light/dark mode" onclick="toggleTheme()" class="theme-toggle flex-shrink-0"></button>
+                <button onclick="scrollToSection('collection')" class="hidden md:block text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent)] transition">Collection</button>
+                <button onclick="toggleBag()" class="relative group p-1">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)] transition"></i>
+                    <span id="bag-count" class="absolute -top-0.5 -right-0.5 bg-[var(--accent)] text-black text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="relative min-h-[85vh] flex items-center justify-center text-center overflow-hidden">
+        <img id="hero-bg" src="clirjewelry.jpg" alt="" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-[var(--bg-primary)]/70"></div>
+        <div class="relative z-10 max-w-4xl px-6 fade-up" style="animation-delay: 0.2s;">
+            <div class="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] gold-text mb-6" id="hero-badge">Timeless Elegance</div>
+            <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[var(--text-primary)] royal-font leading-tight mb-6" id="hero-title">
+                Adorn The <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] to-[#FCF6BA]">Extraordinary</span>
+            </h1>
+            <p class="text-[var(--text-secondary)] text-sm md:text-base max-w-lg mx-auto mb-10 font-light leading-relaxed elegant-font text-lg" id="hero-desc">
+                Curated 18k & 24k Gold, VVS Diamonds, and Swiss Timepieces for the distinguished individual.
+            </p>
+            <button onclick="scrollToSection('collection')" class="px-10 py-4 border-2 border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition duration-500 text-xs font-bold uppercase tracking-[0.2em]" id="hero-cta">
+                View Collection
+            </button>
+        </div>
+    </header>
+
+    <!-- TRUST SIGNALS -->
+    <div class="grid grid-cols-3 border-y border-[var(--border)] bg-[var(--bg-secondary)]/80">
+        <div class="p-6 text-center border-r border-[var(--border)]">
+            <i data-lucide="shield-check" class="w-6 h-6 mx-auto mb-3 gold-text"></i>
+            <div class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]" data-trust="0">Certified Authentic</div>
+        </div>
+        <div class="p-6 text-center border-r border-[var(--border)]">
+            <i data-lucide="truck" class="w-6 h-6 mx-auto mb-3 gold-text"></i>
+            <div class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]" data-trust="1">Insured Delivery</div>
+        </div>
+        <div class="p-6 text-center">
+            <i data-lucide="award" class="w-6 h-6 mx-auto mb-3 gold-text"></i>
+            <div class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]" data-trust="2">Lifetime Warranty</div>
+        </div>
+    </div>
+
+    <!-- COLLECTION -->
+    <section id="collection" class="py-16 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+            <div>
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--text-primary)] royal-font mb-2" id="section-collection-title">The Vault</h2>
+                <div class="h-1 w-20 gold-bg"></div>
+            </div>
+            <div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 hide-scroll" id="filter-buttons">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+        <div id="grid" class="product-grid">
+            <!-- Injected by JS -->
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-[var(--bg-secondary)] border-t border-[var(--border)] py-16 text-center">
+        <div class="royal-font text-2xl font-bold text-[var(--text-primary)] mb-6 tracking-widest" id="footer-brand">CLIRJEWELRY</div>
+        <div class="flex justify-center gap-8 mb-8 flex-wrap" id="footer-social">
+            <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition uppercase text-xs tracking-widest">Instagram</a>
+            <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition uppercase text-xs tracking-widest">WhatsApp</a>
+            <a href="#" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition uppercase text-xs tracking-widest">Email</a>
+        </div>
+        <p class="text-[var(--text-muted)] text-xs uppercase tracking-widest" id="footer-copyright">&copy; 2024 Royal Gold & Gems. Accra, Ghana.</p>
+    </footer>
+
+    <!-- PRODUCT MODAL (with gallery + variants) -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="relative bg-[var(--bg-card)] w-full max-w-4xl max-h-[90vh] rounded-lg flex flex-col md:flex-row overflow-hidden shadow-2xl border border-[var(--border)] animate-in">
+            <div class="w-full md:w-1/2 bg-[var(--bg-secondary)] relative flex flex-col">
+                <img id="modal-img" src="" alt="" class="w-full aspect-square object-cover flex-1">
+                <div id="modal-thumbs" class="thumb-strip p-3 border-t border-[var(--border)] hidden"></div>
+            </div>
+            <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto max-h-[70vh] md:max-h-none">
+                <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-full hover:bg-[var(--border)]"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div id="modal-cat" class="gold-text text-xs font-bold uppercase tracking-[0.2em] mb-2">Category</div>
+                <h2 id="modal-title" class="royal-font text-2xl md:text-3xl text-[var(--text-primary)] mb-4">Product Name</h2>
+                <div class="flex items-baseline gap-3 mb-6 border-b border-[var(--border)] pb-6">
+                    <span id="modal-price" class="text-2xl font-light text-[var(--text-primary)]">GHS 0</span>
+                    <span class="text-xs text-[var(--text-muted)] uppercase tracking-wide">/ Certified Valuation</span>
+                </div>
+                <div id="modal-variants" class="mb-6 hidden">
+                    <!-- Variant selectors (e.g. Color, Size) -->
+                </div>
+                <div class="space-y-3 mb-6 text-sm text-[var(--text-secondary)]">
+                    <p class="flex justify-between border-b border-[var(--border)] pb-2"><span>Material</span> <span id="modal-mat" class="text-[var(--text-primary)]">—</span></p>
+                    <p class="flex justify-between border-b border-[var(--border)] pb-2"><span>Weight</span> <span id="modal-weight" class="text-[var(--text-primary)]">—</span></p>
+                </div>
+                <div class="mt-auto flex gap-3 pt-4">
+                    <button onclick="addToBagFromModal()" class="flex-1 bg-[var(--accent)] text-black py-4 font-bold uppercase text-xs tracking-wider hover:opacity-90 transition">Add to Bag</button>
+                    <button onclick="inquireDirect()" class="flex-1 border border-[var(--border)] text-[var(--text-primary)] py-4 font-bold uppercase text-xs tracking-wider hover:border-[var(--accent)] hover:text-[var(--accent)] transition">Inquire</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BAG DRAWER -->
+    <div id="bag-drawer" class="fixed inset-0 z-50 hidden flex justify-end">
+        <div onclick="toggleBag()" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-sm bg-[var(--bg-secondary)] h-full shadow-2xl border-l border-[var(--border)] flex flex-col slide-in-from-right">
+            <div class="p-6 border-b border-[var(--border)] flex justify-between items-center">
+                <h3 class="royal-font text-xl text-[var(--text-primary)]">Your Selection</h3>
+                <button onclick="toggleBag()" class="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="bag-items" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+            <div class="p-6 bg-[var(--bg-card)] border-t border-[var(--border)]">
+                <div class="flex justify-between text-[var(--text-primary)] royal-font text-xl mb-6">
+                    <span>Est. Total</span>
+                    <span id="bag-total">GHS 0</span>
+                </div>
+                <button onclick="contactConcierge()" class="w-full py-4 gold-gradient text-black font-bold uppercase text-xs tracking-wider hover:brightness-110 transition shadow-lg">
+                    Contact Concierge
+                </button>
+                <p class="text-center text-[10px] text-[var(--text-muted)] mt-4 uppercase tracking-wider">Secure WhatsApp Checkout</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'jewelry_store_settings';
+
+        // Default product structure: supports images[] and variants{}
+        const DEFAULT_ITEMS = [
+            { id: 1, name: "Rolex Submariner Date", cat: "Watches", price: 185000, material: "Oystersteel", weight: "155g", images: ["https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=600"] },
+            { id: 2, name: "Heavy Cuban Link Chain", cat: "Chains", price: 65000, material: "18k Solid Gold", weight: "220g", images: ["https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&q=80&w=600"], variants: { Color: ["Yellow Gold", "White Gold", "Rose Gold"] } },
+            { id: 3, name: "Diamond Solitaire Ring", cat: "Rings", price: 32000, material: "White Gold / VVS1", weight: "5g", images: ["https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=600", "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=600"], variants: { "Ring Size": ["16", "17", "18", "19"] } },
+            { id: 4, name: "Cartier Santos de Cartier", cat: "Watches", price: 95000, material: "Steel & 18k Gold", weight: "140g", images: ["https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&q=80&w=600"] },
+            { id: 5, name: "Diamond Tennis Bracelet", cat: "Bracelets", price: 28000, material: "14k Gold / 3ct Diamond", weight: "15g", images: ["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600"], variants: { Length: ["16cm", "18cm", "20cm"] } },
+            { id: 6, name: "Classic Signet Ring", cat: "Rings", price: 12000, material: "24k Pure Gold", weight: "18g", images: ["https://images.unsplash.com/photo-1641317136661-c3b8bcaeaf72?auto=format&fit=crop&q=80&w=600"] },
+            { id: 7, name: "Audemars Piguet Royal Oak", cat: "Watches", price: 450000, material: "Rose Gold", weight: "170g", images: ["https://images.unsplash.com/photo-1638872726305-35e2e39fb154?auto=format&fit=crop&q=80&w=600"] },
+            { id: 8, name: "Pearl Strand Necklace", cat: "Chains", price: 18500, material: "Akoya Pearls / Gold Clasp", weight: "45g", images: ["https://plus.unsplash.com/premium_photo-1757962534361-72068142ca1e?auto=format&fit=crop&q=80&w=600"] },
+            { id: 9, name: "Sapphire Halo Ring", cat: "Rings", price: 42000, material: "Platinum / Sapphire", weight: "6g", images: ["https://images.unsplash.com/photo-1677316734644-bc83b1f521eb?auto=format&fit=crop&q=80&w=600"], variants: { Color: ["Blue Sapphire", "Pink Sapphire"] } },
+            { id: 10, name: "Gold Figaro Chain", cat: "Chains", price: 15000, material: "14k Yellow Gold", weight: "35g", images: ["https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"] },
+            { id: 11, name: "Omega Seamaster 300M", cat: "Watches", price: 78000, material: "Stainless Steel", weight: "194g", images: ["https://images.unsplash.com/photo-1743127187686-e6145b08658b?auto=format&fit=crop&q=80&w=600"] },
+            { id: 12, name: "Diamond Stud Earrings", cat: "Earrings", price: 25000, material: "18k White Gold / 1ct", weight: "2g", images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=600"] },
+        ];
+
+        let ITEMS = [];
+        let bag = [];
+        let activeItem = null;
+        let activeFilter = "All";
+        let currencySymbol = "GHS ";
+        let whatsappNumber = "233538865290";
+
+        function getItems() {
+            return ITEMS.map(p => {
+                const img = Array.isArray(p.images) && p.images.length ? p.images[0] : (p.img || '');
+                return { ...p, img };
+            });
+        }
+
+        function applyConfig(config) {
+            if (!config) return;
+            if (config.site) {
+                currencySymbol = (config.site.currency || 'GHS').trim() + ' ';
+                whatsappNumber = (config.site.whatsapp || '').trim() || whatsappNumber;
+                const name = (config.site.name || 'CLIRJEWELRY').trim();
+                const brandEl = document.getElementById('nav-brand');
+                if (brandEl) brandEl.innerHTML = escapeHtml(name).replace(/JEWELRY/gi, '<span class="gold-text">JEWELRY</span>');
+                if (document.title !== name) document.title = (name + ' | Gold & Gems').replace(/<[^>]+>/g, '').trim();
+            }
+            if (config.homepage) {
+                const h = config.homepage;
+                setEl('hero-badge', h.heroBadge);
+                const titleEl = document.getElementById('hero-title');
+                if (titleEl) {
+                    const line1 = (h.heroTitle || 'Adorn The').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const line2 = (h.heroTitleHighlight || '').trim();
+                    titleEl.innerHTML = line2 ? line1 + ' <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] to-[#FCF6BA]">' + line2.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' : line1;
+                }
+                setEl('hero-desc', h.heroDesc);
+                setEl('hero-cta', h.heroCta);
+                setEl('section-collection-title', h.collectionTitle);
+                if (h.heroBg) document.getElementById('hero-bg').src = h.heroBg;
+                const trust = h.trustBadges || [];
+                document.querySelectorAll('[data-trust]').forEach((el, i) => { if (trust[i]) el.textContent = trust[i]; });
+            }
+            if (config.footer) {
+                setEl('footer-brand', config.footer.brand);
+                setEl('footer-copyright', config.footer.copyright);
+                const social = config.footer.social || [];
+                const container = document.getElementById('footer-social');
+                if (container && social.length) {
+                    container.innerHTML = social.map(s => `<a href="${(s.url || '#').replace(/"/g, '&quot;')}" target="_blank" rel="noopener" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition uppercase text-xs tracking-widest">${escapeHtml(s.name || '')}</a>`).join('');
+                }
+            }
+            if (config.catalog && Object.keys(config.catalog).length) {
+                ITEMS = [];
+                Object.entries(config.catalog).forEach(([cat, products]) => {
+                    (products || []).forEach(p => {
+                        const imgs = p.images && p.images.length ? p.images : (p.img ? [p.img] : []);
+                        ITEMS.push({
+                            id: p.id || Math.random().toString(36).slice(2),
+                            name: p.name || 'Product',
+                            cat,
+                            price: Number(p.price) || 0,
+                            material: p.material || '—',
+                            weight: p.weight || '—',
+                            images: imgs,
+                            variants: p.variants || null
+                        });
+                    });
+                });
+            }
+        }
+
+        function loadConfig() {
+            var config = null;
+            try {
+                var hash = window.location.hash;
+                if (hash && hash.indexOf('#config=') === 0) {
+                    var b64 = decodeURIComponent(hash.slice(8));
+                    var json = decodeURIComponent(escape(atob(b64)));
+                    config = JSON.parse(json);
+                }
+            } catch (e) {}
+            if (config) {
+                applyConfig(config);
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch (e) {}
+            } else {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) config = JSON.parse(raw);
+                    if (config) applyConfig(config);
+                } catch (e) { console.warn('Config load failed', e); }
+            }
+            if (!ITEMS.length) ITEMS = DEFAULT_ITEMS.map(p => ({
+                ...p,
+                images: p.images || [p.img || ''],
+                variants: p.variants || null
+            }));
+        }
+
+        function setEl(id, val) {
+            const el = document.getElementById(id);
+            if (el && val != null && val !== '') el.textContent = val;
+        }
+        function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        function getCategories() {
+            const cats = new Set(ITEMS.map(i => i.cat));
+            return ['All', ...Array.from(cats).sort()];
+        }
+
+        function render() {
+            const list = activeFilter === "All" ? ITEMS : ITEMS.filter(i => i.cat === activeFilter);
+            const items = getItems();
+            const getImg = (item) => Array.isArray(item.images) && item.images[0] ? item.images[0] : item.img || '';
+
+            document.getElementById('grid').innerHTML = list.map(item => {
+                const img = getImg(item);
+                return `
+                <div onclick="openModal(${item.id})" class="group cursor-pointer">
+                    <div class="relative aspect-square overflow-hidden rounded-lg bg-[var(--bg-card)] border border-[var(--border)] mb-3">
+                        <img src="${img}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                        <div class="absolute inset-0 border-2 border-[var(--accent)]/0 group-hover:border-[var(--accent)]/40 rounded-lg transition duration-500 pointer-events-none"></div>
+                        <div class="absolute bottom-3 right-3 bg-black/70 backdrop-blur text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition transform translate-y-2 group-hover:translate-y-0">
+                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-[10px] gold-text font-bold uppercase tracking-widest mb-1">${escapeHtml(item.cat)}</div>
+                        <h3 class="royal-font text-base sm:text-lg text-[var(--text-primary)] mb-1 line-clamp-2">${escapeHtml(item.name)}</h3>
+                        <div class="text-[var(--text-secondary)] text-sm font-light">${currencySymbol}${item.price.toLocaleString()}</div>
+                    </div>
+                </div>
+            `}).join('');
+
+            const cats = getCategories();
+            document.getElementById('filter-buttons').innerHTML = cats.map(cat => `
+                <button onclick="filter('${escapeHtml(cat)}')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition ${cat === activeFilter ? 'bg-[var(--accent)] text-black border-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'}">${cat}</button>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function filter(cat) {
+            activeFilter = cat;
+            render();
+        }
+
+        function openModal(id) {
+            activeItem = ITEMS.find(i => i.id === id);
+            if (!activeItem) return;
+            const images = Array.isArray(activeItem.images) && activeItem.images.length ? activeItem.images : [activeItem.img || ''];
+            const mainImg = images[0] || '';
+
+            document.getElementById('modal-img').src = mainImg;
+            document.getElementById('modal-cat').innerText = activeItem.cat;
+            document.getElementById('modal-title').innerText = activeItem.name;
+            document.getElementById('modal-price').innerText = currencySymbol + activeItem.price.toLocaleString();
+            document.getElementById('modal-mat').innerText = activeItem.material || '—';
+            document.getElementById('modal-weight').innerText = activeItem.weight || '—';
+
+            const thumbs = document.getElementById('modal-thumbs');
+            if (images.length > 1) {
+                thumbs.classList.remove('hidden');
+                thumbs.innerHTML = images.map((url, i) => `<img src="${url}" alt="" class="${i === 0 ? 'active' : ''}" onclick="setModalImage('${url.replace(/'/g, "\\'")}', this)">`).join('');
+            } else {
+                thumbs.classList.add('hidden');
+                thumbs.innerHTML = '';
+            }
+
+            const variantsDiv = document.getElementById('modal-variants');
+            if (activeItem.variants && Object.keys(activeItem.variants).length) {
+                variantsDiv.classList.remove('hidden');
+                variantsDiv.innerHTML = Object.entries(activeItem.variants).map(([name, opts]) => `
+                    <div class="mb-4">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">${escapeHtml(name)}</div>
+                        <div class="flex flex-wrap gap-2">
+                            ${(Array.isArray(opts) ? opts : [opts]).map((opt, j) => `
+                                <button type="button" class="variant-btn px-3 py-1.5 border border-[var(--border)] rounded-full text-sm text-[var(--text-primary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition" data-variant="${escapeHtml(name)}" data-value="${escapeHtml(String(opt))}">${escapeHtml(String(opt))}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+                variantsDiv.querySelectorAll('.variant-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        variantsDiv.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('border-[var(--accent)]', 'text-[var(--accent)]'));
+                        this.classList.add('border-[var(--accent)]', 'text-[var(--accent)]');
+                    });
+                });
+            } else {
+                variantsDiv.classList.add('hidden');
+                variantsDiv.innerHTML = '';
+            }
+
+            document.getElementById('product-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function setModalImage(url, thumbEl) {
+            document.getElementById('modal-img').src = url;
+            document.querySelectorAll('#modal-thumbs img').forEach(img => img.classList.remove('active'));
+            if (thumbEl) thumbEl.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function addToBagFromModal() {
+            if (activeItem) bag.push(activeItem);
+            updateBag();
+            closeModal();
+            toggleBag();
+        }
+
+        function updateBag() {
+            const badge = document.getElementById('bag-count');
+            badge.innerText = bag.length;
+            badge.classList.toggle('hidden', bag.length === 0);
+            const container = document.getElementById('bag-items');
+            if (bag.length === 0) {
+                container.innerHTML = '<div class="text-center text-[var(--text-muted)] py-10 text-xs uppercase tracking-widest">Your Vault is Empty</div>';
+                document.getElementById('bag-total').innerText = currencySymbol + '0';
+            } else {
+                container.innerHTML = bag.map((item, index) => {
+                    const img = Array.isArray(item.images) && item.images[0] ? item.images[0] : item.img || '';
+                    return `
+                    <div class="flex gap-3 items-center bg-[var(--bg-card)] p-3 rounded-lg border border-[var(--border)]">
+                        <img src="${img}" alt="" class="w-14 h-14 object-cover rounded border border-[var(--border)]">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-[var(--text-primary)] royal-font text-sm truncate">${escapeHtml(item.name)}</h4>
+                            <p class="gold-text text-xs font-bold mt-0.5">${currencySymbol}${item.price.toLocaleString()}</p>
+                        </div>
+                        <button onclick="removeFromBag(${index})" class="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    </div>
+                `}).join('');
+                const total = bag.reduce((sum, item) => sum + item.price, 0);
+                document.getElementById('bag-total').innerText = currencySymbol + total.toLocaleString();
+            }
+            lucide.createIcons();
+        }
+
+        function removeFromBag(index) {
+            bag.splice(index, 1);
+            updateBag();
+        }
+
+        function toggleBag() {
+            document.getElementById('bag-drawer').classList.toggle('hidden');
+        }
+
+        function contactConcierge() {
+            if (bag.length === 0) return;
+            let msg = `💎 *VIP INQUIRY*\nI am interested in acquiring the following:\n\n`;
+            bag.forEach(i => msg += `▪️ ${i.name} (${currencySymbol}${i.price.toLocaleString()})\n`);
+            const total = bag.reduce((sum, item) => sum + item.price, 0);
+            msg += `\n*Est. Value: ${currencySymbol}${total.toLocaleString()}*\n\nPlease advise on availability and payment terms.`;
+            window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function inquireDirect() {
+            if (!activeItem) return;
+            const msg = `💎 *ITEM INQUIRY*\nReference: ${activeItem.name}\nPrice: ${currencySymbol}${activeItem.price.toLocaleString()}\n\nIs this piece currently available for viewing?`;
+            window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isLight = html.getAttribute('data-theme') === 'light';
+            html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+            try { localStorage.setItem('jewelry_theme', isLight ? 'dark' : 'light'); } catch (e) {}
+        }
+
+        (function initTheme() {
+            try {
+                const saved = localStorage.getItem('jewelry_theme');
+                if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+            } catch (e) {}
+        })();
+
+        loadConfig();
+        render();
+    </script>
+</body>
+</html>

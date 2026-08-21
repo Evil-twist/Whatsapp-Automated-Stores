@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clir Tech Hub</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #111; padding-bottom: 20px; transition: background 0.25s, color 0.25s; }
+        [data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
+        .header { background: #1e293b; color: #fff; padding: 16px; position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 900px; margin: 0 auto; }
+        .header h1 { font-size: 1.4rem; }
+        .header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 12px; }
+        .search { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; font-size: 1rem; }
+        .search::placeholder { color: rgba(255,255,255,0.6); }
+        .btn-cart { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; white-space: nowrap; }
+        .btn-cart:hover { background: rgba(255,255,255,0.3); }
+        .cart-badge { background: #f59e0b; color: #000; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; margin-left: 6px; display: none; }
+        .cats { background: #fff; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 100px; z-index: 50; transition: background 0.25s, border-color 0.25s; }
+        [data-theme="dark"] .cats { background: #1e293b; border-bottom-color: #334155; }
+        .cat { padding: 8px 16px; border-radius: 20px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: background 0.2s, color 0.2s; }
+        .cat:hover { background: #e2e8f0; }
+        .cat.active { background: #fef3c7; color: #b45309; }
+        [data-theme="dark"] .cat { background: #334155; color: #94a3b8; }
+        [data-theme="dark"] .cat:hover { background: #475569; }
+        [data-theme="dark"] .cat.active { background: #b45309; color: #1e293b; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 900px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+        .card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; cursor: pointer; transition: box-shadow 0.2s, background 0.25s, border-color 0.25s; }
+        [data-theme="dark"] .card { background: #1e293b; border-color: #334155; }
+        .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        [data-theme="dark"] .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .card-img-wrap { aspect-ratio: 1; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px; transition: background 0.25s; }
+        [data-theme="dark"] .card-img-wrap { background: #0f172a; }
+        .card-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .card-body { padding: 12px; }
+        .card-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+        .card-spec { font-size: 0.75rem; color: #64748b; margin-bottom: 8px; transition: color 0.25s; }
+        [data-theme="dark"] .card-spec { color: #94a3b8; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; }
+        .card-price { font-weight: 700; color: #b45309; font-size: 1rem; }
+        .badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+        .badge-new { background: #d1fae5; color: #047857; }
+        .badge-used { background: #fed7aa; color: #c2410c; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; transition: background 0.25s; }
+        [data-theme="dark"] .modal { background: #1e293b; }
+        .modal-close { position: absolute; top: 8px; right: 8px; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; z-index: 1; color: #334155; }
+        [data-theme="dark"] .modal-close { background: #334155; color: #e2e8f0; }
+        .modal-img-wrap { aspect-ratio: 1; background: #f8fafc; padding: 16px; position: relative; transition: background 0.25s; }
+        [data-theme="dark"] .modal-img-wrap { background: #0f172a; }
+        .modal-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .modal-thumbs { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; transition: background 0.25s, border-color 0.25s; }
+        [data-theme="dark"] .modal-thumbs { background: #0f172a; border-bottom-color: #334155; }
+        .modal-thumbs img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .modal-thumbs img:hover, .modal-thumbs img.active { border-color: #b45309; }
+        .modal-body { padding: 16px; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .modal-price { font-size: 1.5rem; font-weight: 700; color: #b45309; margin-bottom: 12px; }
+        .modal-specs { font-size: 0.9rem; color: #475569; margin-bottom: 12px; }
+        .modal-options { margin-bottom: 16px; }
+        .modal-options h4 { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
+        .modal-options .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+        .modal-options .opt-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 0.85rem; }
+        .modal-options .opt-btn:hover { border-color: #b45309; background: #fffbeb; }
+        .modal-options .opt-btn.selected { border-color: #b45309; background: #fef3c7; color: #b45309; font-weight: 600; }
+        [data-theme="dark"] .modal-options .opt-btn { background: #334155; border-color: #475569; color: #e2e8f0; }
+        [data-theme="dark"] .modal-options .opt-btn.selected { border-color: #b45309; background: #b45309; color: #1e293b; }
+        .btn-add { width: 100%; padding: 14px; background: #1e293b; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+        .btn-add:hover { background: #334155; }
+        .theme-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .theme-btn:hover { background: rgba(255,255,255,0.3); }
+        .theme-btn[aria-label="Switch to light mode"] { display: none; }
+        .theme-btn[aria-label="Switch to dark mode"] { display: flex; }
+        [data-theme="dark"] .theme-btn[aria-label="Switch to dark mode"] { display: none; }
+        [data-theme="dark"] .theme-btn[aria-label="Switch to light mode"] { display: flex; }
+        .hidden { display: none !important; }
+        .footer { background: #1e293b; color: #94a3b8; padding: 32px 16px 24px; margin-top: 48px; }
+        .footer-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+        .footer-brand { font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+        .footer-about { font-size: 0.9rem; max-width: 480px; margin: 0 auto 16px; line-height: 1.5; }
+        .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-bottom: 16px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+        .footer-links a:hover { color: #f59e0b; }
+        .footer-copy { font-size: 0.8rem; color: #64748b; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-inner">
+        <h1 id="site-name">CLIR TECH</h1>
+        <p id="site-tagline">Phones · Laptops · Accessories</p>
+        <div class="header-row">
+            <input type="text" class="search" id="search" placeholder="Search products..." oninput="filterProducts()">
+            <button type="button" class="theme-btn" id="theme-btn-dark" aria-label="Switch to dark mode" onclick="setTheme('dark')" title="Dark mode">🌙</button>
+            <button type="button" class="theme-btn" id="theme-btn-light" aria-label="Switch to light mode" onclick="setTheme('light')" title="Light mode">☀️</button>
+            <button type="button" class="btn-cart" onclick="checkout()">Cart <span id="cart-badge" class="cart-badge">0</span></button>
+        </div>
+    </div>
+</div>
+
+<div class="cats" id="cats-bar">
+    <button type="button" class="cat active" data-cat="All" onclick="setCat('All')">All</button>
+</div>
+
+<div class="wrap">
+    <div id="product-list" class="grid"></div>
+</div>
+
+<footer class="footer" id="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand" id="footer-brand">Clir Tech Hub</div>
+        <p class="footer-about" id="footer-about">Your trusted electronics store. Phones, laptops, and accessories.</p>
+        <div class="footer-links" id="footer-links"></div>
+        <div class="footer-copy" id="footer-copyright">© 2025 Clir Tech Hub. All rights reserved.</div>
+    </div>
+</footer>
+
+<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+        <div class="modal-img-wrap">
+            <img id="modal-img" src="" alt="">
+        </div>
+        <div id="modal-thumbs" class="modal-thumbs"></div>
+        <div class="modal-body">
+            <h2 id="modal-title" class="modal-title"></h2>
+            <p id="modal-price" class="modal-price"></p>
+            <div id="modal-specs" class="modal-specs"></div>
+            <div id="modal-options"></div>
+            <button type="button" class="btn-add" onclick="addToCart()">Add to Cart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var STORAGE_KEY = 'electronics_store_settings';
+    var THEME_KEY = 'electronics_theme';
+    var cart = [];
+    var currentCat = 'All';
+    var currentProduct = null;
+    var selectedOptions = {};
+    var whatsapp = '233538865290';
+    var currency = 'GHS';
+    var inventory = [];
+    var allCats = ['Phones', 'Laptops', 'Accessories'];
+
+    window.setTheme = function(mode) {
+        if (mode !== 'light' && mode !== 'dark') return;
+        document.documentElement.setAttribute('data-theme', mode);
+        try { localStorage.setItem(THEME_KEY, mode); } catch (e) {}
+    };
+
+    (function initTheme() {
+        try {
+            var saved = localStorage.getItem(THEME_KEY);
+            document.documentElement.setAttribute('data-theme', (saved === 'dark') ? 'dark' : 'light');
+        } catch (e) {}
+    })();
+
+    function getSettings() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+
+    function getDefaultCatalog() {
+        return {
+            Phones: [
+                { id: 1, name: 'iPhone 13 Pro Max', price: 9500, condition: 'UK Used', specs: '256GB · Sierra Blue', images: ['https://images.unsplash.com/photo-1641460232841-e283da213de6?w=400'], options: { 'Memory': ['256GB', '512GB'], 'Color': ['Sierra Blue', 'Gold', 'Graphite'], 'Battery Health': ['90%', '92%', '95%'] } },
+                { id: 2, name: 'Samsung S23 Ultra', price: 12500, condition: 'Brand New', specs: '512GB · Phantom Black', images: ['https://images.unsplash.com/photo-1678911820864-e2c567c655d7?w=400'], options: { 'Memory': ['256GB', '512GB'], 'Color': ['Phantom Black', 'Cream', 'Green'] } },
+                { id: 3, name: 'iPhone 14', price: 7200, condition: 'UK Used', specs: '128GB · Midnight', images: ['https://images.unsplash.com/photo-1663314326611-9e2fd4f11b1b?w=400'], options: { 'Memory': ['128GB', '256GB'], 'Color': ['Midnight', 'Blue', 'Starlight'], 'Battery Health': ['85%', '90%', '95%'] } },
+                { id: 4, name: 'Google Pixel 7 Pro', price: 5800, condition: 'UK Used', specs: '128GB · Hazel', images: ['https://images.unsplash.com/photo-1666238851883-1cdc90b547e4?w=400'], options: { 'Color': ['Hazel', 'Obsidian', 'Snow'] } },
+                { id: 5, name: 'Samsung Galaxy A54', price: 3800, condition: 'Brand New', specs: '256GB · Lime', images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'], options: { 'Memory': ['128GB', '256GB'], 'Color': ['Lime', 'Violet', 'Graphite'] } },
+                { id: 6, name: 'iPhone 11', price: 3200, condition: 'UK Used', specs: '64GB · Purple', images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400'], options: { 'Memory': ['64GB', '128GB'], 'Color': ['Purple', 'Black', 'White'], 'Battery Health': ['80%', '85%', '90%'] } }
+            ],
+            Laptops: [
+                { id: 7, name: 'MacBook Air M1', price: 8500, condition: 'UK Used', specs: '8GB · 256GB SSD', images: ['https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Space Grey', 'Gold', 'Silver'] } },
+                { id: 8, name: 'HP EliteBook 840 G6', price: 4200, condition: 'UK Used', specs: 'Core i7 · 16GB · Touchscreen', images: ['https://images.unsplash.com/photo-1544731612-de7f96afe55f?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Silver', 'Black'] } },
+                { id: 9, name: 'Dell XPS 13', price: 9800, condition: 'UK Used', specs: 'Core i7 · 4K · 512GB SSD', images: ['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Silver', 'Frost'] } },
+                { id: 10, name: 'Lenovo ThinkPad X1 Carbon', price: 5500, condition: 'UK Used', specs: 'Core i5 · Ultra Light', images: ['https://images.unsplash.com/photo-1626890871138-a286af648586?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Black'] } },
+                { id: 11, name: 'MacBook Pro 14 M1 Pro', price: 18500, condition: 'UK Used', specs: '16GB · 512GB · 120Hz', images: ['https://images.unsplash.com/photo-1658400274389-e7dbedd89b67?w=400'], options: { 'Memory': ['16GB', '32GB'], 'Color': ['Space Grey', 'Silver'] } },
+                { id: 12, name: 'HP Envy x360', price: 6500, condition: 'Brand New', specs: 'Ryzen 5 · Convertible', images: ['https://images.unsplash.com/photo-1583223667854-e0e05b1ad4f3?w=400'], options: { 'Memory': ['8GB', '16GB'], 'Color': ['Natural Silver', 'Pale Gold'] } }
+            ],
+            Accessories: [
+                { id: 13, name: 'Sony WH-1000XM5', price: 3800, condition: 'Brand New', specs: 'Noise Cancelling · 30hr', images: ['https://images.unsplash.com/photo-1761005653849-74d20f95ecc2?w=400'], options: { 'Color': ['Black', 'Silver', 'Midnight Blue'] } },
+                { id: 14, name: 'AirPods Pro 2', price: 2800, condition: 'Brand New', specs: 'USB-C · MagSafe · ANC', images: ['https://images.unsplash.com/photo-1606741965326-cb990ae01bb2?w=400'], options: { 'Color': ['White'] } },
+                { id: 15, name: 'Apple Watch Series 8', price: 4500, condition: 'UK Used', specs: '45mm · GPS · Midnight', images: ['https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400'], options: { 'Size': ['41mm', '45mm'], 'Color': ['Midnight', 'Starlight', 'Silver'] } },
+                { id: 16, name: 'JBL Flip 6', price: 1400, condition: 'Brand New', specs: 'Waterproof · Portable', images: ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400'], options: { 'Color': ['Blue', 'Black', 'Red', 'Squad'] } },
+                { id: 17, name: 'Samsung Galaxy Watch 6', price: 3200, condition: 'Brand New', specs: '44mm · LTE · Health', images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'], options: { 'Size': ['40mm', '44mm'], 'Color': ['Graphite', 'Silver', 'Gold'] } },
+                { id: 18, name: 'Anker PowerCore 20000', price: 450, condition: 'Brand New', specs: '20000mAh · Fast Charge', images: ['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400'], options: { 'Color': ['Black', 'White'] } }
+            ]
+        };
+    }
+
+    function getInventory() {
+        var s = getSettings();
+        var catalog = (s && s.catalog && typeof s.catalog === 'object') ? s.catalog : getDefaultCatalog();
+        var list = [];
+        var cats = Object.keys(catalog);
+        allCats = ['Phones', 'Laptops', 'Accessories'];
+        for (var c = 0; c < cats.length; c++) {
+            var catName = cats[c];
+            var arr = catalog[catName];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var p = arr[i];
+                if (!p || !p.name) continue;
+                var copy = { id: p.id != null ? p.id : list.length + 1, name: p.name, price: Number(p.price) || 0, condition: p.condition || 'UK Used', cat: catName, specs: p.specs || '', images: Array.isArray(p.images) ? p.images : (p.img ? [p.img] : []), options: (p.options && typeof p.options === 'object') ? p.options : {} };
+                list.push(copy);
+            }
+        }
+        return list.length ? list : flattenCatalog(getDefaultCatalog());
+    }
+
+    function flattenCatalog(catalog) {
+        var list = [];
+        var cats = Object.keys(catalog);
+        for (var c = 0; c < cats.length; c++) {
+            var arr = catalog[cats[c]];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var p = arr[i];
+                if (!p || !p.name) continue;
+                list.push({ id: p.id != null ? p.id : list.length + 1, name: p.name, price: Number(p.price) || 0, condition: p.condition || 'UK Used', cat: cats[c], specs: p.specs || '', images: Array.isArray(p.images) ? p.images : (p.img ? [p.img] : []), options: (p.options && typeof p.options === 'object') ? p.options : {} });
+            }
+        }
+        return list;
+    }
+
+    function applySiteSettings() {
+        var s = getSettings();
+        if (s && s.site) {
+            if (s.site.whatsapp) whatsapp = String(s.site.whatsapp).replace(/\D/g, '');
+            if (s.site.currency) currency = s.site.currency || 'GHS';
+            var el = document.getElementById('site-name');
+            if (el) el.textContent = (s.site.name || 'CLIR TECH').replace(/<[^>]+>/g, '');
+            el = document.getElementById('site-tagline');
+            if (el) el.textContent = s.site.tagline || 'Phones · Laptops · Accessories';
+        }
+        var f = (s && s.footer) ? s.footer : {};
+        el = document.getElementById('footer-brand');
+        if (el) el.textContent = f.brand || 'Clir Tech Hub';
+        el = document.getElementById('footer-about');
+        if (el) el.textContent = (f.about || (s && s.site && s.site.about) || 'Your trusted electronics store. Phones, laptops, and accessories.').replace(/<[^>]+>/g, '');
+        el = document.getElementById('footer-copyright');
+        if (el) el.textContent = f.copyright || '© 2025 Clir Tech Hub. All rights reserved.';
+        var linksEl = document.getElementById('footer-links');
+        if (linksEl && f.links && f.links.length) {
+            var linksHtml = '';
+            for (var i = 0; i < f.links.length; i++) {
+                var L = f.links[i];
+                if (L && L.text) linksHtml += '<a href="' + escapeHtml(L.url || '#') + '">' + escapeHtml(L.text) + '</a>';
+            }
+            linksEl.innerHTML = linksHtml;
+        } else {
+            linksEl.innerHTML = '';
+        }
+    }
+
+    function renderCats() {
+        var s = getSettings();
+        var catalog = (s && s.catalog) ? s.catalog : getDefaultCatalog();
+        var cats = Object.keys(catalog);
+        if (cats.length === 0) cats = ['Phones', 'Laptops', 'Accessories'];
+        var bar = document.getElementById('cats-bar');
+        if (!bar) return;
+        var html = '<button type="button" class="cat active" data-cat="All" onclick="setCat(\'All\')">All</button>';
+        for (var i = 0; i < cats.length; i++) {
+            html += '<button type="button" class="cat" data-cat="' + escapeHtml(cats[i]) + '" onclick="setCat(\'' + escapeHtml(cats[i]).replace(/'/g, "\\'") + '\')">' + escapeHtml(cats[i]) + '</button>';
+        }
+        bar.innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function getFirstImg(p) {
+        if (Array.isArray(p.images) && p.images.length) return p.images[0];
+        return p.img || '';
+    }
+
+    function renderProducts() {
+        inventory = getInventory();
+        applySiteSettings();
+        var listEl = document.getElementById('product-list');
+        if (!listEl) return;
+        var q = (document.getElementById('search') && document.getElementById('search').value) || '';
+        q = q.toLowerCase().trim();
+        var html = '';
+        for (var i = 0; i < inventory.length; i++) {
+            var p = inventory[i];
+            var catOk = currentCat === 'All' || p.cat === currentCat;
+            var nameOk = !q || (p.name || '').toLowerCase().indexOf(q) !== -1;
+            if (!catOk || !nameOk) continue;
+            var img = getFirstImg(p);
+            var condClass = (p.condition === 'Brand New') ? 'badge-new' : 'badge-used';
+            html += '<div class="card product-card" data-cat="' + escapeHtml(p.cat) + '" data-name="' + escapeHtml(p.name) + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')">';
+            html += '<div class="card-img-wrap"><img src="' + escapeHtml(img) + '" alt="' + escapeHtml(p.name) + '"></div>';
+            html += '<div class="card-body"><div class="card-title">' + escapeHtml(p.name) + '</div>';
+            html += '<span class="badge ' + condClass + '">' + escapeHtml(p.condition) + '</span>';
+            html += '<div class="card-spec">' + escapeHtml(p.specs) + '</div>';
+            html += '<div class="card-footer"><span class="card-price">' + escapeHtml(currency) + ' ' + Number(p.price).toLocaleString() + '</span></div></div></div>';
+        }
+        listEl.innerHTML = html || '<p style="grid-column:1/-1; padding:24px; text-align:center; color:#64748b;">No products. Add products in the Admin panel and Save.</p>';
+    }
+
+    window.setCat = function(cat) {
+        currentCat = cat;
+        var btns = document.querySelectorAll('.cat');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].classList.toggle('active', btns[i].getAttribute('data-cat') === cat);
+        }
+        renderProducts();
+    };
+
+    window.filterProducts = function() {
+        renderProducts();
+    };
+
+    window.openModal = function(id) {
+        currentProduct = null;
+        for (var i = 0; i < inventory.length; i++) {
+            if (inventory[i].id === id) { currentProduct = inventory[i]; break; }
+        }
+        if (!currentProduct) return;
+        selectedOptions = {};
+        var images = currentProduct.images && currentProduct.images.length ? currentProduct.images : [];
+        var mainImg = images[0] || '';
+        var el = document.getElementById('modal-img');
+        if (el) el.src = mainImg;
+        el = document.getElementById('modal-title');
+        if (el) el.textContent = currentProduct.name;
+        el = document.getElementById('modal-price');
+        if (el) el.textContent = currency + ' ' + Number(currentProduct.price).toLocaleString();
+        el = document.getElementById('modal-specs');
+        if (el) el.textContent = currentProduct.specs || '';
+        var thumbsEl = document.getElementById('modal-thumbs');
+        if (thumbsEl) {
+            if (images.length > 1) {
+                thumbsEl.innerHTML = '';
+                thumbsEl.style.display = 'flex';
+                for (var t = 0; t < images.length; t++) {
+                    var im = document.createElement('img');
+                    im.src = images[t];
+                    im.alt = '';
+                    im.className = t === 0 ? 'active' : '';
+                    im.onclick = (function(idx) { return function() {
+                        var m = document.getElementById('modal-img');
+                        if (m) m.src = images[idx];
+                        var all = thumbsEl.querySelectorAll('img');
+                        for (var a = 0; a < all.length; a++) all[a].classList.toggle('active', a === idx);
+                    }; })(t);
+                    thumbsEl.appendChild(im);
+                }
+            } else {
+                thumbsEl.innerHTML = '';
+                thumbsEl.style.display = 'none';
+            }
+        }
+        var opts = currentProduct.options || {};
+        var optKeys = Object.keys(opts);
+        var optionsEl = document.getElementById('modal-options');
+        if (optionsEl) {
+            if (optKeys.length === 0) {
+                optionsEl.innerHTML = '';
+                optionsEl.style.display = 'none';
+            } else {
+                optionsEl.style.display = 'block';
+                var optHtml = '';
+                for (var k = 0; k < optKeys.length; k++) {
+                    var key = optKeys[k];
+                    var vals = opts[key];
+                    if (!Array.isArray(vals)) vals = [vals];
+                    selectedOptions[key] = vals[0];
+                    optHtml += '<div class="modal-options"><h4>' + escapeHtml(key) + '</h4><div class="opts">';
+                    for (var v = 0; v < vals.length; v++) {
+                        var val = String(vals[v]);
+                        optHtml += '<button type="button" class="opt-btn' + (v === 0 ? ' selected' : '') + '" data-key="' + escapeHtml(key) + '" data-val="' + escapeHtml(val) + '">' + escapeHtml(val) + '</button>';
+                    }
+                    optHtml += '</div></div>';
+                }
+                optionsEl.innerHTML = optHtml;
+                var optBtns = optionsEl.querySelectorAll('.opt-btn');
+                for (var b = 0; b < optBtns.length; b++) {
+                    (function(btn) {
+                        btn.addEventListener('click', function() {
+                            var key = btn.getAttribute('data-key');
+                            var val = btn.getAttribute('data-val');
+                            selectedOptions[key] = val;
+                            var sameKey = optionsEl.querySelectorAll('.opt-btn[data-key="' + key + '"]');
+                            for (var s = 0; s < sameKey.length; s++) sameKey[s].classList.remove('selected');
+                            btn.classList.add('selected');
+                        });
+                    })(optBtns[b]);
+                }
+            }
+        }
+        el = document.getElementById('modal-overlay');
+        if (el) el.classList.add('show');
+    };
+
+    window.closeModal = function() {
+        var el = document.getElementById('modal-overlay');
+        if (el) el.classList.remove('show');
+    };
+
+    window.addToCart = function() {
+        if (!currentProduct) return;
+        var label = currentProduct.name;
+        var optParts = [];
+        for (var k in selectedOptions) if (selectedOptions[k]) optParts.push(selectedOptions[k]);
+        if (optParts.length) label += ' (' + optParts.join(', ') + ')';
+        cart.push({ name: currentProduct.name, price: currentProduct.price, label: label });
+        var badge = document.getElementById('cart-badge');
+        if (badge) {
+            badge.textContent = cart.length;
+            badge.style.display = cart.length ? 'inline' : 'none';
+        }
+        closeModal();
+    };
+
+    window.checkout = function() {
+        if (cart.length === 0) { alert('Your cart is empty.'); return; }
+        var msg = 'Order Request\n\n';
+        for (var i = 0; i < cart.length; i++) {
+            msg += '• ' + cart[i].label + ' - ' + currency + ' ' + Number(cart[i].price).toLocaleString() + '\n';
+        }
+        msg += '\nTotal items: ' + cart.length;
+        window.open('https://wa.me/' + whatsapp + '?text=' + encodeURIComponent(msg), '_blank');
+    };
+
+    renderCats();
+    renderProducts();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kicks Ghana</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #faf9f7;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --accent: #b8860b;
+            --accent-soft: rgba(184, 134, 11, 0.12);
+            --border: #e8e6e3;
+        }
+        .dark {
+            --bg: #0d0d0d;
+            --surface: #1a1a1a;
+            --text: #f5f5f5;
+            --text-muted: #a0a0a0;
+            --accent: #d4af37;
+            --accent-soft: rgba(212, 175, 55, 0.15);
+            --border: #2a2a2a;
+        }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+        .font-luxury { font-family: 'Cormorant Garamond', serif; }
+        .theme-toggle { transition: transform 0.3s; }
+        .theme-toggle:hover { transform: rotate(15deg); }
+        #grid .card { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+        #grid .card:active { transform: scale(0.98); }
+        .size-btn { transition: all 0.2s; }
+        .variant-btn { transition: all 0.2s; }
+        .modal-enter { animation: modalSlide 0.3s ease; }
+        @keyframes modalSlide { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        .thumb { transition: opacity 0.2s, border-color 0.2s; }
+        .thumb.active { border-color: var(--accent); opacity: 1; }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <header class="sticky top-0 z-40 border-b transition-colors duration-300" style="background: var(--surface); border-color: var(--border);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div>
+                <h1 id="site-title" class="text-2xl sm:text-3xl font-luxury font-bold tracking-tight" style="color: var(--accent);">CLIRSHOE</h1>
+                <p id="site-tagline" class="text-xs sm:text-sm font-medium mt-0.5" style="color: var(--text-muted);">Fresh drops in Accra.</p>
+            </div>
+            <button id="theme-toggle" class="theme-toggle p-2.5 rounded-full border transition-colors" style="border-color: var(--border); background: var(--surface);" aria-label="Toggle theme">
+                <i data-lucide="sun" class="w-5 h-5 hidden dark:block" style="color: var(--accent);"></i>
+                <i data-lucide="moon" class="w-5 h-5 block dark:hidden" style="color: var(--text);"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div id="hero-banner" class="hidden rounded-2xl overflow-hidden mb-8 border" style="border-color: var(--border);">
+            <div class="relative aspect-[21/9] sm:aspect-[3/1] min-h-[140px]">
+                <img id="hero-img" src="" alt="" class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4" style="background: linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0.3));">
+                    <h2 id="hero-title" class="font-luxury text-2xl sm:text-4xl font-semibold text-white"></h2>
+                    <p id="hero-subtitle" class="text-white/90 text-sm sm:text-base mt-1"></p>
+                </div>
+            </div>
+        </div>
+        <div id="grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <!-- Injected by JS -->
+        </div>
+    </main>
+
+    <!-- Footer (editable from admin) -->
+    <footer id="store-footer" class="mt-16 border-t transition-colors duration-300" style="background: var(--surface); border-color: var(--border);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <h3 id="footer-brand" class="font-luxury text-xl font-semibold mb-3" style="color: var(--accent);"></h3>
+                    <p id="footer-about" class="text-sm leading-relaxed" style="color: var(--text-muted);"></p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider mb-4" style="color: var(--text-muted);">Quick links</h4>
+                    <ul id="footer-links" class="space-y-2"></ul>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider mb-4" style="color: var(--text-muted);">Follow us</h4>
+                    <div id="footer-social" class="flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+            <div class="mt-10 pt-6 border-t text-center text-sm" style="border-color: var(--border); color: var(--text-muted);">
+                <p id="footer-copyright"></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Product detail modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden flex flex-col modal-enter" style="background: var(--surface);">
+        <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10" style="background: linear-gradient(to bottom, var(--surface) 60%, transparent);">
+            <button onclick="closeModal()" class="p-2.5 rounded-full border transition-colors" style="border-color: var(--border); background: var(--surface);">
+                <i data-lucide="chevron-left" class="w-6 h-6" style="color: var(--text);"></i>
+            </button>
+            <span id="modal-price" class="py-2 px-4 font-semibold rounded-full text-sm" style="background: var(--accent-soft); color: var(--accent);">GHS 0</span>
+        </div>
+
+        <div class="flex-1 overflow-auto">
+            <!-- Image area: gallery or single -->
+            <div class="relative w-full aspect-square sm:aspect-[4/3] flex items-center justify-center overflow-hidden" style="background: var(--bg);">
+                <img id="modal-img" src="" alt="" class="w-full h-full object-cover">
+                <div id="modal-gallery-thumbs" class="absolute bottom-3 left-0 right-0 flex justify-center gap-2 px-4 overflow-x-auto py-1 hidden"></div>
+            </div>
+
+            <div class="p-5 sm:p-6">
+                <h2 id="modal-title" class="font-luxury text-2xl sm:text-3xl font-semibold uppercase tracking-wide mb-2" style="color: var(--text);"></h2>
+                <div id="modal-badge" class="inline-block px-2.5 py-1 text-xs font-semibold uppercase mb-4 rounded" style="background: var(--accent-soft); color: var(--accent);">Authentic / Box Included</div>
+
+                <!-- Variants (e.g. Color) -->
+                <div id="modal-variants" class="mb-5 space-y-4 hidden"></div>
+
+                <!-- Sizes -->
+                <div class="mb-6">
+                    <label class="text-xs font-semibold uppercase tracking-wider block mb-3" style="color: var(--text-muted);">Select Size (EU)</label>
+                    <div class="grid grid-cols-5 gap-2" id="size-grid"></div>
+                </div>
+
+                <button onclick="buyNow()" class="w-full py-4 rounded-xl font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]" style="background: var(--accent); color: #0d0d0d;">
+                    Cop Now <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'clirshoes_settings';
+        const FALLBACK_SHOES = [
+            { id: 1, name: "Air Jordan 1 High OG 'Chicago'", price: 1150, img: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=800" },
+            { id: 2, name: "Adidas Yeezy Boost 350 V2 'Zebra'", price: 980, img: "https://images.unsplash.com/photo-1584735175097-719d848f8449?auto=format&fit=crop&q=80&w=800" },
+            { id: 3, name: "Nike Dunk Low 'Panda'", price: 550, img: "https://images.unsplash.com/photo-1623684225794-a8f1f5037f5c?q=80&w=800" },
+            { id: 4, name: "New Balance 550 'White Green'", price: 620, img: "https://images.unsplash.com/photo-1582076197780-20fab84bc271?q=80&w=800" },
+            { id: 5, name: "Nike Air Force 1 'Triple White'", price: 450, img: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800" },
+            { id: 6, name: "Adidas Samba OG", price: 480, img: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=800" },
+            { id: 7, name: "Nike Air Max 97 'Silver Bullet'", price: 750, img: "https://images.unsplash.com/photo-1579446650032-86effeeb3389?q=80&w=800" },
+            { id: 8, name: "Vans Old Skool Classic", price: 350, img: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&q=80&w=800" },
+            { id: 9, name: "Converse Chuck 70 High", price: 380, img: "https://images.unsplash.com/photo-1544857574-d4c0a1eb5ea1?q=80&w=800" },
+            { id: 10, name: "Nike Air Jordan 4 'Military Black'", price: 1200, img: "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?auto=format&fit=crop&q=80&w=800" },
+            { id: 11, name: "Adidas Forum Low", price: 520, img: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&q=80&w=800" },
+            { id: 12, name: "New Balance 9060", price: 890, img: "https://images.unsplash.com/photo-1628429437853-40ec8ebe3386?q=80&w=800" }
+        ];
+        const DEFAULT_SIZES = [36, 37, 38, 39, 40, 41, 42];
+
+        let SHOES = [];
+        let SIZES = [...DEFAULT_SIZES];
+        let selectedShoe = null;
+        let selectedSize = null;
+        let selectedVariantChoices = {};
+        let currentImageIndex = 0;
+
+        function loadStoreConfig() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    const products = data.products || (data.catalog && Object.values(data.catalog).flat()) || [];
+                    if (products.length) {
+                        SHOES = products.map((p, i) => ({
+                            id: p.id || i + 1,
+                            name: p.name || 'Product',
+                            price: Number(p.price) || 0,
+                            img: p.img || (Array.isArray(p.images) && p.images[0]) || '',
+                            images: Array.isArray(p.images) && p.images.length ? p.images : (p.img ? [p.img] : []),
+                            variants: Array.isArray(p.variants) ? p.variants : [],
+                            sizes: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : null
+                        }));
+                    } else { SHOES = [...FALLBACK_SHOES].map(s => ({ ...s, images: [s.img], variants: [] })); }
+                    const site = data.site || {};
+                    document.getElementById('site-title').textContent = site.name || 'CLIRSHOE';
+                    document.getElementById('site-tagline').textContent = site.tagline || 'Fresh drops in Accra.';
+                    if (Array.isArray(data.sizes) && data.sizes.length) SIZES = data.sizes;
+                    const hero = data.hero || {};
+                    const heroEl = document.getElementById('hero-banner');
+                    if (hero.image || hero.title) {
+                        heroEl.classList.remove('hidden');
+                        document.getElementById('hero-img').src = hero.image || '';
+                        document.getElementById('hero-title').textContent = hero.title || '';
+                        document.getElementById('hero-subtitle').textContent = hero.subtitle || '';
+                    } else { heroEl.classList.add('hidden'); }
+                    const footer = data.footer || {};
+                    document.getElementById('footer-brand').textContent = footer.brand || data.site?.name || 'CLIRSHOE';
+                    document.getElementById('footer-about').textContent = data.site?.about || '';
+                    const linksList = document.getElementById('footer-links');
+                    const links = footer.links || [];
+                    linksList.innerHTML = links.map(l => `<li><a href="${(l.url || '#').replace(/"/g, '&quot;')}" class="hover:underline transition" style="color: var(--text);">${String(l.text || '').replace(/</g, '&lt;')}</a></li>`).join('');
+                    const socialEl = document.getElementById('footer-social');
+                    const social = footer.social || [];
+                    socialEl.innerHTML = social.map(s => `<a href="${(s.url || '#').replace(/"/g, '&quot;')}" target="_blank" rel="noopener" aria-label="${String(s.name || '').replace(/"/g, '&quot;')}" class="w-10 h-10 rounded-full flex items-center justify-center transition opacity-80 hover:opacity-100" style="background: var(--accent-soft); color: var(--accent);"><i class="${String(s.icon || 'fa-brands fa-link').replace(/</g, '&lt;')}"></i></a>`).join('');
+                    document.getElementById('footer-copyright').textContent = footer.copyright || '';
+                } else {
+                    SHOES = FALLBACK_SHOES.map(s => ({ ...s, images: [s.img], variants: [] }));
+                    renderFooterDefaults();
+                }
+            } catch (e) {
+                SHOES = FALLBACK_SHOES.map(s => ({ ...s, images: [s.img], variants: [] }));
+                renderFooterDefaults();
+            }
+        }
+
+        function renderFooterDefaults() {
+            document.getElementById('footer-brand').textContent = 'CLIRSHOE';
+            document.getElementById('footer-about').textContent = 'Premium kicks. Authentic. Delivered.';
+            document.getElementById('footer-links').innerHTML = '<li><a href="#" class="hover:underline" style="color: var(--text);">Contact</a></li><li><a href="#" class="hover:underline" style="color: var(--text);">Shipping</a></li>';
+            document.getElementById('footer-social').innerHTML = '';
+            document.getElementById('footer-copyright').textContent = '© 2025 CLIRSHOE. All Rights Reserved.';
+        }
+
+        function getProductImages(product) {
+            if (Array.isArray(product.images) && product.images.length) return product.images;
+            return product.img ? [product.img] : [];
+        }
+
+        function render() {
+            const currency = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}').site?.currency || 'GHS'; } catch { return 'GHS'; } })();
+            document.getElementById('grid').innerHTML = SHOES.map(s => {
+                const imgs = getProductImages(s);
+                const mainImg = imgs[0] || s.img || '';
+                return `
+                <div onclick="openModal(${s.id})" class="card group relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer border" style="background: var(--surface); border-color: var(--border);">
+                    <div class="absolute inset-0">
+                        <img src="${mainImg}" alt="${(s.name || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style="background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);"></div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <h3 class="font-luxury text-lg sm:text-xl font-semibold uppercase leading-tight line-clamp-2">${(s.name || '').replace(/</g, '&lt;')}</h3>
+                        <p class="font-mono font-semibold mt-1" style="color: var(--accent);">${currency} ${s.price}</p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function openModal(id) {
+            selectedShoe = SHOES.find(s => s.id === id);
+            if (!selectedShoe) return;
+            selectedSize = null;
+            selectedVariantChoices = {};
+            currentImageIndex = 0;
+
+            const imgs = getProductImages(selectedShoe);
+            const currency = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}').site?.currency || 'GHS'; } catch { return 'GHS'; } })();
+
+            document.getElementById('modal-title').textContent = selectedShoe.name || '';
+            document.getElementById('modal-price').textContent = `${currency} ${selectedShoe.price}`;
+            document.getElementById('modal-img').src = imgs[0] || selectedShoe.img || '';
+            document.getElementById('modal-img').alt = selectedShoe.name || '';
+
+            const thumbsEl = document.getElementById('modal-gallery-thumbs');
+            if (imgs.length > 1) {
+                thumbsEl.classList.remove('hidden');
+                thumbsEl.innerHTML = imgs.map((url, i) => `
+                    <button type="button" onclick="setModalImage(${i})" class="thumb flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${i === 0 ? 'active' : ''}" style="border-color: var(--border); opacity: ${i === 0 ? 1 : 0.7};">
+                        <img src="${url}" alt="" class="w-full h-full object-cover">
+                    </button>
+                `).join('');
+            } else {
+                thumbsEl.classList.add('hidden');
+                thumbsEl.innerHTML = '';
+            }
+
+            const variantsEl = document.getElementById('modal-variants');
+            if (selectedShoe.variants && selectedShoe.variants.length) {
+                variantsEl.classList.remove('hidden');
+                variantsEl.innerHTML = selectedShoe.variants.map((v, vi) => {
+                    const options = v.options || [];
+                    return `
+                    <div>
+                        <label class="text-xs font-semibold uppercase tracking-wider block mb-2" style="color: var(--text-muted);">${(v.name || 'Option').replace(/</g, '&lt;')}</label>
+                        <div class="flex flex-wrap gap-2">
+                            ${options.map((opt, oi) => `
+                                <button type="button" onclick="setVariant(${vi}, ${oi}, this)" class="variant-btn px-3 py-1.5 rounded-lg text-sm font-medium border ${oi === 0 ? 'border-current' : ''}" style="border-color: var(--border); color: var(--text);" data-variant-name="${(v.name || '').replace(/"/g, '&quot;')}" data-option="${(opt || '').replace(/"/g, '&quot;')}">${(opt || '').replace(/</g, '&lt;')}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                selectedShoe.variants.forEach((v, vi) => { selectedVariantChoices[v.name] = (v.options && v.options[0]) || ''; });
+            } else {
+                variantsEl.classList.add('hidden');
+                variantsEl.innerHTML = '';
+            }
+
+            const sizes = (selectedShoe.sizes && selectedShoe.sizes.length) ? selectedShoe.sizes : SIZES;
+            document.getElementById('size-grid').innerHTML = sizes.map(sz => `
+                <button type="button" onclick="setSize(${sz}, this)" class="size-btn aspect-square rounded-lg font-semibold text-sm border-2" style="border-color: var(--border); color: var(--text-muted);">${sz}</button>
+            `).join('');
+
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+
+        function setModalImage(i) {
+            currentImageIndex = i;
+            const imgs = getProductImages(selectedShoe);
+            if (imgs[i]) document.getElementById('modal-img').src = imgs[i];
+            document.querySelectorAll('#modal-gallery-thumbs .thumb').forEach((el, j) => {
+                el.classList.toggle('active', j === i);
+                el.style.opacity = j === i ? 1 : 0.7;
+                el.style.borderColor = j === i ? 'var(--accent)' : 'var(--border)';
+            });
+        }
+
+        function setVariant(variantIndex, optionIndex, btn) {
+            const v = selectedShoe.variants[variantIndex];
+            if (!v || !v.options) return;
+            const choice = v.options[optionIndex];
+            selectedVariantChoices[v.name] = choice;
+            btn.closest('div').querySelectorAll('.variant-btn').forEach((b, i) => {
+                b.classList.remove('border-2');
+                b.style.borderColor = 'var(--border)';
+                if (i === optionIndex) {
+                    b.style.borderColor = 'var(--accent)';
+                    b.classList.add('border-2');
+                }
+            });
+        }
+
+        function setSize(sz, btn) {
+            selectedSize = sz;
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.style.borderColor = 'var(--border)';
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-muted)';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            btn.style.background = 'var(--accent-soft)';
+            btn.style.color = 'var(--accent)';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function buyNow() {
+            if (!selectedSize) { alert('Select a size!'); return; }
+            let phone = '';
+            try {
+                const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                phone = (data.site && data.site.whatsapp) ? String(data.site.whatsapp).replace(/\D/g, '') : '233538865290';
+            } catch { phone = '233538865290'; }
+            if (!phone) phone = '233538865290';
+
+            const variantStr = Object.keys(selectedVariantChoices).length
+                ? '\n' + Object.entries(selectedVariantChoices).map(([k, v]) => `${k}: ${v}`).join('\n')
+                : '';
+            const msg = `👟 *ORDER*\nModel: ${selectedShoe.name}\nSize: ${selectedSize}${variantStr}\nPrice: GHS ${selectedShoe.price}\n\nAvailable?`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function initTheme() {
+            const dark = localStorage.getItem('clirshoes_dark') === '1';
+            document.documentElement.classList.toggle('dark', dark);
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const next = !document.documentElement.classList.toggle('dark');
+                localStorage.setItem('clirshoes_dark', next ? '0' : '1');
+                lucide.createIcons();
+            });
+        }
+
+        initTheme();
+        loadStoreConfig();
+        render();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
